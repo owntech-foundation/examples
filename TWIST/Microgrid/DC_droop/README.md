@@ -12,7 +12,7 @@ This code example demonstrates an experiment involving three power converters co
 
 | Connexion diagram | Microgrid structure |
 | ------ | ------ |
-|   <img src="/Image/droop.png" alt="Droop connexion diagram">| <img src="/Image/droopss.png" alt="Microgrid structure">|
+|   <img src="Image/droop.png" alt="Droop connexion diagram">| <img src="Image/droopss.png" alt="Microgrid structure">|
 
 
 ## Code Usage

@@ -18,7 +18,7 @@ Below is the connexion diagram :
 
 | Connexion diagram | microgrid structure |
 | ------ | ------ |
-|   ![schema_com](/Image/RS485.png)     | ![schema_com](/Image/exchange.png) |
+|   ![schema_com](Image/RS485.png)     | ![schema_com](Image/exchange.png) |
 
 
 

@@ -13,7 +13,7 @@ This code example demonstrates a current control experiment utilizing analog com
 
 | Connexion diagram | Microgrid structure |
 | ------ | ------ |
-| ![schema_com](/Image/Analogique.png) | ![schema_com](/Image/Maitre.png)|
+| ![schema_com](Image/Analogique.png) | ![schema_com](Image/Maitre.png)|
 
 ## Communication Modules
 
