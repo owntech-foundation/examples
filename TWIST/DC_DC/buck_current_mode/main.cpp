@@ -127,7 +127,7 @@ void setup_routine()
     twist.setVersion(shield_TWIST_V1_2);
 
     /* buck voltage mode */
-    twist.initAllBuck();
+    twist.initAllBuck(CURRENT_MODE);
 
     data.enableTwistDefaultChannels();
 
