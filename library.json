@@ -1,6 +1,6 @@
 {
     "name": "OwnTech_Examples",
-    "version": "1.0.0",
+    "version": "0.0.2",
     "description": "A library that contains OwnTech Power API examples",
     "keywords": "Power, Control, OwnTech",
     "repository":
@@ -20,6 +20,16 @@
             "email": "afarahhass@laas.fr"
         }
     ],
+    "examples": [
+    {
+        "name": "boost_voltage_mode",
+        "base": "examples/DCDC/boost_voltage_mode"
+    },
+    {
+        "name": "buck_current_mode",
+        "base": "examples/DCDC/buck_current_mode"
+    }
+    ]
     "license": "LGPL-2.1",
     "homepage": "https://www.owntech.org/",
     "frameworks": ["zephyr"],
