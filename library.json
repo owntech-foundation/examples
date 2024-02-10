@@ -29,7 +29,7 @@
         "name": "buck_current_mode",
         "base": "examples/DCDC/buck_current_mode"
     }
-    ]
+    ],
     "license": "LGPL-2.1",
     "homepage": "https://www.owntech.org/",
     "frameworks": ["zephyr"],
