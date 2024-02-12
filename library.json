@@ -23,11 +23,25 @@
     "examples": [
     {
         "name": "boost_voltage_mode",
-        "base": "examples/DCDC/boost_voltage_mode"
+        "title": "Voltage Mode Boost",
+        "description": "Voltage mode boost converter using PID controller for TWIST",
+        "group": "Samples TWIST",
+        "base": "examples/DCDC/boost_voltage_mode",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
     },
     {
-        "name": "buck_current_mode",
-        "base": "examples/DCDC/buck_current_mode"
+        "name": "buck_voltage_mode",
+        "title": "Voltage Mode Buck",
+        "description": "Voltage mode buck converter using PID controller for TWIST",
+        "group": "Samples TWIST",
+        "base": "examples/DCDC/buck_voltage_mode",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
     }
     ],
     "license": "LGPL-2.1",
