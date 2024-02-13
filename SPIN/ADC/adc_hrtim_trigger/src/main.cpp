@@ -59,16 +59,19 @@ void setup_routine()
 
     spin.pwm.setFrequency(200000); // Set frequency of pwm
 
-    // these functions must be used BEFORE initializing the selected timer
-    spin.pwm.setModulation(PWMA, Lft_aligned);
+    spin.pwm.setModulation(PWMA, UpDwn);
     spin.pwm.setAdcEdgeTrigger(PWMA, EdgeTrigger_up);
-    spin.pwm.setMode(PWMA, VOLTAGE_MODE);
 
     spin.pwm.initUnit(PWMA); // timer initialization
 
+    // Setting trigger for ADC
+    spin.pwm.setAdcTrigger(PWMA, ADCTRIG_1);
+    spin.pwm.setAdcTriggerInstant(PWMA, 0.06);
+    spin.pwm.enableAdcTrigger(PWMA);
+
     spin.pwm.startDualOutput(PWMA); // Start PWM
 
-    spin.adc.configureTriggerSource(2, hrtim_ev1); // ADC 2 configured in software mode
+    spin.adc.configureTriggerSource(2, hrtim_ev1); // ADC 2 configured to be triggered by the PWM
 
     data.enableAcquisition(2, 35); // ADC 2 enabled
 
@@ -94,7 +97,7 @@ void loop_background_task()
     printk("%f \n", adc_value);
 
     // Pause between two runs of the task
-    task.suspendBackgroundMs(1000);
+    task.suspendBackgroundMs(100);
 }
 
 /**

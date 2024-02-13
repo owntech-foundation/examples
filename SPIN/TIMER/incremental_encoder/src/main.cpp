@@ -41,8 +41,8 @@ void loop_background_task();   // Code to be executed in the background task
 void loop_critical_task();     // Code to be executed in real time in the critical task
 
 //--------------USER VARIABLES DECLARATIONS-------------------
-static float32_t adc_value;
 
+static uint32_t incremental_value;
 
 //--------------SETUP FUNCTIONS-------------------------------
 
@@ -57,17 +57,15 @@ void setup_routine()
     // Setup the hardware first
     spin.version.setBoardVersion(TWIST_v_1_1_2);
 
-    spin.adc.configureTriggerSource(2, software); // ADC 2 configured in software mode
-
-    data.enableAcquisition(2, 35); // ADC 2 enabled
+    spin.timer.startLogTimer4IncrementalEncoder();
 
     // Then declare tasks
     uint32_t background_task_number = task.createBackground(loop_background_task);
-    task.createCritical(loop_critical_task, 100); // Uncomment if you use the critical task
+    //task.createCritical(loop_critical_task, 500); // Uncomment if you use the critical task
 
     // Finally, start tasks
     task.startBackground(background_task_number);
-    task.startCritical(); // Uncomment if you use the critical task
+    //task.startCritical(); // Uncomment if you use the critical task
 }
 
 //--------------LOOP FUNCTIONS--------------------------------
@@ -79,11 +77,12 @@ void setup_routine()
  */
 void loop_background_task()
 {
+    incremental_value = spin.timer.getTimer4IncrementalEncoderValue();
     // Task content
-    printk("%f \n", adc_value);
+    printk(" %u \n", incremental_value);
 
     // Pause between two runs of the task
-    task.suspendBackgroundMs(100);
+    task.suspendBackgroundMs(1000);
 }
 
 /**
@@ -94,8 +93,7 @@ void loop_background_task()
  */
 void loop_critical_task()
 {
-    data.triggerAcquisition(2);
-    adc_value = data.getLatest(2, 35);
+
 }
 
 /**
