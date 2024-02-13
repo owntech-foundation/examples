@@ -79,11 +79,11 @@ void loop_background_task()
 {
     // Task content
 
-    dac_value = (dac_value + 1)%4096;
+    dac_value = (dac_value + 100)%4096;
     spin.dac.setConstValue(2, 1, dac_value);
 
     // Pause between two runs of the task
-    task.suspendBackgroundMs(1000);
+    task.suspendBackgroundMs(100);
 }
 
 /**

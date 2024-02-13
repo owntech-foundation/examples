@@ -1,4 +1,4 @@
-# Triggering measure from ADC via software trigger
+# Triggering measure from ADC via HRTIM trigger
 
 An ADC, or Analog-to-Digital Converter, is a crucial component in modern electronics that converts continuous analog signals into discrete digital data. In simpler terms, it takes real-world phenomena, like sound or temperature, and turns them into numbers that a computer can understand and process. This conversion is essential for various applications, in power electronics it allows us to get real-time measures from the circuit like voltage and current. 
 
