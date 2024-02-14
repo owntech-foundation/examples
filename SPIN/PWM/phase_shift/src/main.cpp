@@ -73,20 +73,14 @@ void setup_routine()
     spin.version.setBoardVersion(TWIST_v_1_1_2);
     twist.setVersion(shield_TWIST_V1_2);
 
-    /* PWM A initialization */
-    spin.pwm.setModulation(PWMA, UpDwn);
-    spin.pwm.setAdcEdgeTrigger(PWMA, EdgeTrigger_up);
-    spin.pwm.setMode(PWMA, VOLTAGE_MODE);
+    spin.pwm.setFrequency(200000); // Set frequency of pwm
 
+    /* PWM A initialization */
     spin.pwm.initUnit(PWMA); // timer initialization
 
     spin.pwm.startDualOutput(PWMA); // Start PWM
 
     /* PWM C initialization */
-    spin.pwm.setModulation(PWMC, UpDwn);
-    spin.pwm.setAdcEdgeTrigger(PWMC, EdgeTrigger_up);
-    spin.pwm.setMode(PWMC, VOLTAGE_MODE);
-
     spin.pwm.initUnit(PWMC); // timer initialization
 
     spin.pwm.setPhaseShift(PWMC, 180); // Phase shift of 180° for 2 legs interleaved configuration

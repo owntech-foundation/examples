@@ -73,11 +73,7 @@ void setup_routine()
     spin.version.setBoardVersion(TWIST_v_1_1_2);
     twist.setVersion(shield_TWIST_V1_2);
 
-    /* buck voltage mode */
-    spin.pwm.setModulation(PWMA, UpDwn);
-    spin.pwm.setAdcEdgeTrigger(PWMA, EdgeTrigger_up);
-    spin.pwm.setMode(PWMA, VOLTAGE_MODE);
-
+    spin.pwm.setFrequency(200000); // Set frequency of pwm
     spin.pwm.initUnit(PWMA); // timer initialization
 
     spin.pwm.startDualOutput(PWMA); // Start PWM

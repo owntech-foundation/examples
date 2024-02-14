@@ -82,7 +82,7 @@ void loop_background_task()
     printk(" %u \n", incremental_value);
 
     // Pause between two runs of the task
-    task.suspendBackgroundMs(1000);
+    task.suspendBackgroundMs(100);
 }
 
 /**
