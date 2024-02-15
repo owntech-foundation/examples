@@ -1,0 +1,51 @@
+{
+    "name": "OwnTech_Examples",
+    "version": "0.0.2",
+    "description": "A library that contains OwnTech Power API examples",
+    "keywords": "Power, Control, OwnTech",
+    "repository":
+    {
+        "type": "git",
+        "url": "https://github.com/owntech-foundation/examples.git"
+    },
+    "authors":
+    [
+        {
+            "name": "Jean Alinei",
+            "email": "jean.alinei@owntech.org",
+            "maintainer": true
+        },
+        {
+            "name": "Ayoub Farah Hassan",
+            "email": "afarahhass@laas.fr"
+        }
+    ],
+    "examples": [
+    {
+        "name": "boost_voltage_mode",
+        "title": "Voltage Mode Boost",
+        "description": "Voltage mode boost converter using PID controller for TWIST",
+        "group": "Samples TWIST",
+        "base": "examples/TWIST/DCDC/boost_voltage_mode",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "buck_voltage_mode",
+        "title": "Voltage Mode Buck",
+        "description": "Voltage mode buck converter using PID controller for TWIST",
+        "group": "Samples TWIST",
+        "base": "examples/TWIST/DCDC/buck_voltage_mode",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    }
+    ],
+    "license": "LGPL-2.1",
+    "homepage": "https://www.owntech.org/",
+    "frameworks": ["zephyr"],
+    "platforms": ["ststm32"]
+}
