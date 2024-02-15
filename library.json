@@ -121,17 +121,6 @@
         ]
     },
     {
-        "name": "DC_cient_server",
-        "title": "DC client server",
-        "description": "implementation of DC client server in microgrid",
-        "group": "Samples TWIST",
-        "base": "TWIST/Microgrid/DC_client_server",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
         "name": "adc_hrtim_trigger",
         "title": "HRTIM triggered ADC",
         "description": "setting the adc to be trigerred by the hrtim",
