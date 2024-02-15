@@ -26,7 +26,7 @@
         "title": "Voltage Mode Boost",
         "description": "Voltage mode boost converter using PID controller for TWIST",
         "group": "Samples TWIST",
-        "base": "examples/TWIST/DCDC/boost_voltage_mode",
+        "base": "TWIST/DC_DC/boost_voltage_mode",
         "files": [
             "main.cpp",
             "README.md"
@@ -37,7 +37,183 @@
         "title": "Voltage Mode Buck",
         "description": "Voltage mode buck converter using PID controller for TWIST",
         "group": "Samples TWIST",
-        "base": "examples/TWIST/DCDC/buck_voltage_mode",
+        "base": "TWIST/DC_DC/buck_voltage_mode",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "buck_current_mode",
+        "title": "Current Mode Buck",
+        "description": "Peak current mode buck converter using PID controller for TWIST",
+        "group": "Samples TWIST",
+        "base": "TWIST/DC_DC/buck_current_mode",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "interleaved",
+        "title": "Interleaved",
+        "description": "Interleaved mode buck converter with PID controlled output voltage",
+        "group": "Samples TWIST",
+        "base": "TWIST/DC_DC/interleaved",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "AC_cient_server",
+        "title": "AC client server",
+        "description": "implementation of AC client server in microgrid",
+        "group": "Samples TWIST",
+        "base": "TWIST/Microgrid/AC_client_server",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "AC_peer_to_peer",
+        "title": "AC peer to peer",
+        "description": "implementation of AC peer to peer in microgrid",
+        "group": "Samples TWIST",
+        "base": "TWIST/Microgrid/AC_peer_to_peer",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "DC_cient_server",
+        "title": "DC client server",
+        "description": "implementation of DC client server in microgrid",
+        "group": "Samples TWIST",
+        "base": "TWIST/Microgrid/DC_client_server",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "DC_peer_to_peer",
+        "title": "DC peer to peer",
+        "description": "implementation of DC peer to peer in microgrid",
+        "group": "Samples TWIST",
+        "base": "TWIST/Microgrid/DC_peer_to_peer",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "DC_droop",
+        "title": "DC droop",
+        "description": "implementation of DC droop in microgrid",
+        "group": "Samples TWIST",
+        "base": "TWIST/Microgrid/DC_droop",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "DC_cient_server",
+        "title": "DC client server",
+        "description": "implementation of DC client server in microgrid",
+        "group": "Samples TWIST",
+        "base": "TWIST/Microgrid/DC_client_server",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "adc_hrtim_trigger",
+        "title": "HRTIM triggered ADC",
+        "description": "setting the adc to be trigerred by the hrtim",
+        "group": "Samples SPIN",
+        "base": "SPIN/ADC/adc_hrtim_trigger",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "adc_software_trigger",
+        "title": "Software triggered ADC",
+        "description": "setting the adc to be trigerred by software",
+        "group": "Samples SPIN",
+        "base": "SPIN/ADC/adc_hrtim_trigger",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "signal_generation",
+        "title": "DAC signal generation",
+        "description": "Sawtooth generation with DAC",
+        "group": "Samples SPIN",
+        "base": "SPIN/DAC/signal_generation",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "blinky",
+        "title": "Blinky LED",
+        "description": "Toggling LED",
+        "group": "Samples SPIN",
+        "base": "SPIN/LED/blinky",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "duty_cycle_setting",
+        "title": "Setting PWM duty cycle",
+        "description": "Using PWM with duty cycle",
+        "group": "Samples SPIN",
+        "base": "SPIN/PWM/duty_cycle_setting",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "multiple_pwm",
+        "title": "Setting multiple PWM",
+        "description": "Using multiple PWM with duty cycle",
+        "group": "Samples SPIN",
+        "base": "SPIN/PWM/multiple_pwm",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "phase_shift",
+        "title": "Setting PWM phase shift",
+        "description": "Setting a phase shift between two PWM",
+        "group": "Samples SPIN",
+        "base": "SPIN/PWM/phase_shift",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "incremental_encoder",
+        "title": "Incremental encoder",
+        "description": "Using a timer with a rotary incrmental encoder",
+        "group": "Samples SPIN",
+        "base": "SPIN/TIMER/incremental_encoder",
         "files": [
             "main.cpp",
             "README.md"
