@@ -1,4 +1,21 @@
-This is a branch to test the board in boost voltage mode closed-loop.
+# Boost with PID controlled output voltage
+
+A voltage mode boost converter regulates voltage by comparing the output voltage to a reference voltage. It adjusts the duty cycle of its switching signal to keep the output voltage stable. This type of converter efficiently steps up voltage levels, making it useful in various electronic devices such as converting photovoltaic panel voltage.
+
+This example will implement a voltage mode boost converter to control the output.
+
+
+## Hardware setup and requirement
+
+
+![schema](Image/boost_m.png)
+
+You will need :
+- 1 TWIST
+- A dc power supply (**max 10V**)
+- A resistor (or a dc electronic load)
+
+## Software setup
 
 We import control_pid library with src/owntech.ini via the line :
 
@@ -22,5 +39,10 @@ static float32_t kd = 0.0;
 static uint32_t control_task_period = 100;
 ```
 
-The voltage reference is initially 15V, but you can increase/decrease it with the serial monitor with 'u' and 'd' on you keyboard.
+## Expected result
+
+This code will control the output voltage to have 15V, you can control the output voltage with the serial monitor :
+
+- press `u` to increase the voltage
+- press `d` to decrease the voltage
 

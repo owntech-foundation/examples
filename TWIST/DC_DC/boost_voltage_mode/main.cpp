@@ -97,7 +97,7 @@ void setup_routine()
     twist.setVersion(shield_TWIST_V1_2);
 
     /* buck voltage mode */
-    twist.initAllBoost();
+    twist.initLegBoost(LEG1);
 
     data.enableTwistDefaultChannels();
 
@@ -236,7 +236,7 @@ void loop_critical_task()
         if (!pwm_enable)
         {
             pwm_enable = true;
-            twist.startAll();
+            twist.startLeg(LEG1);
         }
     }
 

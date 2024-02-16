@@ -1,4 +1,6 @@
-This is a branch to test the board in buck interleaved.
+# Interleaved operation
+
+## Overview
 
 In the case of a two-phase interleaved buck converter, the term "interleaved" implies that there are two power stages operating, and they are out of phase by 180 degrees. This means that while one power stage is in its on-state (conducting), the other is in its off-state (non-conducting), and vice versa.
 
@@ -8,6 +10,19 @@ The 180-degree phase shift ensures that there is always at least one power stage
 
 ![waveform](https://qph.cf2.quoracdn.net/main-qimg-102ebabc9c40d17b58069d02025a0175)
 
+This example will implement interleaved operation using the two legs of the TWIST.
+
+## Hardware setup and requirements
+
+![schema](Image/buck_m.png)
+
+You will need :
+
+- 1 TWIST
+- A DC voltage power supply
+- A resistor (or a DC electronic load)
+
+## Software setup
 
 We import control_pid library with src/owntech.ini via the line :
 
@@ -30,6 +45,8 @@ static float32_t ki = 2.86;
 static float32_t kd = 0.0;
 static uint32_t control_task_period = 100;
 ```
+
+## Expected results
 
 The voltage reference is initially 15V, but you can increase/decrease it with the serial monitor with 'u' and 'd' on you keyboard.
 
