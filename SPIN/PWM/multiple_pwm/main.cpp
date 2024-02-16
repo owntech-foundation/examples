@@ -89,7 +89,7 @@ void setup_routine()
 
     spin.pwm.initUnit(PWMC); // timer initialization
 
-    spin.pwm.setPhaseShift(PWMC, 72); // Phase shift of 180 for 2 legs interleaved configuration
+    spin.pwm.setPhaseShift(PWMC, 72); // Phase shift of 72°
     spin.pwm.startDualOutput(PWMC); // Start PWM
 
     /* PWM D initialization */
@@ -99,7 +99,7 @@ void setup_routine()
 
     spin.pwm.initUnit(PWMD); // timer initialization
 
-    spin.pwm.setPhaseShift(PWMD, 144); // Phase shift of 180 for 2 legs interleaved configuration
+    spin.pwm.setPhaseShift(PWMD, 144); // Phase shift of 144°
     spin.pwm.startDualOutput(PWMD); // Start PWM
 
     /* PWM E initialization */
@@ -109,7 +109,7 @@ void setup_routine()
 
     spin.pwm.initUnit(PWME); // timer initialization
 
-    spin.pwm.setPhaseShift(PWME, 216); // Phase shift of 180 for 2 legs interleaved configuration
+    spin.pwm.setPhaseShift(PWME, 216); // Phase shift of 216°
     spin.pwm.startDualOutput(PWME); // Start PWM
 
     /* PWM F initialization */
@@ -119,7 +119,7 @@ void setup_routine()
 
     spin.pwm.initUnit(PWMF); // timer initialization
 
-    spin.pwm.setPhaseShift(PWMF, 288); // Phase shift of 180 for 2 legs interleaved configuration
+    spin.pwm.setPhaseShift(PWMF, 288); // Phase shift of 288°
     spin.pwm.startDualOutput(PWMF); // Start PWM
 
     // Then declare tasks
