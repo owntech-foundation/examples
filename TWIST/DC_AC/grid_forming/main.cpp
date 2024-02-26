@@ -32,8 +32,6 @@
 #include "TaskAPI.h"
 #include "TwistAPI.h"
 #include "SpinAPI.h"
-#include "Rs485Communication.h"
-#include "SyncCommunication.h"
 
 // from control library
 #include "pr.h"
