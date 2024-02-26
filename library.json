@@ -146,6 +146,17 @@
         ]
     },
     {
+        "name": "grid_forming",
+        "title": "Grid Forming",
+        "description": "Voltage source regulated",
+        "group": "Examples TWIST",
+        "base": "TWIST/DC_AC/grid_forming",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
         "name": "blinky",
         "title": "Blinky LED",
         "description": "Toggling LED",
