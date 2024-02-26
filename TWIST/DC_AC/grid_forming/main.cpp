@@ -72,6 +72,7 @@ static float meas_data; // temp storage meas value (ctrl task)
 /* duty_cycle*/
 static float32_t duty_cycle;
 
+static float32_t Udc = 40.0F;
 /* Sinewave settings */
 static float32_t Vgrid; 
 static float32_t Vgrid_amplitude = 10.0; 
@@ -81,6 +82,9 @@ float angle = 0; // [rad]
 //pr_params_t pr_params;
 static Pr prop_res;
 static float32_t pr_value;
+static float32_t Kp = 0.001F;
+static float32_t Kr = 300.0F;
+static float32_t Ts = control_task_period * 1.0e-6F;
 
 static uint8_t status;
 static uint32_t control_loop_counter; // counter in the control loop.
@@ -144,10 +148,6 @@ void setup_routine()
     task.startCritical(); // Uncomment if you use the critical task
 
     // PR initialisation.
-    float32_t Kp = 0.001F;
-    float32_t Kr = 300.0F;
-    float32_t Udc = 40.0F;
-    float32_t Ts = control_task_period * 1.0e-6F;
     PrParams params = PrParams(Ts, Kp, Kr, w0, 0.0F, -Udc, Udc);
     prop_res.init(params);
 }
