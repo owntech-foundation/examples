@@ -17,6 +17,9 @@ Here you can find ready to be used example for [spin](https://github.com/owntech
     - [DC peer to peer](TWIST/Microgrid/DC_droop/README.md)
     - [DC droop](TWIST/Microgrid/DC_peer_to_peer/README.md)
 
+ - DC AC topology examples
+    - [Grid forming](TWIST/DC_AC/grid_forming/README.md)
+
 # Example for SPIN
 
 - ADC use examples
