@@ -65,8 +65,8 @@ static float32_t I2_offset = 0.0F;
 static float32_t I1_offset_tmp = 0.F;
 static float32_t I2_offset_tmp = 0.F;
 
-static float32_t Iref; // current reference from SERVER
-static float32_t Vgrid; // voltage reference from SERVER
+static float32_t Iref; 
+static float32_t Vgrid;
 static float32_t Vgrid_amplitude = 16.0F; // amplitude of the voltage.
 static float meas_data; // temp storage meas value (ctrl task)
 static float32_t Iref_amplitude;
@@ -163,7 +163,7 @@ void setup_routine()
     PrParams params(Ts, Kp, Kr, w0, 0.0, -Udc, Udc);
     prop_res.init(params);
     float32_t rise_time = 30e-3;
-    pll.init(Ts, Vgrid, w0/(2.0 * PI), rise_time);
+    pll.init(Ts, Vgrid_amplitude, w0/(2.0 * PI), rise_time);
 }
 
 //--------------LOOP FUNCTIONS--------------------------------
@@ -303,7 +303,8 @@ void loop_critical_task()
     {
         mode = POWERMODE;
         pr_value = prop_res.calculateWithReturn(Iref, I1_low_value);
-        duty_cycle = ((V1_low_value - V2_low_value) + pr_value) / (2 * 40.0) + 0.5;
+        Vgrid = V1_low_value - V2_low_value;
+        duty_cycle = (Vgrid + pr_value) / (2 * 40.0) + 0.5;
         twist.setAllDutyCycle(duty_cycle);
         if (!pwm_enable)
         {

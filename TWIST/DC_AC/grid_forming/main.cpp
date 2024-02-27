@@ -75,7 +75,7 @@ static float32_t duty_cycle;
 static float32_t Udc = 40.0F;
 /* Sinewave settings */
 static float32_t Vgrid; 
-static float32_t Vgrid_amplitude = 10.0; 
+static float32_t Vgrid_amplitude = 16.0; 
 static float32_t w0 = 2.0 * PI * 50.0;   // pulsation
 float angle = 0; // [rad]
 //------------- PR RESONANT -------------------------------------
