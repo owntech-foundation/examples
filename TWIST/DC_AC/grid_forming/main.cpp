@@ -86,7 +86,6 @@ static float32_t Kp = 0.001F;
 static float32_t Kr = 300.0F;
 static float32_t Ts = control_task_period * 1.0e-6F;
 
-static uint8_t status;
 static uint32_t control_loop_counter; // counter in the control loop.
 
 typedef struct Record
@@ -193,24 +192,21 @@ void loop_communication_task()
  */
 void loop_application_task()
 {
-    while (1)
-    {
 
-        if (mode == IDLEMODE)
-        {
-            printk("I1_offset = %f:", I1_offset);
-            printk("I2_offset = %f\n", I2_offset);
-        }
-        else if (mode == POWERMODE)
-        {
-            printk("%f:", duty_cycle);
-            printk("%f:", Vgrid);
-            printk("%f:", I2_low_value);
-            printk("%f:", I1_low_value);
-            printk("%f:\n", V1_low_value);
-        }
-        k_msleep(100);
+    if (mode == IDLEMODE)
+    {
+        printk("I1_offset = %f:", I1_offset);
+        printk("I2_offset = %f\n", I2_offset);
     }
+    else if (mode == POWERMODE)
+    {
+        printk("%f:", duty_cycle);
+        printk("%f:", Vgrid);
+        printk("%f:", I2_low_value);
+        printk("%f:", I1_low_value);
+        printk("%f:\n", V1_low_value);
+    }
+    task.suspendBackgroundMs(100);
 }
 
 /**

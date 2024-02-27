@@ -88,15 +88,6 @@ static float32_t Ts = control_task_period * 1.0e-6F;
 static float32_t Kp = 0.01;
 static float32_t Kr = 1200.0;
 
-struct consigne_struct
-{
-    float32_t Vref_fromSERVER;
-    float32_t Iref_fromSERVER;
-    float32_t w0_fromSERVER;
-    uint8_t id_and_status; // Contains status
-};
-
-uint8_t status;
 uint32_t control_loop_counter;
 typedef struct Record
 {
@@ -218,25 +209,20 @@ void loop_communication_task()
  */
 void loop_application_task()
 {
-    while (1)
+    if (mode == IDLEMODE)
+    {
+        printk("I1_offset = %f:", I1_offset);
+        printk("I2_offset = %f\n", I2_offset);
+    }
+    else if (mode == POWERMODE)
     {
 
-        if (mode == IDLEMODE)
-        {
-            printk("I1_offset = %f:", I1_offset);
-            printk("I2_offset = %f\n", I2_offset);
-        }
-        else if (mode == POWERMODE)
-        {
-
-            printk("%i:", status);
-            printk("%f:", Iref_amplitude);
-            printk("%f:", duty_cycle);
-            printk("%f:", V1_low_value);
-            printk("\n");
-        }
-        k_msleep(100);
+        printk("%f:", Iref_amplitude);
+        printk("%f:", duty_cycle);
+        printk("%f:", V1_low_value);
+        printk("\n");
     }
+    task.suspendBackgroundMs(100);
 }
 
 /**
