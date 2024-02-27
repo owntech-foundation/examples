@@ -163,7 +163,7 @@ void setup_routine()
     PrParams params(Ts, Kp, Kr, w0, 0.0, -Udc, Udc);
     prop_res.init(params);
     float32_t rise_time = 30e-3;
-    pll.init(Ts, Vgrid, f0, rise_time);
+    pll.init(Ts, Vgrid, w0/(2.0 * PI), rise_time);
 }
 
 //--------------LOOP FUNCTIONS--------------------------------
