@@ -8,6 +8,14 @@
         "type": "git",
         "url": "https://github.com/owntech-foundation/examples.git"
     },
+    "build": 
+    {
+        "srcFilter": "-<**>"
+    },
+    "license": "LGPL-2.1",
+    "homepage": "https://www.owntech.org/",
+    "frameworks": ["zephyr"],
+    "platforms": ["ststm32"],
     "authors":
     [
         {
@@ -225,9 +233,5 @@
             "README.md"
         ]
     }
-    ],
-    "license": "LGPL-2.1",
-    "homepage": "https://www.owntech.org/",
-    "frameworks": ["zephyr"],
-    "platforms": ["ststm32"]
+    ]
 }
