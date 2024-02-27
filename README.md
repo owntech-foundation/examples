@@ -19,6 +19,7 @@ Here you can find ready to be used example for [spin](https://github.com/owntech
 
  - DC AC topology examples
     - [Grid forming](TWIST/DC_AC/grid_forming/README.md)
+    - [Grid following](TWIST/DC_AC/grid_following/README.md)
 
 # Example for SPIN
 
