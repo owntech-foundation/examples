@@ -25,6 +25,7 @@
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
+ * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
 //--------------OWNTECH APIs----------------------------------
@@ -32,32 +33,17 @@
 #include "TaskAPI.h"
 #include "TwistAPI.h"
 #include "SpinAPI.h"
-#include "opalib_control_pid.h"
-
-#include "zephyr/console/console.h"
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
 
 //--------------LOOP FUNCTIONS DECLARATION--------------------
-void loop_communication_task(); // code to be executed in the slow communication task
-void loop_application_task();   // Code to be executed in the background task
+void loop_background_task();   // Code to be executed in the background task
 void loop_critical_task();     // Code to be executed in real time in the critical task
 
 //--------------USER VARIABLES DECLARATIONS-------------------
-uint8_t received_serial_char;
+static float32_t adc_value;
 
-float32_t duty_cycle = 0.3;
-
-//---------------------------------------------------------------
-
-enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVERTER
-{
-    IDLEMODE = 0,
-    POWERMODE
-};
-
-uint8_t mode = IDLEMODE;
 
 //--------------SETUP FUNCTIONS-------------------------------
 
@@ -70,76 +56,35 @@ uint8_t mode = IDLEMODE;
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
-    twist.setVersion(shield_TWIST_V1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
 
-    spin.pwm.setFrequency(200000); // Set frequency of pwm
+    spin.adc.configureTriggerSource(2, software); // ADC 2 configured in software mode
 
-    /* PWM A initialization */
-    spin.pwm.initUnit(PWMA); // timer initialization
-
-    spin.pwm.startDualOutput(PWMA); // Start PWM
-
-    /* PWM C initialization */
-    spin.pwm.initUnit(PWMC); // timer initialization
-
-    spin.pwm.setPhaseShift(PWMC, 180); // Phase shift of 180° for 2 legs interleaved configuration
-    spin.pwm.startDualOutput(PWMC); // Start PWM
+    data.enableAcquisition(2, 35); // ADC 2 enabled
 
     // Then declare tasks
-    uint32_t app_task_number = task.createBackground(loop_application_task);
-    uint32_t com_task_number = task.createBackground(loop_communication_task);
+    uint32_t background_task_number = task.createBackground(loop_background_task);
     task.createCritical(loop_critical_task, 100); // Uncomment if you use the critical task
 
     // Finally, start tasks
-    task.startBackground(app_task_number);
-    task.startBackground(com_task_number);
+    task.startBackground(background_task_number);
     task.startCritical(); // Uncomment if you use the critical task
 }
 
 //--------------LOOP FUNCTIONS--------------------------------
-
-void loop_communication_task()
-{
-    while (1)
-    {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
-        {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     ------- MENU ---------             |\n");
-            printk("|     press u : duty cycle UP            |\n");
-            printk("|     press d : duty cycle DOWN          |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'u':
-            duty_cycle += 0.05;
-            break;
-        case 'd':
-            duty_cycle -= 0.05;
-            break;
-        default:
-            break;
-        }
-    }
-}
 
 /**
  * This is the code loop of the background task
  * It is executed second as defined by it suspend task in its last line.
  * You can use it to execute slow code such as state-machines.
  */
-void loop_application_task()
+void loop_background_task()
 {
     // Task content
-    printk("%f\n", duty_cycle);
+    printk("%f \n", adc_value);
 
     // Pause between two runs of the task
-    task.suspendBackgroundMs(1000);
-
+    task.suspendBackgroundMs(100);
 }
 
 /**
@@ -150,8 +95,8 @@ void loop_application_task()
  */
 void loop_critical_task()
 {
-        spin.pwm.setDutyCycle(PWMA, duty_cycle);
-        spin.pwm.setDutyCycle(PWMC, duty_cycle);
+    data.triggerAcquisition(2);
+    adc_value = data.getLatest(2, 35);
 }
 
 /**

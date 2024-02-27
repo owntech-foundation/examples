@@ -25,6 +25,7 @@
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
+ * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
 //--------------OWNTECH APIs----------------------------------
@@ -42,7 +43,7 @@ void loop_critical_task();     // Code to be executed in real time in the critic
 
 //--------------USER VARIABLES DECLARATIONS-------------------
 
-
+static uint32_t dac_value;
 
 //--------------SETUP FUNCTIONS-------------------------------
 
@@ -55,9 +56,11 @@ void loop_critical_task();     // Code to be executed in real time in the critic
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
 
-    // Then declare tasks
+    spin.dac.initConstValue(2); // DAC initialization
+    spin.dac.setConstValue(2, 1, 0);
+
     uint32_t background_task_number = task.createBackground(loop_background_task);
     //task.createCritical(loop_critical_task, 500); // Uncomment if you use the critical task
 
@@ -76,10 +79,12 @@ void setup_routine()
 void loop_background_task()
 {
     // Task content
-    spin.led.toggle();
+
+    dac_value = (dac_value + 100)%4096;
+    spin.dac.setConstValue(2, 1, dac_value);
 
     // Pause between two runs of the task
-    task.suspendBackgroundMs(1000);
+    task.suspendBackgroundMs(100);
 }
 
 /**
@@ -90,7 +95,6 @@ void loop_background_task()
  */
 void loop_critical_task()
 {
-
 }
 
 /**

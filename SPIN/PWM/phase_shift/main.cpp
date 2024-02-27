@@ -25,6 +25,7 @@
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
+ * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
 //--------------OWNTECH APIs----------------------------------
@@ -70,57 +71,20 @@ uint8_t mode = IDLEMODE;
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
-    twist.setVersion(shield_TWIST_V1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
+
+    spin.pwm.setFrequency(200000); // Set frequency of pwm
 
     /* PWM A initialization */
-    spin.pwm.setModulation(PWMA, UpDwn);
-    spin.pwm.setAdcEdgeTrigger(PWMA, EdgeTrigger_up);
-    spin.pwm.setMode(PWMA, VOLTAGE_MODE);
-
     spin.pwm.initUnit(PWMA); // timer initialization
 
     spin.pwm.startDualOutput(PWMA); // Start PWM
 
     /* PWM C initialization */
-    spin.pwm.setModulation(PWMC, UpDwn);
-    spin.pwm.setAdcEdgeTrigger(PWMC, EdgeTrigger_up);
-    spin.pwm.setMode(PWMC, VOLTAGE_MODE);
-
     spin.pwm.initUnit(PWMC); // timer initialization
 
-    spin.pwm.setPhaseShift(PWMC, 72); // Phase shift of 180 for 2 legs interleaved configuration
+    spin.pwm.setPhaseShift(PWMC, 180); // Phase shift of 180° for 2 legs interleaved configuration
     spin.pwm.startDualOutput(PWMC); // Start PWM
-
-    /* PWM D initialization */
-    spin.pwm.setModulation(PWMD, UpDwn);
-    spin.pwm.setAdcEdgeTrigger(PWMD, EdgeTrigger_up);
-    spin.pwm.setMode(PWMD, VOLTAGE_MODE);
-
-    spin.pwm.initUnit(PWMD); // timer initialization
-
-    spin.pwm.setPhaseShift(PWMD, 144); // Phase shift of 180 for 2 legs interleaved configuration
-    spin.pwm.startDualOutput(PWMD); // Start PWM
-
-    /* PWM E initialization */
-    spin.pwm.setModulation(PWME, UpDwn);
-    spin.pwm.setAdcEdgeTrigger(PWME, EdgeTrigger_up);
-    spin.pwm.setMode(PWME, VOLTAGE_MODE);
-
-    spin.pwm.initUnit(PWME); // timer initialization
-
-    spin.pwm.setPhaseShift(PWME, 216); // Phase shift of 180 for 2 legs interleaved configuration
-    spin.pwm.startDualOutput(PWME); // Start PWM
-
-    /* PWM F initialization */
-    spin.pwm.setModulation(PWMF, UpDwn);
-    spin.pwm.setAdcEdgeTrigger(PWMF, EdgeTrigger_up);
-    spin.pwm.setMode(PWMF, VOLTAGE_MODE);
-
-    spin.pwm.initUnit(PWMF); // timer initialization
-
-    spin.pwm.setPhaseShift(PWMF, 288); // Phase shift of 180 for 2 legs interleaved configuration
-    spin.pwm.startDualOutput(PWMF); // Start PWM
 
     // Then declare tasks
     uint32_t app_task_number = task.createBackground(loop_application_task);
@@ -188,9 +152,6 @@ void loop_critical_task()
 {
         spin.pwm.setDutyCycle(PWMA, duty_cycle);
         spin.pwm.setDutyCycle(PWMC, duty_cycle);
-        spin.pwm.setDutyCycle(PWMD, duty_cycle);
-        spin.pwm.setDutyCycle(PWME, duty_cycle);
-        spin.pwm.setDutyCycle(PWMF, duty_cycle);
 }
 
 /**

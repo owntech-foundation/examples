@@ -25,6 +25,8 @@
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
+ * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
+ * @author Régis Ruelland <regis.ruelland@laas.fr>
  */
 
 //--------------OWNTECH APIs----------------------------------
@@ -242,29 +244,25 @@ void loop_communication_task()
  */
 void loop_application_task()
 {
-    while (1)
+    if (mode == IDLEMODE)
     {
-
-        if (mode == IDLEMODE)
-        {
-            spin.led.turnOff();
-        }
-        else if (mode == POWERMODE)
-        {
-            spin.led.turnOn();
+        spin.led.turnOff();
+    }
+    else if (mode == POWERMODE)
+    {
+        spin.led.turnOn();
 
 #ifndef SERVER
-            printk("%i:", status);
-            printk("%f:", Iref);
+        printk("%i:", status);
+        printk("%f:", Iref);
 #endif
-            printk("%f:", duty_cycle);
-            printk("%f:", Vref);
-            printk("%f:", I2_low_value);
-            printk("%f:", I1_low_value);
-            printk("%f:\n", V1_low_value);
-        }
-        k_msleep(100);
+        printk("%f:", duty_cycle);
+        printk("%f:", Vref);
+        printk("%f:", I2_low_value);
+        printk("%f:", I1_low_value);
+        printk("%f:\n", V1_low_value);
     }
+    task.suspendBackgroundMs(100);
 }
 
 /**

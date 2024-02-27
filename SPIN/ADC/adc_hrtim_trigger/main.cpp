@@ -25,6 +25,7 @@
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
+ * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
 //--------------OWNTECH APIs----------------------------------
@@ -41,8 +42,8 @@ void loop_background_task();   // Code to be executed in the background task
 void loop_critical_task();     // Code to be executed in real time in the critical task
 
 //--------------USER VARIABLES DECLARATIONS-------------------
+static float32_t adc_value;
 
-static uint32_t dac_value;
 
 //--------------SETUP FUNCTIONS-------------------------------
 
@@ -55,17 +56,33 @@ static uint32_t dac_value;
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
 
-    spin.dac.initConstValue(2); // DAC initialization
-    spin.dac.setConstValue(2, 1, 0);
+    spin.pwm.setFrequency(200000); // Set frequency of pwm
 
+    spin.pwm.setModulation(PWMA, UpDwn);
+    spin.pwm.setAdcEdgeTrigger(PWMA, EdgeTrigger_up);
+
+    spin.pwm.initUnit(PWMA); // timer initialization
+
+    // Setting trigger for ADC
+    spin.pwm.setAdcTrigger(PWMA, ADCTRIG_1);
+    spin.pwm.setAdcTriggerInstant(PWMA, 0.06);
+    spin.pwm.enableAdcTrigger(PWMA);
+
+    spin.pwm.startDualOutput(PWMA); // Start PWM
+
+    spin.adc.configureTriggerSource(2, hrtim_ev1); // ADC 2 configured to be triggered by the PWM
+
+    data.enableAcquisition(2, 35); // ADC 2 enabled
+
+    // Then declare tasks
     uint32_t background_task_number = task.createBackground(loop_background_task);
-    //task.createCritical(loop_critical_task, 500); // Uncomment if you use the critical task
+    task.createCritical(loop_critical_task, 100); // Uncomment if you use the critical task
 
     // Finally, start tasks
     task.startBackground(background_task_number);
-    //task.startCritical(); // Uncomment if you use the critical task
+    task.startCritical(); // Uncomment if you use the critical task
 }
 
 //--------------LOOP FUNCTIONS--------------------------------
@@ -78,9 +95,7 @@ void setup_routine()
 void loop_background_task()
 {
     // Task content
-
-    dac_value = (dac_value + 100)%4096;
-    spin.dac.setConstValue(2, 1, dac_value);
+    printk("%f \n", adc_value);
 
     // Pause between two runs of the task
     task.suspendBackgroundMs(100);
@@ -94,6 +109,7 @@ void loop_background_task()
  */
 void loop_critical_task()
 {
+    adc_value = data.getLatest(2, 35);
 }
 
 /**

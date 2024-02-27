@@ -25,6 +25,8 @@
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
+ * @author Antoine Boche <antoine.boche@laas.fr>
+ * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
 //--------------OWNTECH APIs----------------------------------
@@ -66,7 +68,9 @@ static float32_t kd = 0.0;
 // reference voltage/current
 float32_t duty_cycle = 0.3;
 static float32_t Vref = 12.0;
+#ifdef SLAVE2
 static float32_t Iref = 0;
+#endif
 static float32_t Imax = 1;
 static float32_t Imin = 0.2;
 static float32_t Icom = 0;
@@ -78,10 +82,8 @@ bool flag = false;
 float32_t meas_data;
 static float32_t V1_low_value;
 static float32_t V2_low_value;
-static float32_t Vhigh_value;
 static float32_t I1_low_value;
 static float32_t I2_low_value;
-static float32_t Ihigh_value;
 
 static uint8_t delay = 0;
 static uint8_t tx_usart_val[DMA_BUFFER_SIZE];
@@ -214,73 +216,69 @@ void loop_communication_task()
  */
 void loop_application_task()
 {
-
-    while (1)
-    {  
-        if (mode == IDLEMODE)
-        {
-            spin.led.turnOff();
-        }
-        else if (mode == POWERMODE)
-        {
-            spin.led.turnOn();
-        }
-
-        printk("%.2f:", V1_low_value);
-        printk("%.2f:", V2_low_value);
-        printk("%.2f:", I1_low_value);
-        printk("%.2f:", I2_low_value);
-        printk("%.2f:", I1_low_value+I2_low_value);
-        #ifdef MASTER
-        printk("%d:", tx_usart_val[0]);
-        printk("%d:", tx_usart_val[1]);
-        printk("%d:", tx_usart_val[2]);
-        #endif
-        #ifdef SLAVE2
-        printk("%d:", rx_usart_val[0]);
-        printk("%d:", rx_usart_val[1]);
-        printk("%d:", rx_usart_val[2]);
-        #endif
-        printk("%d:\n", flag);
-
-        #ifdef MASTER
-            if (flag == true)
-            {
-                Icom = (I1_low_value + I2_low_value + Icom) * 0.4;
-                if (Icom < 0.5)
-                {
-                    Icom = 0.5;
-                }
-                Isend = (int)(Icom*255/2);
-                
-
-                tx_usart_val[0] = 2;
-                tx_usart_val[1] = 1;
-                tx_usart_val[2] = Isend;
-                tx_usart_val[3] = 0;
-                tx_usart_val[4] = 0;
-                tx_usart_val[5] = 0;
-                tx_usart_val[6] = 0;
-                tx_usart_val[7] = 0;
-            }
-            else if (flag == false)
-            {
-                Icom = 0;
-                Isend = (int)((0.45)*255/2);
-
-                tx_usart_val[0] = 2;
-                tx_usart_val[1] = 0;
-                tx_usart_val[2] = Isend;
-                tx_usart_val[3] = 0;
-                tx_usart_val[4] = 0;
-                tx_usart_val[5] = 0;
-                tx_usart_val[6] = 0;
-                tx_usart_val[7] = 0;
-            }
-        #endif
-
-        k_msleep(100);
+    if (mode == IDLEMODE)
+    {
+        spin.led.turnOff();
     }
+    else if (mode == POWERMODE)
+    {
+        spin.led.turnOn();
+    }
+
+    printk("%.2f:", V1_low_value);
+    printk("%.2f:", V2_low_value);
+    printk("%.2f:", I1_low_value);
+    printk("%.2f:", I2_low_value);
+    printk("%.2f:", I1_low_value+I2_low_value);
+    #ifdef MASTER
+    printk("%d:", tx_usart_val[0]);
+    printk("%d:", tx_usart_val[1]);
+    printk("%d:", tx_usart_val[2]);
+    #endif
+    #ifdef SLAVE2
+    printk("%d:", rx_usart_val[0]);
+    printk("%d:", rx_usart_val[1]);
+    printk("%d:", rx_usart_val[2]);
+    #endif
+    printk("%d:\n", flag);
+
+    #ifdef MASTER
+        if (flag == true)
+        {
+            Icom = (I1_low_value + I2_low_value + Icom) * 0.4;
+            if (Icom < 0.5)
+            {
+                Icom = 0.5;
+            }
+            Isend = (int)(Icom*255/2);
+            
+
+            tx_usart_val[0] = 2;
+            tx_usart_val[1] = 1;
+            tx_usart_val[2] = Isend;
+            tx_usart_val[3] = 0;
+            tx_usart_val[4] = 0;
+            tx_usart_val[5] = 0;
+            tx_usart_val[6] = 0;
+            tx_usart_val[7] = 0;
+        }
+        else if (flag == false)
+        {
+            Icom = 0;
+            Isend = (int)((0.45)*255/2);
+
+            tx_usart_val[0] = 2;
+            tx_usart_val[1] = 0;
+            tx_usart_val[2] = Isend;
+            tx_usart_val[3] = 0;
+            tx_usart_val[4] = 0;
+            tx_usart_val[5] = 0;
+            tx_usart_val[6] = 0;
+            tx_usart_val[7] = 0;
+        }
+    #endif
+
+    task.suspendBackgroundMs(100);
 }
 
 /**

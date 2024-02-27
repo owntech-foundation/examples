@@ -25,6 +25,8 @@
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
+ * @author Antoine Boche <antoine.boche@laas.fr>
+ * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
 //--------------OWNTECH APIs----------------------------------
@@ -62,13 +64,19 @@ static float32_t V_high;
 int count = 0;
 static float meas_data; // temp storage meas value (ctrl task)
 
-// Droop coeficient configuration 
-static float32_t coef_droop = 1.2;
-static float32_t coef_droop1 = 1.1;
-static float32_t coef_droop2 = 1.6;
-
 //Define for selecting the card to be flashed 
 #define DROOP1
+
+// Droop coeficient configuration 
+#ifdef DROOP
+static float32_t coef_droop = 1.2;
+#endif
+#ifdef DROOP1
+static float32_t coef_droop1 = 1.1;
+#endif
+#ifdef DROOP2
+static float32_t coef_droop2 = 1.6;
+#endif
 
 #if defined(DROOP) || defined(DROOP1) || defined(DROOP2)
     float32_t duty_cycle = 0.1;
@@ -198,29 +206,26 @@ void loop_communication_task()
  */
 void loop_application_task()
 {
-        while (1)
+    if (mode == IDLEMODE)
     {
-        if (mode == IDLEMODE)
-        {
-            spin.led.turnOff();
-        }
-        else if (mode == POWERMODE)
-        {
-            spin.led.turnOn();
-        }
-
-        printk("%.2f:", duty_cycle);
-        printk("%.2f:", V_high);
-        printk("%.2f:", I_high);
-        printk("%.2f:", V1_low_value);
-        printk("%.2f:", I1_low_value);
-        printk("%.2f:", V2_low_value);
-        printk("%.2f:", I2_low_value);
-        printk("%.2f:", reference);
-        printk("%.2f\n", I1_low_value+I2_low_value);
-
-        task.suspendBackgroundMs(100);
+        spin.led.turnOff();
     }
+    else if (mode == POWERMODE)
+    {
+        spin.led.turnOn();
+    }
+
+    printk("%.2f:", duty_cycle);
+    printk("%.2f:", V_high);
+    printk("%.2f:", I_high);
+    printk("%.2f:", V1_low_value);
+    printk("%.2f:", I1_low_value);
+    printk("%.2f:", V2_low_value);
+    printk("%.2f:", I2_low_value);
+    printk("%.2f:", reference);
+    printk("%.2f\n", I1_low_value+I2_low_value);
+
+    task.suspendBackgroundMs(100);
 }
 
 /**

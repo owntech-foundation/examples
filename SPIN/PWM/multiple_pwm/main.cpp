@@ -46,32 +46,9 @@ void loop_application_task();   // Code to be executed in the background task
 void loop_critical_task();     // Code to be executed in real time in the critical task
 
 //--------------USER VARIABLES DECLARATIONS-------------------
-
-static uint32_t control_task_period = 100; //[us] period of the control task
-static bool pwm_enable = false;            //[bool] state of the PWM (ctrl task)
-
 uint8_t received_serial_char;
 
-/* Measure variables */
-
-static float32_t V1_low_value;
-static float32_t V2_low_value;
-static float32_t I1_low_value;
-static float32_t I2_low_value;
-static float32_t I_high;
-static float32_t V_high;
-
-static float meas_data; // temp storage meas value (ctrl task)
-
 float32_t duty_cycle = 0.3;
-
-static float32_t voltage_reference = 15; //voltage reference
-
-/* PID coefficient for a 8.6ms step response*/
-
-static float32_t kp = 0.000215;
-static float32_t ki = 2.86;
-static float32_t kd = 0.0;
 
 //---------------------------------------------------------------
 
@@ -94,15 +71,56 @@ uint8_t mode = IDLEMODE;
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
-    twist.setVersion(shield_TWIST_V1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
 
-    /* buck voltage mode */
-    twist.initLegBoost(LEG1);
+    /* PWM A initialization */
+    spin.pwm.setModulation(PWMA, UpDwn);
+    spin.pwm.setAdcEdgeTrigger(PWMA, EdgeTrigger_up);
+    spin.pwm.setMode(PWMA, VOLTAGE_MODE);
 
-    data.enableTwistDefaultChannels();
+    spin.pwm.initUnit(PWMA); // timer initialization
 
-    opalib_control_init_interleaved_pid(kp, ki, kd, control_task_period);
+    spin.pwm.startDualOutput(PWMA); // Start PWM
+
+    /* PWM C initialization */
+    spin.pwm.setModulation(PWMC, UpDwn);
+    spin.pwm.setAdcEdgeTrigger(PWMC, EdgeTrigger_up);
+    spin.pwm.setMode(PWMC, VOLTAGE_MODE);
+
+    spin.pwm.initUnit(PWMC); // timer initialization
+
+    spin.pwm.setPhaseShift(PWMC, 72); // Phase shift of 72°
+    spin.pwm.startDualOutput(PWMC); // Start PWM
+
+    /* PWM D initialization */
+    spin.pwm.setModulation(PWMD, UpDwn);
+    spin.pwm.setAdcEdgeTrigger(PWMD, EdgeTrigger_up);
+    spin.pwm.setMode(PWMD, VOLTAGE_MODE);
+
+    spin.pwm.initUnit(PWMD); // timer initialization
+
+    spin.pwm.setPhaseShift(PWMD, 144); // Phase shift of 144°
+    spin.pwm.startDualOutput(PWMD); // Start PWM
+
+    /* PWM E initialization */
+    spin.pwm.setModulation(PWME, UpDwn);
+    spin.pwm.setAdcEdgeTrigger(PWME, EdgeTrigger_up);
+    spin.pwm.setMode(PWME, VOLTAGE_MODE);
+
+    spin.pwm.initUnit(PWME); // timer initialization
+
+    spin.pwm.setPhaseShift(PWME, 216); // Phase shift of 216°
+    spin.pwm.startDualOutput(PWME); // Start PWM
+
+    /* PWM F initialization */
+    spin.pwm.setModulation(PWMF, UpDwn);
+    spin.pwm.setAdcEdgeTrigger(PWMF, EdgeTrigger_up);
+    spin.pwm.setMode(PWMF, VOLTAGE_MODE);
+
+    spin.pwm.initUnit(PWMF); // timer initialization
+
+    spin.pwm.setPhaseShift(PWMF, 288); // Phase shift of 288°
+    spin.pwm.startDualOutput(PWMF); // Start PWM
 
     // Then declare tasks
     uint32_t app_task_number = task.createBackground(loop_application_task);
@@ -128,27 +146,16 @@ void loop_communication_task()
             //----------SERIAL INTERFACE MENU-----------------------
             printk(" ________________________________________\n");
             printk("|     ------- MENU ---------             |\n");
-            printk("|     press i : idle mode                |\n");
-            printk("|     press s : serial mode              |\n");
-            printk("|     press p : power mode               |\n");
             printk("|     press u : duty cycle UP            |\n");
             printk("|     press d : duty cycle DOWN          |\n");
             printk("|________________________________________|\n\n");
             //------------------------------------------------------
             break;
-        case 'i':
-            printk("idle mode\n");
-            mode = IDLEMODE;
-            break;
-        case 'p':
-            printk("power mode\n");
-            mode = POWERMODE;
-            break;
         case 'u':
-            voltage_reference += 0.5;
+            duty_cycle += 0.05;
             break;
         case 'd':
-            voltage_reference -= 0.5;
+            duty_cycle -= 0.05;
             break;
         default:
             break;
@@ -163,23 +170,12 @@ void loop_communication_task()
  */
 void loop_application_task()
 {
-    if (mode == IDLEMODE)
-    {
-        spin.led.turnOff();
-    }
-    else if (mode == POWERMODE)
-    {
-        spin.led.turnOn();
+    // Task content
+    printk("%f\n", duty_cycle);
 
-        printk("%f:", I1_low_value);
-        printk("%f:", V1_low_value);
-        printk("%f:", I2_low_value);
-        printk("%f:", V2_low_value);
-        printk("%f:", I_high);
-        printk("%f\n", V_high);
-    }
-
+    // Pause between two runs of the task
     task.suspendBackgroundMs(1000);
+
 }
 
 /**
@@ -190,53 +186,11 @@ void loop_application_task()
  */
 void loop_critical_task()
 {
-    meas_data = data.getLatest(I1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I1_low_value = meas_data;
-
-    meas_data = data.getLatest(V1_LOW);
-    if (meas_data != -10000)
-        V1_low_value = meas_data;
-
-    meas_data = data.getLatest(V2_LOW);
-    if (meas_data != -10000)
-        V2_low_value = meas_data;
-
-    meas_data = data.getLatest(I2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I2_low_value = meas_data;
-
-    meas_data = data.getLatest(I_HIGH);
-    if (meas_data < 10000 && meas_data > -10000)
-        I_high = meas_data;
-
-    meas_data = data.getLatest(V_HIGH);
-    if (meas_data != -10000)
-        V_high = meas_data;
-
-
-
-    if (mode == IDLEMODE)
-    {
-        if (pwm_enable == true)
-        {
-            twist.stopAll();
-        }
-        pwm_enable = false;
-    }
-    else if (mode == POWERMODE)
-    {
-        duty_cycle = opalib_control_interleaved_pid_calculation(voltage_reference, V1_low_value);
-        twist.setAllDutyCycle(duty_cycle);
-
-        /* Set POWER ON */
-        if (!pwm_enable)
-        {
-            pwm_enable = true;
-            twist.startLeg(LEG1);
-        }
-    }
-
+        spin.pwm.setDutyCycle(PWMA, duty_cycle);
+        spin.pwm.setDutyCycle(PWMC, duty_cycle);
+        spin.pwm.setDutyCycle(PWMD, duty_cycle);
+        spin.pwm.setDutyCycle(PWME, duty_cycle);
+        spin.pwm.setDutyCycle(PWMF, duty_cycle);
 }
 
 /**

@@ -1,4 +1,4 @@
-# Buck voltage mode
+# Buck current mode
 
 ## Overview
 

@@ -1,0 +1,233 @@
+{
+    "name": "OwnTech_Examples",
+    "version": "0.0.2",
+    "description": "A library that contains OwnTech Power API examples",
+    "keywords": "Power, Control, OwnTech",
+    "repository":
+    {
+        "type": "git",
+        "url": "https://github.com/owntech-foundation/examples.git"
+    },
+    "authors":
+    [
+        {
+            "name": "Jean Alinei",
+            "email": "jean.alinei@owntech.org",
+            "maintainer": true
+        },
+        {
+            "name": "Ayoub Farah Hassan",
+            "email": "ayoub.farah-hassan@laas.fr",
+            "maintainer":true
+        },
+        {
+            "name": "Régis Ruelland",
+            "email": "regis.ruelland@laas.fr"
+        },
+        {
+            "name": "Luiz Villa",
+            "email": "luiz.villa@laas.fr"
+        },
+        {
+            "name": "Clément Foucher",
+            "email": "clement.foucher@laas.fr"
+        },
+        {
+            "name": "Antoine Boche",
+            "email": "antoine.boche@laas.fr"
+        }
+    ],
+    "examples": [
+    {
+        "name": "boost_voltage_mode",
+        "title": "Voltage Mode Boost",
+        "description": "Voltage mode boost converter using PID controller for TWIST",
+        "group": "Examples TWIST",
+        "base": "TWIST/DC_DC/boost_voltage_mode",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "buck_voltage_mode",
+        "title": "Voltage Mode Buck",
+        "description": "Voltage mode buck converter using PID controller for TWIST",
+        "group": "Examples TWIST",
+        "base": "TWIST/DC_DC/buck_voltage_mode",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "buck_current_mode",
+        "title": "Current Mode Buck",
+        "description": "Peak current mode buck converter using PID controller for TWIST",
+        "group": "Examples TWIST",
+        "base": "TWIST/DC_DC/buck_current_mode",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "interleaved",
+        "title": "Interleaved",
+        "description": "Interleaved mode buck converter with PID controlled output voltage",
+        "group": "Examples TWIST",
+        "base": "TWIST/DC_DC/interleaved",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "AC_cient_server",
+        "title": "AC client server",
+        "description": "implementation of AC client server in microgrid",
+        "group": "Examples TWIST",
+        "base": "TWIST/Microgrid/AC_client_server",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "AC_peer_to_peer",
+        "title": "AC peer to peer",
+        "description": "implementation of AC peer to peer in microgrid",
+        "group": "Examples TWIST",
+        "base": "TWIST/Microgrid/AC_peer_to_peer",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "DC_cient_server",
+        "title": "DC client server",
+        "description": "implementation of DC client server in microgrid",
+        "group": "Examples TWIST",
+        "base": "TWIST/Microgrid/DC_client_server",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "DC_peer_to_peer",
+        "title": "DC peer to peer",
+        "description": "implementation of DC peer to peer in microgrid",
+        "group": "Examples TWIST",
+        "base": "TWIST/Microgrid/DC_peer_to_peer",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "DC_droop",
+        "title": "DC droop",
+        "description": "implementation of DC droop in microgrid",
+        "group": "Examples TWIST",
+        "base": "TWIST/Microgrid/DC_droop",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "blinky",
+        "title": "Blinky LED",
+        "description": "Toggling LED",
+        "group": "Examples SPIN",
+        "base": "SPIN/LED/blinky",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "duty_cycle_setting",
+        "title": "Setting PWM duty cycle",
+        "description": "Using PWM with duty cycle",
+        "group": "Examples SPIN",
+        "base": "SPIN/PWM/duty_cycle_setting",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "multiple_pwm",
+        "title": "Setting multiple PWM",
+        "description": "Using multiple PWM with duty cycle",
+        "group": "Examples SPIN",
+        "base": "SPIN/PWM/multiple_pwm",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "phase_shift",
+        "title": "Setting PWM phase shift",
+        "description": "Setting a phase shift between two PWM",
+        "group": "Examples SPIN",
+        "base": "SPIN/PWM/phase_shift",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "signal_generation",
+        "title": "DAC signal generation",
+        "description": "Sawtooth generation with DAC",
+        "group": "Examples SPIN",
+        "base": "SPIN/DAC/signal_generation",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "adc_software_trigger",
+        "title": "Software triggered ADC",
+        "description": "setting the adc to be trigerred by software",
+        "group": "Examples SPIN",
+        "base": "SPIN/ADC/adc_hrtim_trigger",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "adc_hrtim_trigger",
+        "title": "HRTIM triggered ADC",
+        "description": "setting the adc to be trigerred by the hrtim",
+        "group": "Examples SPIN",
+        "base": "SPIN/ADC/adc_hrtim_trigger",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "incremental_encoder",
+        "title": "Incremental encoder",
+        "description": "Using a timer with a rotary incrmental encoder",
+        "group": "Examples SPIN",
+        "base": "SPIN/TIMER/incremental_encoder",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    }
+    ],
+    "license": "LGPL-2.1",
+    "homepage": "https://www.owntech.org/",
+    "frameworks": ["zephyr"],
+    "platforms": ["ststm32"]
+}
