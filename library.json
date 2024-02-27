@@ -17,7 +17,24 @@
         },
         {
             "name": "Ayoub Farah Hassan",
-            "email": "afarahhass@laas.fr"
+            "email": "ayoub.farah-hassan@laas.fr",
+            "maintainer":true
+        },
+        {
+            "name": "Régis Ruelland",
+            "email": "regis.ruelland@laas.fr"
+        },
+        {
+            "name": "Luiz Villa",
+            "email": "luiz.villa@laas.fr"
+        },
+        {
+            "name": "Clément Foucher",
+            "email": "clement.foucher@laas.fr"
+        },
+        {
+            "name": "Antoine Boche",
+            "email": "antoine.boche@laas.fr"
         }
     ],
     "examples": [
