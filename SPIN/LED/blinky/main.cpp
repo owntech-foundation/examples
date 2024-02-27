@@ -55,7 +55,7 @@ void loop_critical_task();     // Code to be executed in real time in the critic
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
 
     // Then declare tasks
     uint32_t background_task_number = task.createBackground(loop_background_task);

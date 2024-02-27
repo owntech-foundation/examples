@@ -55,7 +55,7 @@ static float32_t adc_value;
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
 
     spin.adc.configureTriggerSource(2, software); // ADC 2 configured in software mode
 

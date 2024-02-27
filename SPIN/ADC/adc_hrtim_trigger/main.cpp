@@ -55,7 +55,7 @@ static float32_t adc_value;
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
 
     spin.pwm.setFrequency(200000); // Set frequency of pwm
 

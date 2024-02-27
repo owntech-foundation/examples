@@ -55,7 +55,7 @@ static uint32_t dac_value;
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
 
     spin.dac.initConstValue(2); // DAC initialization
     spin.dac.setConstValue(2, 1, 0);
