@@ -204,29 +204,26 @@ void loop_communication_task()
  */
 void loop_application_task()
 {
-        while (1)
+    if (mode == IDLEMODE)
     {
-        if (mode == IDLEMODE)
-        {
-            spin.led.turnOff();
-        }
-        else if (mode == POWERMODE)
-        {
-            spin.led.turnOn();
-        }
-
-        printk("%.2f:", duty_cycle);
-        printk("%.2f:", V_high);
-        printk("%.2f:", I_high);
-        printk("%.2f:", V1_low_value);
-        printk("%.2f:", I1_low_value);
-        printk("%.2f:", V2_low_value);
-        printk("%.2f:", I2_low_value);
-        printk("%.2f:", reference);
-        printk("%.2f\n", I1_low_value+I2_low_value);
-
-        task.suspendBackgroundMs(100);
+        spin.led.turnOff();
     }
+    else if (mode == POWERMODE)
+    {
+        spin.led.turnOn();
+    }
+
+    printk("%.2f:", duty_cycle);
+    printk("%.2f:", V_high);
+    printk("%.2f:", I_high);
+    printk("%.2f:", V1_low_value);
+    printk("%.2f:", I1_low_value);
+    printk("%.2f:", V2_low_value);
+    printk("%.2f:", I2_low_value);
+    printk("%.2f:", reference);
+    printk("%.2f\n", I1_low_value+I2_low_value);
+
+    task.suspendBackgroundMs(100);
 }
 
 /**

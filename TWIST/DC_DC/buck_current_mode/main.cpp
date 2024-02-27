@@ -193,24 +193,19 @@ void loop_communication_task()
  */
 void loop_application_task()
 {
-    while (1)
+    if (mode == IDLEMODE)
     {
-
-        if (mode == IDLEMODE)
-        {
-            spin.led.turnOff();
-        }
-        else if (mode == POWERMODE)
-        {
-            spin.led.turnOn();
-
-            printk("%f:", V1_low_value);
-            printk("%f:", V2_low_value);
-            printk("%f\n", PeakRef);
-        }
-        k_msleep(100);
+        spin.led.turnOff();
     }
+    else if (mode == POWERMODE)
+    {
+        spin.led.turnOn();
 
+        printk("%f:", V1_low_value);
+        printk("%f:", V2_low_value);
+        printk("%f\n", PeakRef);
+    }
+    task.suspendBackgroundMs(1000);
 }
 
 /**
