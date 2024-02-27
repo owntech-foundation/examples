@@ -69,19 +69,20 @@ static float32_t Iref;
 static float32_t Vgrid;
 static float32_t Vgrid_amplitude = 16.0F; // amplitude of the voltage.
 static float meas_data; // temp storage meas value (ctrl task)
-static float32_t Iref_amplitude;
+static float32_t Iref_amplitude = 0.5;
 /* duty_cycle*/
 static float32_t duty_cycle;
 static const float32_t Udc = 40.0; // Vhigh assumed to be around 40V
 /* Sinewave settings */
-static const float w0 = 2.F * PI * 50.0F;
-static float angle = 0.0F;
+static const float f0 = 50.0F;
+static const float w0 = 2.F * PI * f0; 
 
 //------------- PR RESONANT -------------------------------------
 static Pr prop_res;
 static PllSinus pll;
 static PllDatas pll_datas;
-static uint16_t pll_counter_ok = 0;
+static uint32_t pll_counter = 0;
+static bool pll_is_locked = false;
 static float32_t pr_value;
 static float32_t Ts = control_task_period * 1.0e-6F;
 static float32_t Kp = 0.01;
@@ -162,8 +163,8 @@ void setup_routine()
     // Proportional resonant initialisation.
     PrParams params(Ts, Kp, Kr, w0, 0.0, -Udc, Udc);
     prop_res.init(params);
-    float32_t rise_time = 30e-3;
-    pll.init(Ts, Vgrid_amplitude, w0/(2.0 * PI), rise_time);
+    float32_t rise_time = 50e-3;
+    pll.init(Ts, Vgrid_amplitude, f0, rise_time);
 }
 
 //--------------LOOP FUNCTIONS--------------------------------
@@ -188,11 +189,20 @@ void loop_communication_task()
             printk("idle mode\n");
             mode_asked = IDLEMODE;
             record_counter = 0;
+            Iref_amplitude = 0.4;
             break;
         case 'p':
             printk("power mode\n");
             mode_asked = POWERMODE;
             record_counter = 0;
+            break;
+        case 'u':
+            if (Iref_amplitude < 0.5)
+                Iref_amplitude += 0.1;
+            break;
+        case 'd':
+            if (Iref_amplitude > 0.2)
+                Iref_amplitude -= 0.1;
             break;
         default:
             break;
@@ -220,7 +230,7 @@ void loop_application_task()
         {
 
             printk("%i:", status);
-            printk("%f:", Iref);
+            printk("%f:", Iref_amplitude);
             printk("%f:", duty_cycle);
             printk("%f:", V1_low_value);
             printk("\n");
@@ -290,16 +300,18 @@ void loop_critical_task()
     else
     {
         pll_datas.error = 100;
-        pll_counter_ok = 0;
-        pll.reset(50.0);
+        pll_counter = 0;
+        pll.reset(f0);
+        pll_is_locked = false;
     }
     // criteria of PLL locked
-    if ((pll_datas.error < 2.0) && (pll_datas.error > -2.0) && (pll_datas.w < 326.0) && (pll_datas.w > 300.0) ) {
-        pll_counter_ok++;
-    } else {
-        pll_counter_ok = 0;
+    if ((pll_is_locked == false) && (pll_datas.error < 2.5) && (pll_datas.error > -2.5) && (pll_datas.w < 333.0) && (pll_datas.w > 295.0) ) {
+        pll_counter++;
     }
-    if (pll_counter_ok > 400)
+    if (pll_counter > 400) {
+        pll_is_locked = true;
+    }
+    if (pll_is_locked)
     {
         mode = POWERMODE;
         pr_value = prop_res.calculateWithReturn(Iref, I1_low_value);
@@ -311,6 +323,7 @@ void loop_critical_task()
             pwm_enable = true;
             twist.startAll();
         }
+        spin.led.turnOn();
 
     }
     else
@@ -333,6 +346,9 @@ void loop_critical_task()
         {
             I1_offset = I1_offset_tmp;
             I2_offset = I2_offset_tmp;
+            spin.led.turnOff();
+        } 
+        if (control_loop_counter > 100) {
             spin.led.turnOff();
         }
     }
