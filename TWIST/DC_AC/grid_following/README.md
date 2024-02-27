@@ -1,13 +1,13 @@
 # Ac current source follower
 
-In this example you need to have a first Twist with the [Grid Forming](../grid_forming/REAMD.md) example.
+In this example you need to have a first Twist with the [Grid Forming](../grid_forming/README.md) example.
 
 <div style="text-align:center"><img src="Image/schema_grid_following.png" alt="Schematic p2p" width="600"></div>
 
 The parameters are:
 
 * $U_{DC} = 40 V$
-* $R_{LOAD} = 30 \Omega$.
+* $R_{LOAD} = 15 \Omega$.
 
 
 In the second Twist we use a software phase locked loop ( _"pll"_ ).
