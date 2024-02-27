@@ -66,7 +66,9 @@ static float32_t kd = 0.0;
 // reference voltage/current
 float32_t duty_cycle = 0.3;
 static float32_t Vref = 12.0;
+#ifdef SLAVE2
 static float32_t Iref = 0;
+#endif
 static float32_t Imax = 1;
 static float32_t Imin = 0.2;
 static float32_t Icom = 0;
@@ -78,10 +80,8 @@ bool flag = false;
 float32_t meas_data;
 static float32_t V1_low_value;
 static float32_t V2_low_value;
-static float32_t Vhigh_value;
 static float32_t I1_low_value;
 static float32_t I2_low_value;
-static float32_t Ihigh_value;
 
 static uint8_t delay = 0;
 static uint8_t tx_usart_val[DMA_BUFFER_SIZE];

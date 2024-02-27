@@ -72,7 +72,9 @@ static float32_t I2_low_value;
 
 // reference voltage/current
 float32_t duty_cycle = 0.5;
+#ifdef MASTER
 static float32_t Vref = 12.0;
+#endif
 static float32_t Iref;
 static float32_t PeakRef_Raw;
 int count = 0;

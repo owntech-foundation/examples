@@ -62,13 +62,19 @@ static float32_t V_high;
 int count = 0;
 static float meas_data; // temp storage meas value (ctrl task)
 
-// Droop coeficient configuration 
-static float32_t coef_droop = 1.2;
-static float32_t coef_droop1 = 1.1;
-static float32_t coef_droop2 = 1.6;
-
 //Define for selecting the card to be flashed 
 #define DROOP1
+
+// Droop coeficient configuration 
+#ifdef DROOP
+static float32_t coef_droop = 1.2;
+#endif
+#ifdef DROOP1
+static float32_t coef_droop1 = 1.1;
+#endif
+#ifdef DROOP2
+static float32_t coef_droop2 = 1.6;
+#endif
 
 #if defined(DROOP) || defined(DROOP1) || defined(DROOP2)
     float32_t duty_cycle = 0.1;
