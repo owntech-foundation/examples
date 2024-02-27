@@ -138,39 +138,6 @@
         ]
     },
     {
-        "name": "adc_hrtim_trigger",
-        "title": "HRTIM triggered ADC",
-        "description": "setting the adc to be trigerred by the hrtim",
-        "group": "Examples SPIN",
-        "base": "SPIN/ADC/adc_hrtim_trigger",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "adc_software_trigger",
-        "title": "Software triggered ADC",
-        "description": "setting the adc to be trigerred by software",
-        "group": "Examples SPIN",
-        "base": "SPIN/ADC/adc_hrtim_trigger",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "signal_generation",
-        "title": "DAC signal generation",
-        "description": "Sawtooth generation with DAC",
-        "group": "Examples SPIN",
-        "base": "SPIN/DAC/signal_generation",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
         "name": "blinky",
         "title": "Blinky LED",
         "description": "Toggling LED",
@@ -209,6 +176,39 @@
         "description": "Setting a phase shift between two PWM",
         "group": "Examples SPIN",
         "base": "SPIN/PWM/phase_shift",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "signal_generation",
+        "title": "DAC signal generation",
+        "description": "Sawtooth generation with DAC",
+        "group": "Examples SPIN",
+        "base": "SPIN/DAC/signal_generation",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "adc_software_trigger",
+        "title": "Software triggered ADC",
+        "description": "setting the adc to be trigerred by software",
+        "group": "Examples SPIN",
+        "base": "SPIN/ADC/adc_hrtim_trigger",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "adc_hrtim_trigger",
+        "title": "HRTIM triggered ADC",
+        "description": "setting the adc to be trigerred by the hrtim",
+        "group": "Examples SPIN",
+        "base": "SPIN/ADC/adc_hrtim_trigger",
         "files": [
             "main.cpp",
             "README.md"
