@@ -157,6 +157,17 @@
         ]
     },
     {
+        "name": "grid_following",
+        "title": "Grid Following",
+        "description": "AC current inject current in grid",
+        "group": "Examples TWIST",
+        "base": "TWIST/DC_AC/grid_following",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
         "name": "blinky",
         "title": "Blinky LED",
         "description": "Toggling LED",
