@@ -12,7 +12,7 @@ The parameters are:
 
 The voltage regulation will be done by a proportional resonant regulator.
 This component is provided by the OwnTech control library which must be included 
-in the file `src/owntech.ini`.
+in the file `platformio.ini`.
 
 ```
 lib_deps=

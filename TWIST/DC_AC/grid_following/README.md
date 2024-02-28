@@ -16,7 +16,7 @@ with a power factor of one. The current is regulated using a proportional resona
 regulator.
 
 the _"pll"_ and _"pr"_ are provided by the OwnTech control library which must be included 
-in the file `src/owntech.ini`.
+in the file `platfomio.ini`.
 
 ```
 lib_deps=

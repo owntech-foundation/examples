@@ -130,7 +130,7 @@ uint8_t mode_asked = IDLEMODE;
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
     twist.setVersion(shield_TWIST_V1_3);
 
     data.enableTwistDefaultChannels();
