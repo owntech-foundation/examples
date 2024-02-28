@@ -34,7 +34,7 @@
 #include "TaskAPI.h"
 #include "TwistAPI.h"
 #include "SpinAPI.h"
-#include "opalib_control_pid.h"
+#include "pid.h"
 
 #include "zephyr/console/console.h"
 
@@ -87,8 +87,14 @@ static float32_t coef_droop2 = 1.6;
 /* PID coefficient for a 8.6ms step response*/
 
 static float32_t kp = 0.000215;
-static float32_t ki = 2.86;
-static float32_t kd = 0.0;
+static float32_t Ti = 7.5175e-5;
+static float32_t Td = 0.0;
+static float32_t N = 0.0;
+static float32_t upper_bound = 1.0F;
+static float32_t lower_bound = 0.0F;
+static float32_t Ts = control_task_period * 1e-6;
+static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
+static Pid pid;
 
 //---------------------------------------------------------------
 
@@ -135,7 +141,7 @@ float32_t Convert_Ilow_in_Quantum_To_mA(uint16_t IlowInQuantum, float32_t Ilow_O
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
     twist.setVersion(shield_TWIST_V1_2);
 
     /* buck voltage mode */
@@ -143,8 +149,7 @@ void setup_routine()
 
     data.enableTwistDefaultChannels();
 
-    opalib_control_init_interleaved_pid(kp, ki, kd, control_task_period);
-    opalib_control_init_leg1_pid(kp, ki, kd, control_task_period);
+    pid.init(pid_params);
 
     // Then declare tasks
     uint32_t app_task_number = task.createBackground(loop_application_task);
@@ -276,17 +281,17 @@ void loop_critical_task()
         #ifdef DROOP
             float Vref_droop = reference - (I1_low_value+I2_low_value)*coef_droop;
 
-            duty_cycle = opalib_control_leg1_pid_calculation(Vref_droop, V1_low_value); 
+            duty_cycle = pid.calculateWithReturn(Vref_droop, V1_low_value); 
         #endif
 
         #ifdef DROOP1
             float Vref_droop = reference - (I1_low_value+I2_low_value)*coef_droop1;
-            duty_cycle = opalib_control_leg1_pid_calculation(Vref_droop, V1_low_value);
+            duty_cycle = pid.calculateWithReturn(Vref_droop, V1_low_value);
         #endif
 
         #ifdef DROOP2
             float Vref_droop = reference - (I1_low_value+I2_low_value)*coef_droop2;
-            duty_cycle = opalib_control_leg1_pid_calculation(Vref_droop, V1_low_value);  
+            duty_cycle = pid.calculateWithReturn(Vref_droop, V1_low_value);  
         #endif
 
         twist.setAllDutyCycle(duty_cycle);

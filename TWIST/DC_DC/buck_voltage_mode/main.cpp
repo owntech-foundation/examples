@@ -33,7 +33,7 @@
 #include "TaskAPI.h"
 #include "TwistAPI.h"
 #include "SpinAPI.h"
-#include "opalib_control_pid.h"
+#include "pid.h"
 
 #include "zephyr/console/console.h"
 
@@ -70,8 +70,14 @@ static float32_t voltage_reference = 15; //voltage reference
 /* PID coefficient for a 8.6ms step response*/
 
 static float32_t kp = 0.000215;
-static float32_t ki = 2.86;
-static float32_t kd = 0.0;
+static float32_t Ti = 7.5175e-5;
+static float32_t Td = 0.0;
+static float32_t N = 0.0;
+static float32_t upper_bound = 1.0F;
+static float32_t lower_bound = 0.0F;
+static float32_t Ts = control_task_period * 1e-6;
+static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
+static Pid pid;
 
 //---------------------------------------------------------------
 
@@ -94,7 +100,7 @@ uint8_t mode = IDLEMODE;
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
     twist.setVersion(shield_TWIST_V1_2);
 
     /* buck voltage mode */
@@ -102,7 +108,7 @@ void setup_routine()
 
     data.enableTwistDefaultChannels();
 
-    opalib_control_init_interleaved_pid(kp, ki, kd, control_task_period);
+    pid.init(pid_params);
 
     // Then declare tasks
     uint32_t app_task_number = task.createBackground(loop_application_task);
@@ -225,7 +231,7 @@ void loop_critical_task()
     }
     else if (mode == POWERMODE)
     {
-        duty_cycle = opalib_control_interleaved_pid_calculation(voltage_reference, V1_low_value);
+        duty_cycle = pid.calculateWithReturn(voltage_reference, V1_low_value);
         twist.setAllDutyCycle(duty_cycle);
 
         /* Set POWER ON */

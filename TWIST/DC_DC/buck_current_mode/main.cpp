@@ -124,7 +124,7 @@ float32_t PID_CM(float reference, float measurement)
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
     twist.setVersion(shield_TWIST_V1_2);
 
     /* buck voltage mode */
