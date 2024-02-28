@@ -146,6 +146,28 @@
         ]
     },
     {
+        "name": "grid_forming",
+        "title": "Grid Forming Inverter",
+        "description": "It generates an AC voltage source. Commonly, a grid-forming inverter is a device that autonomously establishes and maintains stable grid voltage and frequency.",
+        "group": "Examples TWIST",
+        "base": "TWIST/DC_AC/grid_forming",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "grid_following",
+        "title": "Grid Following Inverter",
+        "description": "It is an AC current source which follow a grid voltage. Commonly, a grid-following inverter adjusts its output to match the voltage and frequency of the existing electrical grid",
+        "group": "Examples TWIST",
+        "base": "TWIST/DC_AC/grid_following",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
         "name": "blinky",
         "title": "Blinky LED",
         "description": "Toggling LED",
