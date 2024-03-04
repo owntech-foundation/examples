@@ -37,8 +37,10 @@
 #include "Rs485Communication.h"
 #include "SyncCommunication.h"
 
-#include "park.h"
-#include "sin_tab.h"
+// modules from control library
+#include "trigo.h"
+#include "pid.h"
+#include "pr.h"
 
 #include "zephyr/console/console.h"
 
@@ -72,7 +74,8 @@ static float meas_data; // temp storage meas value (ctrl task)
 float32_t duty_cycle;
 
 /* Sinewave settings */
-float f0 = 50;
+const static float f0 = 50.F;
+const static float w0 = 2 * PI * f0;
 float angle = 0;
 
 /* PEER 2 PEER variables */
@@ -82,20 +85,30 @@ float32_t I_ac_ref;
 float32_t P_ref = 19; // 20W power reference from server to client
 float32_t v_dc_ref = sqrt(P_ref*115); // must be superior to at least 20V
 
-// PID parameters
-static float32_t p = 0.01;            // proportional coefficient
-static float32_t i = 0.1;            // integral coefficient
-static float32_t integrator_mem = 0; // integral memory
+
+static const float32_t Ts = control_task_period * 1e-6F;
+static const float32_t Kp = 0.01;
+static const float32_t Ti = 0.1;  // (Kp/Ki = Ti)
+static const float32_t Td = 0.0;
+static const float32_t N = 0.0;
+static const float32_t upper_bound = 2.0; 
+static const float32_t lower_bound = -2.0;
+static Pid pid_current_control;
+static const PidParams pid_params(Ts, Kp, Ti, Td, N, lower_bound, upper_bound); 
 
 //------------- PR RESONANT -------------------------------------
-pr_params_t pr_params;
-float32_t w0;
-float32_t K_current = 60;
-float32_t pid_period = control_task_period / 1000000.0f;
+static const float32_t K_current = 60.0F;
+static const float32_t Kp_pr = 0.0005;
+static const float32_t Kr = 700.0;
+static float32_t pr_upper_bound = 30.0; // assume Udc ~ 30V
+static float32_t pr_lower_bound = -30.0;
+static Pr pr;
+static const PrParams pr_params(Ts, Kp_pr, Kr, 0.0, pr_lower_bound, pr_upper_bound);
+
+
 
 struct consigne_struct
 {
-    float32_t w0_fromSERVER;
     float32_t P_ref_fromSERVER;
     uint8_t id_and_status; // Contains status
 };
@@ -147,36 +160,13 @@ void reception_function(void)
         if ((rx_consigne.id_and_status & 2) == 1)
             counter = 0;
 
-        w0 = rx_consigne.w0_fromSERVER;
         P_ref = rx_consigne.P_ref_fromSERVER;
     }
 #endif
 
 }
 
-/**
- * @brief current control
- * @param[out] gain_current
-*/
-float32_t PID_CM(float reference, float measurement)
-{
-    /////
-    // Compute error
 
-    float32_t error = reference - measurement;
-
-    /////
-    // Compute derivative term
-
-    float32_t sum = (p * error) + integrator_mem;
-
-    /////
-    // Compute integral term with anti-windup
-
-    integrator_mem += (i * error) * pid_period;
-
-    return sum;
-}
 
 /**
  * This is the setup routine.
@@ -190,7 +180,7 @@ void setup_routine()
 
     // Setup the hardware first
     spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_2);
+    twist.setVersion(shield_TWIST_V1_3);
 
     data.enableTwistDefaultChannels();
 
@@ -218,16 +208,9 @@ void setup_routine()
     task.startBackground(com_task_number);
     task.startCritical(); // Uncomment if you use the critical task
 
-    // PR RESONANT
-    pr_params.Ki = 700.0;
-    pr_params.Kp = 0.0005;
-    pr_params.Ts = 100.0e-6;
-    pr_params.num[0] = 0.0;
-    pr_params.num[1] = 0.0;
-    pr_params.den[0] = 0.0;
-    pr_params.den[1] = 0.0;
-    pr_params.den[2] = 0.0;
-
+    pid_current_control.init(pid_params);
+    pid_current_control.reset(-gain_current); // output initialisation of the pid.
+    pr.init(pr_params);
 }
 
 //--------------LOOP FUNCTIONS--------------------------------
@@ -317,6 +300,7 @@ void loop_critical_task()
     meas_data = data.getLatest(V_HIGH);
     if (meas_data != -10000)
         V_high = meas_data;
+    if (V_high < 10.0) V_high = 10.0; // to prevent div by 0.
 
     meas_data = data.getLatest(I_HIGH);
     if (meas_data < 10000 && meas_data > -10000)
@@ -338,13 +322,9 @@ void loop_critical_task()
     {
         /* Set POWER ON */
 
-        angle += 2.0F * M_PI * f0 * control_task_period * 1.0e-6F;
-        if (angle > 2.0 * M_PI) angle -= 2.0 * M_PI;
-
-        w0 = 2*M_PI*f0;
-
-        duty_cycle = 0.5 + 0.15*ot_sin(angle);
-
+        angle += w0 * Ts;
+        angle = ot_modulo_2pi(angle);
+        duty_cycle = 0.5 + 0.15 * ot_sin(angle);
         twist.setAllDutyCycle(duty_cycle);
 
         if (counter == 0)
@@ -353,7 +333,6 @@ void loop_critical_task()
             tx_consigne.id_and_status = (1 << 6) + 1;
 
         tx_consigne.P_ref_fromSERVER = P_ref;
-        tx_consigne.w0_fromSERVER = w0;
 
         rs485Communication.startTransmission();
 
@@ -391,9 +370,9 @@ void loop_critical_task()
         mode = POWERMODE;
         v_dc_ref = sqrt(P_ref*115); // V_dc²/R = P, where R = 115Ω the output ressitor
         V_ac = V1_low_value - V2_low_value;
-        gain_current = -PID_CM(v_dc_ref, V_high);
-        I_ac_ref = gain_current*V_ac;
-        duty_cycle = (V_ac +  pr_resonant(I_ac_ref, I1_low_value, w0, 0, &pr_params))/(2*V_high) + 0.5;
+        gain_current = -pid_current_control.calculateWithReturn(v_dc_ref, V_high);
+        I_ac_ref = gain_current * V_ac;
+        duty_cycle = (V_ac +  pr.calculateWithReturn(I_ac_ref, I1_low_value)) / (2.0F * V_high) + 0.5F;
         twist.setAllDutyCycle(duty_cycle);
 
         if (!pwm_enable)

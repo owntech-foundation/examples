@@ -37,10 +37,9 @@
 #include "Rs485Communication.h"
 #include "SyncCommunication.h"
 
-#include "park.h"
-#include "sin_tab.h"
-
 #include "zephyr/console/console.h"
+
+#include "pr.h"
 
 #define CLIENT      // Role : SERVER or CLIENT 
 
@@ -71,19 +70,25 @@ static float32_t Vref; // voltage reference from SERVER
 static float meas_data; // temp storage meas value (ctrl task)
 
 /* duty_cycle*/
-float32_t duty_cycle;
+static float32_t duty_cycle;
 
 /* Sinewave settings */
-float f0 = 50;
-float angle = 0;
+static const float f0 = 50;
+static float angle = 0;
+
+static float Udc;
 
 //------------- PR RESONANT -------------------------------------
-pr_params_t pr_params;
-float32_t w0;
+static float32_t w0 = 2 * PI *f0;
 static float32_t integral_mem = 0; // integral memory
-float32_t K_current = 60;
-float32_t pid_period = control_task_period / 1000000.0f;
-float32_t k_gain = 1.0;
+static float32_t K_current = 60;
+static float32_t Ts = control_task_period * 1.0e-6f;
+static float32_t k_gain = 1.0;
+static const float32_t Kr = 300.0;
+static const float32_t Kp = 0.001; 
+static PrParams pr_params(Ts, Kp, Kr, 0.0, lower_bound, upper_bound);
+
+static PrParams pr_voltage_params(Ts, Kp_v, Kr_v, 0.0, lower_bound, upper_bound);
 
 struct consigne_struct
 {
@@ -156,7 +161,7 @@ void setup_routine()
 {
     // Setup the hardware first
     spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_2);
+    twist.setVersion(shield_TWIST_V1_3);
 
     data.enableTwistDefaultChannels();
 
@@ -183,16 +188,6 @@ void setup_routine()
     task.startBackground(app_task_number);
     task.startBackground(com_task_number);
     task.startCritical(); // Uncomment if you use the critical task
-
-    // PR RESONANT
-    pr_params.Ki = 300.0;
-    pr_params.Kp = 0.001;
-    pr_params.Ts = 100.0e-6;
-    pr_params.num[0] = 0.0;
-    pr_params.num[1] = 0.0;
-    pr_params.den[0] = 0.0;
-    pr_params.den[1] = 0.0;
-    pr_params.den[2] = 0.0;
 
 }
 
@@ -311,13 +306,11 @@ void loop_critical_task()
     {
         /* Set POWER ON */
 
-        angle += 2.0F * M_PI * f0 * control_task_period * 1.0e-6F;
-        if (angle > 2.0 * M_PI) angle -= 2.0 * M_PI;
+        angle += w0 * Ts;
+        angle = ot_modulo_2pi(angle);
 
-        w0 = 2*M_PI*f0;
-
-        duty_cycle = 0.5 + 0.15*ot_sin(angle);
-        Vref = duty_cycle*40.0;
+        Vref = 20.0 * ot_sin(angle);
+        duty_cycle = 0.5 + Vref / (2.0 * Udc);
 
         twist.setAllDutyCycle(duty_cycle);
 
@@ -364,7 +357,7 @@ void loop_critical_task()
     {
         mode = POWERMODE;
 
-        integral_mem += K_current*pid_period*(Iref - I1_low_value);
+        integral_mem += K_current*Ts*(Iref - I1_low_value);
         duty_cycle = (Vref + integral_mem + pr_resonant(Iref, I1_low_value, w0, 0, &pr_params))/40.0;
 
         twist.setAllDutyCycle(duty_cycle);

@@ -101,7 +101,7 @@ void setup_routine()
 {
     // Setup the hardware first
     spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_2);
+    twist.setVersion(shield_TWIST_V1_3);
 
     /* buck voltage mode */
     twist.initLegBoost(LEG1);
