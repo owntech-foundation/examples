@@ -17,26 +17,32 @@ You will need :
 
 ## Software setup
 
-We import control_pid library with src/owntech.ini via the line :
+We import the OwnTech control library with platformio.ini via the line :
 
-```python
+```
 lib_deps=
-    control_pid = https://gitlab.laas.fr/owntech/power-api/opalib-control-pid.git
+    control_lib = https://github.com/owntech-foundation/control_library.git
 ```
 
 We can use this library to initialize a PID control with the function :
 
-```c
-opalib_control_init_interleaved_pid(kp, ki, kd, control_task_period);
+```cpp
+pid.init(pid_params);
 ```
 
 the initial parameters are :
 
-```c
+```cpp
+static Pid pid; // define a pid controller
+
 static float32_t kp = 0.000215;
-static float32_t ki = 2.86;
-static float32_t kd = 0.0;
-static uint32_t control_task_period = 100;
+static float32_t Ti = 7.5175e-5;
+static float32_t Td = 0.0;
+static float32_t N = 0.0;
+static float32_t upper_bound = 1.0F;
+static float32_t lower_bound = 0.0F;
+static float32_t Ts = control_task_period * 1.e-6F;
+static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
 ```
 
 ## Expected result

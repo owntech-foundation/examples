@@ -1,0 +1,44 @@
+test_a_faire:
+  - fichier: TWIST/DC_AC/grid_following/main.cpp
+    compilation: true
+    test: true
+    readme: true
+  - fichier: TWIST/DC_AC/grid_forming/main.cpp
+    compilation: true
+    test: true
+    readme: true
+  - fichier: TWIST/DC_DC/boost_voltage_mode/main.cpp
+    compilation: true
+    test: true
+    readme: true
+  - fichier: TWIST/DC_DC/buck_current_mode/main.cpp
+    compilation: true
+    test: true
+    readme: true
+  - fichier: TWIST/DC_DC/buck_voltage_mode/main.cpp
+    compilation: true
+    test: true
+  - fichier: TWIST/DC_DC/interleaved/main.cpp
+    compilation: true
+    test: true
+    readme: true
+  - fichier: TWIST/Microgrid/AC_client_server/main.cpp
+    compilation: false
+    test: false
+    readme: false
+  - fichier: TWIST/Microgrid/AC_peer_to_peer/main.cpp
+    compilation: true
+    test: false
+    readme: false
+  - fichier: TWIST/Microgrid/DC_client_server/main.cpp
+    compilation: false
+    test: false
+    readme: false
+  - fichier: TWIST/Microgrid/DC_droop/main.cpp
+    compilation: false
+    test: false
+    readme: false
+  - fichier: TWIST/Microgrid/DC_peer_to_peer/main.cpp
+    compilation: false
+    test: false
+    readme: false

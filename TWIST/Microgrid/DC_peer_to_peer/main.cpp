@@ -194,8 +194,8 @@ void loop_communication_task()
             printk(" ________________________________________\n");
             printk("|     ------- MENU ---------             |\n");
             printk("|     press i : idle mode                |\n");
-            printk("|     press s : serial mode              |\n");
             printk("|     press p : power mode               |\n");
+            printk("|     press l : listen mode              |\n");
             printk("|________________________________________|\n\n");
             //------------------------------------------------------
             break;

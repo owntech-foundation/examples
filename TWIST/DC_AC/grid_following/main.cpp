@@ -85,8 +85,8 @@ static uint32_t pll_counter = 0;
 static bool pll_is_locked = false;
 static float32_t pr_value;
 static float32_t Ts = control_task_period * 1.0e-6F;
-static float32_t Kp = 0.01;
-static float32_t Kr = 1200.0;
+static float32_t Kp = 0.2;
+static float32_t Kr = 3000.0;
 
 uint32_t control_loop_counter;
 typedef struct Record
@@ -105,9 +105,12 @@ typedef struct Record
 
 } record_t;
 
-record_t record_array[2048];
+const uint16_t RECORD_SIZE = 2048;
+const uint16_t NB_CURVES = 11;
+record_t record_array[RECORD_SIZE];
 uint32_t record_counter = 0;
-
+bool is_downloading = false;
+uint16_t k_download = 0;
 //---------------------------------------------------------------
 
 enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVERTER
@@ -170,9 +173,12 @@ void loop_communication_task()
         case 'h':
             //----------SERIAL INTERFACE MENU-----------------------
             printk(" ________________________________________\n");
-            printk("|     ------- MENU ---------             |\n");
+            printk("|     --- grid following example -----   |\n");
             printk("|     press i : idle mode                |\n");
             printk("|     press p : power mode               |\n");
+            printk("|     press u : Iref up                  |\n");
+            printk("|     press d : Iref down                |\n");
+            printk("|     press r : retrieve data recorded   |\n");
             printk("|________________________________________|\n\n");
             //------------------------------------------------------
             break;
@@ -183,9 +189,12 @@ void loop_communication_task()
             Iref_amplitude = 0.4;
             break;
         case 'p':
-            printk("power mode\n");
-            mode_asked = POWERMODE;
-            record_counter = 0;
+            if (!is_downloading)
+            {
+                printk("power mode\n");
+                mode_asked = POWERMODE;
+                record_counter = 0;
+            }
             break;
         case 'u':
             if (Iref_amplitude < 0.5)
@@ -195,6 +204,8 @@ void loop_communication_task()
             if (Iref_amplitude > 0.2)
                 Iref_amplitude -= 0.1;
             break;
+        case 'r': 
+            is_downloading = true;
         default:
             break;
         }
@@ -211,8 +222,25 @@ void loop_application_task()
 {
     if (mode == IDLEMODE)
     {
-        printk("I1_offset = %f:", I1_offset);
-        printk("I2_offset = %f\n", I2_offset);
+        if (!is_downloading)
+        {
+            printk("I1_offset = %f:", I1_offset);
+            printk("I2_offset = %f\n", I2_offset);
+        }
+        else 
+        {
+            printk("begin download\n");
+            while (k_download < (RECORD_SIZE * NB_CURVES))
+            {
+                printk("%d %04x\n", k_download, *((uint16_t *)record_array + k_download));
+                k_download++;
+                task.suspendBackgroundUs(500);
+
+            }
+            printk("end download\n");
+            is_downloading = false;
+            k_download = 0;
+        }
     }
     else if (mode == POWERMODE)
     {

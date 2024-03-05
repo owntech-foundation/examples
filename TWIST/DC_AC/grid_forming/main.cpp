@@ -1,4 +1,5 @@
 /*
+ *
  * Copyright (c) 2021-2024 LAAS-CNRS
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -79,11 +80,10 @@ static float32_t Vgrid_amplitude = 16.0;
 static float32_t w0 = 2.0 * PI * 50.0;   // pulsation
 float angle = 0; // [rad]
 //------------- PR RESONANT -------------------------------------
-//pr_params_t pr_params;
 static Pr prop_res;
 static float32_t pr_value;
-static float32_t Kp = 0.001F;
-static float32_t Kr = 300.0F;
+static float32_t Kp = 0.02F;
+static float32_t Kr = 4000.0F;
 static float32_t Ts = control_task_period * 1.0e-6F;
 
 static uint32_t control_loop_counter; // counter in the control loop.
@@ -163,9 +163,11 @@ void loop_communication_task()
         case 'h':
             //----------SERIAL INTERFACE MENU-----------------------
             printk(" ________________________________________\n");
-            printk("|     ------- MENU ---------             |\n");
+            printk("|     ------- grid forming ------        |\n");
             printk("|     press i : idle mode                |\n");
             printk("|     press p : power mode               |\n");
+            printk("|     press u : vgrid up                 |\n");
+            printk("|     press p : vgrid down               |\n");
             printk("|________________________________________|\n\n");
             //------------------------------------------------------
             break;
@@ -177,6 +179,14 @@ void loop_communication_task()
         case 'p':
             printk("power mode\n");
             mode = POWERMODE;
+            break;
+        case 'u': 
+            if (Vgrid_amplitude < 18.0)
+                    Vgrid_amplitude += 2.0;
+            break;
+        case 'd': 
+            if (Vgrid_amplitude > 2.0)
+                    Vgrid_amplitude -= 2.0;
             break;
         default:
             break;

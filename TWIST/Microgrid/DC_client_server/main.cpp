@@ -162,10 +162,9 @@ void loop_communication_task()
             printk(" ________________________________________\n");
             printk("|     ------- MENU ---------             |\n");
             printk("|     press i : idle mode                |\n");
-            printk("|     press s : serial mode              |\n");
             printk("|     press p : power mode               |\n");
-            printk("|     press u : duty cycle UP            |\n");
-            printk("|     press d : duty cycle DOWN          |\n");
+            printk("|     press u : Iref UP                  |\n");
+            printk("|     press d : Iref DOWN                |\n");
             printk("|________________________________________|\n\n");
             //------------------------------------------------------
             break;

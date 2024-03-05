@@ -134,12 +134,11 @@ void loop_communication_task()
         case 'h':
             //----------SERIAL INTERFACE MENU-----------------------
             printk(" ________________________________________\n");
-            printk("|     ------- MENU ---------             |\n");
+            printk("|     -- MENU buck interleaved mode --   |\n");
             printk("|     press i : idle mode                |\n");
-            printk("|     press s : serial mode              |\n");
             printk("|     press p : power mode               |\n");
-            printk("|     press u : duty cycle UP            |\n");
-            printk("|     press d : duty cycle DOWN          |\n");
+            printk("|     press u : voltage reference UP     |\n");
+            printk("|     press d : voltage reference DOWN   |\n");
             printk("|________________________________________|\n\n");
             //------------------------------------------------------
             break;

@@ -9,7 +9,9 @@ The parameters are:
 * $U_{DC} = 40 V$
 * $R_{LOAD} = 30 \Omega$.
 
+## Software overview
 
+### Import a library
 The voltage regulation will be done by a proportional resonant regulator.
 This component is provided by the OwnTech control library which must be included 
 in the file `platformio.ini`.
@@ -18,7 +20,27 @@ in the file `platformio.ini`.
 lib_deps=
     control_lib = https://github.com/owntech-foundation/control_library.git
 ```
+### Define a regulator
 
+The Proportional Resonant regulator is initialized with the lines above:
+
+```cpp
+PrParams params = PrParams(Ts, Kp, Kr, w0, 0.0F, -Udc, Udc);
+prop_res.init(params);
+```
+
+The parameters are defined with these values:
+
+```cpp
+static Pr prop_res; // controller instanciation. 
+static float32_t Kp = 0.02F;
+static float32_t Kr = 4000.0F;
+static float32_t Ts = control_task_period * 1.0e-6F;
+static float32_t w0 = 2.0 * PI * 50.0;   // pulsation
+static float32_t Udc = 40.0F;
+```
+
+## Link between voltage reference and duty cycles.
 The voltage source is defined by the voltage difference: $U_{12} = V_{1low} - V_{2low}$.
 
 Link with the duty cycle:

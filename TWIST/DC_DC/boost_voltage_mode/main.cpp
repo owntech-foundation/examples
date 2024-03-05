@@ -75,7 +75,7 @@ static float32_t Td = 0.0;
 static float32_t N = 0.0;
 static float32_t upper_bound = 1.0F;
 static float32_t lower_bound = 0.0F;
-static float32_t Ts = control_task_period * 1e-6;
+static float32_t Ts = control_task_period * 1.e-6F;
 static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
 static Pid pid;
 
@@ -103,7 +103,7 @@ void setup_routine()
     spin.version.setBoardVersion(SPIN_v_1_0);
     twist.setVersion(shield_TWIST_V1_3);
 
-    /* buck voltage mode */
+    /* boost voltage mode */
     twist.initLegBoost(LEG1);
 
     data.enableTwistDefaultChannels();
@@ -133,12 +133,11 @@ void loop_communication_task()
         case 'h':
             //----------SERIAL INTERFACE MENU-----------------------
             printk(" ________________________________________\n");
-            printk("|     ------- MENU ---------             |\n");
+            printk("|     --- MENU boost voltage mode ---    |\n");
             printk("|     press i : idle mode                |\n");
-            printk("|     press s : serial mode              |\n");
             printk("|     press p : power mode               |\n");
-            printk("|     press u : duty cycle UP            |\n");
-            printk("|     press d : duty cycle DOWN          |\n");
+            printk("|     press u : voltage reference UP     |\n");
+            printk("|     press d : voltage reference DOWN   |\n");
             printk("|________________________________________|\n\n");
             //------------------------------------------------------
             break;
@@ -232,7 +231,7 @@ void loop_critical_task()
     }
     else if (mode == POWERMODE)
     {
-        duty_cycle = pid.calculateWithReturn(voltage_reference, V1_low_value);
+        duty_cycle = pid.calculateWithReturn(voltage_reference, V_high);
         twist.setAllDutyCycle(duty_cycle);
 
         /* Set POWER ON */
