@@ -86,7 +86,7 @@ static float32_t Kp = 0.02F;
 static float32_t Kr = 4000.0F;
 static float32_t Ts = control_task_period * 1.0e-6F;
 
-static uint32_t control_loop_counter; // counter in the control loop.
+static uint32_t critical_task_counter; 
 
 typedef struct Record
 {
@@ -100,7 +100,9 @@ typedef struct Record
     float32_t angle;
     float32_t pr_value;
 } record_t;
-record_t record_array[2048];
+
+const uint16_t RECORD_SIZE = 2048;
+record_t record_array[RECORD_SIZE];
 uint32_t record_counter;
 
 //---------------------------------------------------------------
@@ -262,12 +264,12 @@ void loop_critical_task()
             I2_offset_tmp += I2_low_value;
             spin.led.turnOn();
         } 
-        if (control_loop_counter == nb_offset_meas)
+        if (critical_task_counter == nb_offset_meas)
         {
             I1_offset = I1_offset_tmp / nb_offset_meas;
             I2_offset = I2_offset_tmp / nb_offset_meas;
         }
-        if (control_loop_counter > nb_offset_meas) {
+        if (critical_task_counter > nb_offset_meas) {
             spin.led.turnOff();
          }
         // END OF OFFFSET MANAGEMENT
@@ -288,7 +290,7 @@ void loop_critical_task()
             twist.startAll();
         }
 
-        if (control_loop_counter % 1 == 0)
+        if (critical_task_counter % 1 == 0)
         {
             record_array[record_counter].I1_low = I1_low_value;
             record_array[record_counter].I2_low = I2_low_value;
@@ -299,7 +301,7 @@ void loop_critical_task()
             record_array[record_counter].Vgrid = Vgrid;
             record_array[record_counter].angle = angle;
             record_array[record_counter].pr_value = pr_value;
-            if (record_counter < 2047) {
+            if (record_counter < (RECORD_SIZE-1)) {
                 record_counter++;
                 spin.led.turnOff();
             } else {
@@ -308,7 +310,7 @@ void loop_critical_task()
 
         }
     }
-    control_loop_counter++;
+    critical_task_counter++;
 }
 
 /**

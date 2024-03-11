@@ -303,7 +303,7 @@ void loop_critical_task()
             record_array[record_counter].pll_angle = (int16_t) (256.0 * pll_datas.angle);
             record_array[record_counter].pll_error = (int16_t) (256.0 * pll_datas.error);
             record_array[record_counter].pll_w = (int16_t) (256.0 * pll_datas.w / (2.0 * PI));
-            if (record_counter < 2047) {
+            if (record_counter < (RECORD_SIZE-1)) {
                 record_counter++;
                 spin.led.turnOff();
             } else {
