@@ -34,23 +34,30 @@
 #include "TaskAPI.h"
 #include "TwistAPI.h"
 #include "SpinAPI.h"
-#include "Rs485Communication.h"
-#include "SyncCommunication.h"
+#include "CommunicationAPI.h"
 #include "pid.h"
 
 #include "zephyr/console/console.h"
 
-
 #define DMA_BUFFER_SIZE 8 // size of transfered data
-#define MASTER
+#define MASTER // MASTER, SLAVE or SLAVE2
 
+#ifdef MASTER
+const char ROLE_TXT[]="MASTER";
+#endif
+#ifdef SLAVE 
+const char ROLE_TXT[]="SLAVE";
+#endif 
+#ifdef SLAVE2 
+const char ROLE_TXT[]="SLAVE2";
+#endif
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
 
 //--------------LOOP FUNCTIONS DECLARATION--------------------
 void loop_communication_task(); // code to be executed in the slow communication task
 void loop_application_task();   // Code to be executed in the background task
-void loop_critical_task();     // Code to be executed in real time in the critical task
+void loop_critical_task();      // Code to be executed in real time in the critical task
 
 //--------------USER VARIABLES DECLARATIONS-------------------
 
@@ -73,14 +80,19 @@ static Pid pid;
 
 // reference voltage/current
 float32_t duty_cycle = 0.3;
-static float32_t Vref = 12.0;
 #ifdef SLAVE2
 static float32_t Iref = 0;
 #endif
+
+#ifndef SLAVE2
+static float32_t Vref = 12.0;
+#endif
+#ifdef MASTER
 static float32_t Imax = 1;
 static float32_t Imin = 0.2;
 static float32_t Icom = 0;
 int Isend;
+#endif
 
 bool flag = false;
 
@@ -110,22 +122,19 @@ uint8_t mode = IDLEMODE;
 
 void reception_function()
 {
-        if (delay < 1)
-        {  
-            tx_usart_val[0] = rx_usart_val[0];
-            tx_usart_val[1] = rx_usart_val[1];
-            tx_usart_val[2] = rx_usart_val[2];
-            tx_usart_val[3] = rx_usart_val[3];
-            tx_usart_val[4] = rx_usart_val[4];
-            tx_usart_val[5] = rx_usart_val[5];
-            tx_usart_val[6] = rx_usart_val[6];
-            tx_usart_val[7] = rx_usart_val[7];
+    if (delay < 1)
+    {
+        tx_usart_val[0] = rx_usart_val[0];
+        tx_usart_val[1] = rx_usart_val[1];
+        tx_usart_val[2] = rx_usart_val[2];
+        tx_usart_val[3] = rx_usart_val[3];
+        tx_usart_val[4] = rx_usart_val[4];
+        tx_usart_val[5] = rx_usart_val[5];
+        tx_usart_val[6] = rx_usart_val[6];
+        tx_usart_val[7] = rx_usart_val[7];
 
-            delay++;
-
-        }
-
-
+        delay++;
+    }
 }
 
 /**
@@ -145,27 +154,27 @@ void setup_routine()
 
     data.enableTwistDefaultChannels();
 
-    #ifdef MASTER
-        syncCommunication.initMaster(); // start the synchronisation
-            /* Initializing TX buffer */
-            tx_usart_val[0] = 0;
-            tx_usart_val[1] = 0;
-            tx_usart_val[2] = 0;
-            tx_usart_val[3] = 0;
-            tx_usart_val[4] = 0;
-            tx_usart_val[5] = 0;
-            tx_usart_val[6] = 0;
-            tx_usart_val[7] = 0;
+#ifdef MASTER
+    communication.sync.initMaster(); // start the synchronisation
+    /* Initializing TX buffer */
+    tx_usart_val[0] = 0;
+    tx_usart_val[1] = 0;
+    tx_usart_val[2] = 0;
+    tx_usart_val[3] = 0;
+    tx_usart_val[4] = 0;
+    tx_usart_val[5] = 0;
+    tx_usart_val[6] = 0;
+    tx_usart_val[7] = 0;
 
-    #endif
-    #ifdef SLAVE
-        syncCommunication.initSlave(); // start the synchronisation
-    #endif
-    #ifdef SLAVE2
-        syncCommunication.initSlave(); // start the synchronisation
-    #endif
+#endif
+#ifdef SLAVE
+    communication.sync.initSlave(TWIST_v_1_1_4); // start the synchronisation
+#endif
+#ifdef SLAVE2
+    communication.sync.initSlave(TWIST_v_1_1_4); // start the synchronisation
+#endif
 
-    rs485Communication.configure(tx_usart_val, rx_usart_val, DMA_BUFFER_SIZE, reception_function, 10625000, true); // custom configuration for RS485
+    communication.rs485.configure(tx_usart_val, rx_usart_val, DMA_BUFFER_SIZE, reception_function, SPEED_20M); // custom configuration for RS485
 
     pid.init(pid_params);
 
@@ -185,14 +194,14 @@ void setup_routine()
 void loop_communication_task()
 {
     while (1)
-    {  
+    {
         received_serial_char = console_getchar();
         switch (received_serial_char)
         {
         case 'h':
             //----------SERIAL INTERFACE MENU-----------------------
             printk(" ________________________________________\n");
-            printk("|     ------- MENU ---------             |\n");
+            printk("      MENU: %s                   \n", ROLE_TXT);
             printk("|     press i : idle mode                |\n");
             printk("|     press p : power mode               |\n");
             printk("|     press l : listen mode              |\n");
@@ -235,54 +244,53 @@ void loop_application_task()
     printk("%.2f:", V2_low_value);
     printk("%.2f:", I1_low_value);
     printk("%.2f:", I2_low_value);
-    printk("%.2f:", I1_low_value+I2_low_value);
-    #ifdef MASTER
+    printk("%.2f:", I1_low_value + I2_low_value);
+#ifdef MASTER
     printk("%d:", tx_usart_val[0]);
     printk("%d:", tx_usart_val[1]);
     printk("%d:", tx_usart_val[2]);
-    #endif
-    #ifdef SLAVE2
+#endif
+#ifdef SLAVE2
     printk("%d:", rx_usart_val[0]);
     printk("%d:", rx_usart_val[1]);
     printk("%d:", rx_usart_val[2]);
-    #endif
+#endif
     printk("%d:\n", flag);
 
-    #ifdef MASTER
-        if (flag == true)
+#ifdef MASTER
+    if (flag == true)
+    {
+        Icom = (I1_low_value + I2_low_value + Icom) * 0.4;
+        if (Icom < 0.5)
         {
-            Icom = (I1_low_value + I2_low_value + Icom) * 0.4;
-            if (Icom < 0.5)
-            {
-                Icom = 0.5;
-            }
-            Isend = (int)(Icom*255/2);
-            
-
-            tx_usart_val[0] = 2;
-            tx_usart_val[1] = 1;
-            tx_usart_val[2] = Isend;
-            tx_usart_val[3] = 0;
-            tx_usart_val[4] = 0;
-            tx_usart_val[5] = 0;
-            tx_usart_val[6] = 0;
-            tx_usart_val[7] = 0;
+            Icom = 0.5;
         }
-        else if (flag == false)
-        {
-            Icom = 0;
-            Isend = (int)((0.45)*255/2);
+        Isend = (int)(Icom * 255 / 2);
 
-            tx_usart_val[0] = 2;
-            tx_usart_val[1] = 0;
-            tx_usart_val[2] = Isend;
-            tx_usart_val[3] = 0;
-            tx_usart_val[4] = 0;
-            tx_usart_val[5] = 0;
-            tx_usart_val[6] = 0;
-            tx_usart_val[7] = 0;
-        }
-    #endif
+        tx_usart_val[0] = 2;
+        tx_usart_val[1] = 1;
+        tx_usart_val[2] = Isend;
+        tx_usart_val[3] = 0;
+        tx_usart_val[4] = 0;
+        tx_usart_val[5] = 0;
+        tx_usart_val[6] = 0;
+        tx_usart_val[7] = 0;
+    }
+    else if (flag == false)
+    {
+        Icom = 0;
+        Isend = (int)((0.45) * 255 / 2);
+
+        tx_usart_val[0] = 2;
+        tx_usart_val[1] = 0;
+        tx_usart_val[2] = Isend;
+        tx_usart_val[3] = 0;
+        tx_usart_val[4] = 0;
+        tx_usart_val[5] = 0;
+        tx_usart_val[6] = 0;
+        tx_usart_val[7] = 0;
+    }
+#endif
 
     task.suspendBackgroundMs(100);
 }
@@ -295,85 +303,83 @@ void loop_application_task()
  */
 void loop_critical_task()
 {
-delay = 0;
+    delay = 0;
 
-    #ifdef SLAVE2 
-        if((rx_usart_val[0]==2) && (rx_usart_val[1]==1)) mode = POWERMODE;
-        else mode = LISTENMODE;
-    #endif
+#ifdef SLAVE2
+    if ((rx_usart_val[0] == 2) && (rx_usart_val[1] == 1))
+        mode = POWERMODE;
+    else
+        mode = LISTENMODE;
+#endif
 
     if (mode == IDLEMODE)
-    {   
+    {
         if (pwr_enable == true)
         {
             pwr_enable = false;
             twist.stopAll();
         }
-
     }
     if (mode == LISTENMODE)
-    {   
-        #ifdef MASTER
-            rs485Communication.startTransmission();
-        #endif
+    {
+#ifdef MASTER
+        communication.rs485.startTransmission();
+#endif
         if (pwr_enable == true)
         {
             pwr_enable = false;
             twist.stopAll();
         }
-
     }
     if (mode == POWERMODE)
-    {   
+    {
         if (pwr_enable == false)
         {
             pwr_enable = true;
             twist.startAll();
         }
+#ifndef SLAVE 
         float32_t I12 = I1_low_value + I2_low_value;
+#endif
+#ifdef MASTER
+        communication.rs485.startTransmission();
 
-        #ifdef MASTER
+        duty_cycle = pid.calculateWithReturn(Vref, (V1_low_value));
 
-            rs485Communication.startTransmission();
+        if ((I12) > Imax)
+        {
+            flag = true;
+        }
 
-            duty_cycle = pid.calculateWithReturn(Vref, (V1_low_value));
+        if (((I12) < Imin))
+        {
+            flag = false;
+        }
+#endif
 
-            if ((I12) > Imax)
+#ifdef SLAVE
+        duty_cycle = pid.calculateWithReturn(Vref, (V1_low_value));
+#endif
+
+#ifdef SLAVE2
+        flag = true;
+        if (rx_usart_val[0] == 2)
+        {
+            Iref = ((float)(rx_usart_val[2])) / 255 * 2;
+            if (Iref > 1)
             {
-                flag = true;
+                Iref = 1;
             }
-
-            if (((I12) < Imin))
+            else if (Iref < 0)
             {
-                flag = false;
+                Iref = 0;
             }
-        #endif
+        }
+        duty_cycle = pid.calculateWithReturn(Iref, I12);
+#endif
 
-        #ifdef SLAVE
-            duty_cycle = pid.calculateWithReturn(Vref, (V1_low_value));
-        #endif
-
-        #ifdef SLAVE2
-            flag =true ;
-            if (rx_usart_val[0] == 2)
-            {
-                Iref = ((float)(rx_usart_val[2]))/255*2;
-                if (Iref > 1)
-                {
-                    Iref = 1;
-                }
-                else if (Iref < 0)
-                {
-                    Iref = 0;
-                }
-            }
-            duty_cycle = pid.calculateWithReturn(Iref, I12); 
-        #endif
-
-
-    twist.setAllDutyCycle(duty_cycle);
+        twist.setAllDutyCycle(duty_cycle);
     }
-
 }
 
 /**

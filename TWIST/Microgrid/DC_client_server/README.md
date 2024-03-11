@@ -1,4 +1,4 @@
-Title: Current Control Experiment with Analog Communication - Code Example
+# Current Control Experiment with Analog Communication - Code Example
 
 ## Overview
 

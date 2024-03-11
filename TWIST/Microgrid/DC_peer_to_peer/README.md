@@ -12,7 +12,7 @@ The first card operates to ensure its output current stays below 1 A. When bus c
 - The master board operates in voltage control mode and sends current references to slave boards.
 - Slave boards operate in current control mode and respond to commands from the master board.
 - RS485 communication protocol is used for data exchange.
-- A control task period of 100µs is set for data exchange, at a speed of 10Mbs.
+- A control task period of 100µs is set for data exchange, at a speed of 20Mbs.
 
 Below is the connexion diagram : 
 
@@ -58,7 +58,7 @@ RS485 communication is established between the master and slave boards. The prot
 ## Functions and Workflow
 
 1. **Transmission and Verification:**
-   - The control task period is set to 100µs, with master and slave exchanging 8-bytes data at a speed of 10Mbs.
+   - The control task period is set to 100µs, with master and slave exchanging 8-bytes data at a speed of 20Mbs.
    - The master initiates data transmission at the end of the control task.
    - Slave boards receive and send back data to the master.
    - The master responds to the slave's data by sending back a reply.
@@ -67,9 +67,6 @@ RS485 communication is established between the master and slave boards. The prot
 2. **Data Transmission:**
    - Enable USART by being in `POWERMODE` and pressing the letter 'p' via the serial monitor.
    - To start data transmission, use `serial_tx_on()`. Modify the `tx_usart_val` buffer to send specific data like voltage or current.
-
-3. **Oversampling:**
-   - The default speed is 10Mbs. To increase it to 20Mbs, enable oversampling in `serial_init()`.
 
 ## Precautions
 

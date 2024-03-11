@@ -34,12 +34,12 @@
 #include "TaskAPI.h"
 #include "TwistAPI.h"
 #include "SpinAPI.h"
-#include "SyncCommunication.h"
+#include "CommunicationAPI.h"
 #include "pid.h"
 
 #include "zephyr/console/console.h"
 
-#define SLAVE2
+#define MASTER // MASTER, SLAVE or SLAVE2
 #define VREF 2.048
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
@@ -117,19 +117,19 @@ void setup_routine()
     data.enableTwistDefaultChannels();
 
     #ifdef MASTER
-    syncCommunication.initMaster(); // start the synchronisation
+    communication.sync.initMaster(); // start the synchronisation
     spin.dac.initConstValue(2);
     spin.dac.setConstValue(2, 1, 0);
     #endif
 
     #ifdef SLAVE
-    syncCommunication.initSlave(); // wait for synchronisation
+    communication.sync.initSlave(TWIST_v_1_1_4); // wait for synchronisation
     data.enableShieldChannel(2, EXTRA_MEAS);
     data.triggerAcquisition(2);
     #endif
 
     #ifdef SLAVE2
-    syncCommunication.initSlave(); // wait for synchronisation
+    communication.sync.initSlave(TWIST_v_1_1_4); // wait for synchronisation
     data.enableShieldChannel(2, EXTRA_MEAS);
     data.triggerAcquisition(2);
     #endif

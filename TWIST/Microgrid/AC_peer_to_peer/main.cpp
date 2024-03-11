@@ -121,7 +121,7 @@ uint8_t* buffer_rx =(uint8_t*)&rx_consigne;
 extern float frequency;
 
 uint8_t status;
-uint32_t counter_time;
+uint32_t critical_task_counter;
 
 typedef struct Record
 {
@@ -134,8 +134,9 @@ typedef struct Record
     float32_t angle;
 } record_t;
 
-record_t record_array[2048];
-uint32_t counter;
+const uint16_t RECORD_SIZE = 2048;
+record_t record_array[RECORD_SIZE];
+uint32_t record_counter;
 
 //---------------------------------------------------------------
 
@@ -158,7 +159,7 @@ void reception_function(void)
         status = rx_consigne.id_and_status;
 
         if ((rx_consigne.id_and_status & 2) == 1)
-            counter = 0;
+            record_counter = 0;
 
         P_ref = rx_consigne.P_ref_fromSERVER;
     }
@@ -234,7 +235,7 @@ void loop_communication_task()
         case 'i':
             printk("idle mode\n");
             mode = IDLEMODE;
-            counter = 0;
+            record_counter = 0;
             break;
         case 'p':
             printk("power mode\n");
@@ -327,7 +328,7 @@ void loop_critical_task()
         duty_cycle = 0.5 + 0.15 * ot_sin(angle);
         twist.setAllDutyCycle(duty_cycle);
 
-        if (counter == 0)
+        if (record_counter == 0)
             tx_consigne.id_and_status = (1 << 6) + 2;
         else
             tx_consigne.id_and_status = (1 << 6) + 1;
@@ -336,17 +337,17 @@ void loop_critical_task()
 
         rs485Communication.startTransmission();
 
-        if (counter_time % 4 == 0)
+        if (critical_task_counter % 4 == 0)
         {
-            record_array[counter].I_low = I1_low_value;
-            record_array[counter].V_low = V1_low_value;
-            record_array[counter].Vhigh_value = V_high;
-            record_array[counter].duty_cycle = duty_cycle;
-            record_array[counter].Iref = 0;
-            record_array[counter].Vref = 0;
-            record_array[counter].angle = angle;
-            if (counter < 2047)
-                counter++;
+            record_array[record_counter].I_low = I1_low_value;
+            record_array[record_counter].V_low = V1_low_value;
+            record_array[record_counter].Vhigh_value = V_high;
+            record_array[record_counter].duty_cycle = duty_cycle;
+            record_array[record_counter].Iref = 0;
+            record_array[record_counter].Vref = 0;
+            record_array[record_counter].angle = angle;
+            if (record_counter < (RECORD_SIZE-1))
+                record_counter++;
         }
 
         if (!pwm_enable)
@@ -357,7 +358,7 @@ void loop_critical_task()
         }
 
 
-        counter_time++;
+        critical_task_counter++;
     }
 
 #endif
@@ -382,19 +383,19 @@ void loop_critical_task()
             twist.startAll();
         }
 
-        if (counter_time % 4 == 0)
+        if (critical_task_counter % 4 == 0)
         {
-            record_array[counter].I_low = I1_low_value;
-            record_array[counter].V_low = V1_low_value;
-            record_array[counter].Vhigh_value = V_high;
-            record_array[counter].duty_cycle = duty_cycle;
-            record_array[counter].Iref = I_ac_ref;
-            record_array[counter].Vref = V_ac;
-            record_array[counter].angle = w0;
-            if (counter < 2048)
-                counter++;
+            record_array[record_counter].I_low = I1_low_value;
+            record_array[record_counter].V_low = V1_low_value;
+            record_array[record_counter].Vhigh_value = V_high;
+            record_array[record_counter].duty_cycle = duty_cycle;
+            record_array[record_counter].Iref = I_ac_ref;
+            record_array[record_counter].Vref = V_ac;
+            record_array[record_counter].angle = w0;
+            if (record_counter < (RECORD_SIZE-1))
+                record_counter++;
         }
-        counter_time++;
+        critical_task_counter++;
     }
     else
     {
