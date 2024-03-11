@@ -33,16 +33,20 @@
 #include "DataAPI.h"
 #include "TaskAPI.h"
 #include "TwistAPI.h"
-#include "SpinAPI.h"
-#include "Rs485Communication.h"
-#include "SyncCommunication.h"
+#include "CommunicationAPI.h"
 
 #include "zephyr/console/console.h"
 
+#include "trigo.h"
 #include "pr.h"
 
 #define CLIENT      // Role : SERVER or CLIENT 
 
+#ifdef SERVER
+#define STR_ROLE "SERVER"
+#else
+#define STR_ROLE "CLIENT"
+#endif
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
 
@@ -65,7 +69,7 @@ static float32_t I2_low_value;
 static float32_t V_high;
 
 static float32_t Iref; // current reference from SERVER
-static float32_t Vref; // voltage reference from SERVER
+static float32_t Vgrid; // voltage reference from SERVER
 
 static float meas_data; // temp storage meas value (ctrl task)
 
@@ -73,22 +77,28 @@ static float meas_data; // temp storage meas value (ctrl task)
 static float32_t duty_cycle;
 
 /* Sinewave settings */
+static const float Udc = 40.0;
 static const float f0 = 50;
-static float angle = 0;
-
-static float Udc;
 
 //------------- PR RESONANT -------------------------------------
 static float32_t w0 = 2 * PI *f0;
-static float32_t integral_mem = 0; // integral memory
-static float32_t K_current = 60;
 static float32_t Ts = control_task_period * 1.0e-6f;
+#ifdef SERVER
+static float angle = 0;
+static float32_t Vgrid_amplitude = 12.0; 
 static float32_t k_gain = 1.0;
-static const float32_t Kr = 300.0;
-static const float32_t Kp = 0.001; 
-static PrParams pr_params(Ts, Kp, Kr, 0.0, lower_bound, upper_bound);
 
-static PrParams pr_voltage_params(Ts, Kp_v, Kr_v, 0.0, lower_bound, upper_bound);
+static Pr pr_voltage;
+static float32_t Kp_v = 0.02F;
+static float32_t Kr_v = 4000.0F;
+static PrParams pr_voltage_params(Ts, Kp_v, Kr_v, w0, 0.0, -Udc, Udc);
+#else 
+static float32_t Kp_i = 0.2;
+static float32_t Kr_i = 3000.0;
+static Pr pr_current;
+static PrParams pr_current_params(Ts, Kp_i, Kr_i, w0, 0.0, -Udc, Udc);
+static float32_t pr_value;
+#endif
 
 struct consigne_struct
 {
@@ -103,8 +113,6 @@ struct consigne_struct rx_consigne;
 uint8_t* buffer_tx = (uint8_t*)&tx_consigne;
 uint8_t* buffer_rx =(uint8_t*)&rx_consigne;
 
-extern float frequency;
-
 uint8_t status;
 uint32_t counter_time;
 
@@ -115,11 +123,14 @@ typedef struct Record
     float32_t Vhigh_value;
     float32_t Iref;
     float32_t duty_cycle;
-    float32_t Vref;
+    float32_t Vgrid;
     float32_t angle;
 } record_t;
 
-record_t record_array[2048];
+bool is_downloading;
+const uint16_t RECORD_SIZE = 2048;
+const uint16_t NB_CURVES = 7;
+record_t record_array[RECORD_SIZE];
 uint32_t counter;
 
 //---------------------------------------------------------------
@@ -145,7 +156,7 @@ void reception_function(void)
             counter = 0;
 
         Iref = rx_consigne.Iref_fromSERVER;
-        Vref = rx_consigne.Vref_fromSERVER;
+        Vgrid = rx_consigne.Vref_fromSERVER;
         w0 = rx_consigne.w0_fromSERVER;
     }
 #endif
@@ -169,14 +180,16 @@ void setup_routine()
     twist.initLegBuck(LEG1);
     twist.initLegBoost(LEG2);
 
-    rs485Communication.configure(buffer_tx, buffer_rx, sizeof(consigne_struct), reception_function, 10625000, true); // custom configuration for RS485
+    communication.rs485.configure(buffer_tx, buffer_rx, sizeof(consigne_struct), reception_function, SPEED_20M); // custom configuration for RS485
 
 #ifdef SERVER
-    syncCommunication.initMaster(); // start the synchronisation
+    communication.sync.initMaster(); // start the synchronisation
+    pr_voltage.init(pr_voltage_params);
 #endif
 
 #ifndef SERVER
-    syncCommunication.initSlave();
+    pr_current.init(pr_current_params);
+    communication.sync.initSlave(TWIST_v_1_1_4);
 #endif
 
     // Then declare tasks
@@ -188,7 +201,6 @@ void setup_routine()
     task.startBackground(app_task_number);
     task.startBackground(com_task_number);
     task.startCritical(); // Uncomment if you use the critical task
-
 }
 
 //--------------LOOP FUNCTIONS--------------------------------
@@ -203,7 +215,7 @@ void loop_communication_task()
         case 'h':
             //----------SERIAL INTERFACE MENU-----------------------
             printk(" ________________________________________\n");
-            printk("|     ------- MENU ---------             |\n");
+            printk("|     ----AC client/server: %s ---       |\n", STR_ROLE);
             printk("|     press i : idle mode                |\n");
             printk("|     press p : power mode               |\n");
             printk("|________________________________________|\n\n");
@@ -212,18 +224,24 @@ void loop_communication_task()
         case 'i':
             printk("idle mode\n");
             mode = IDLEMODE;
-            f0 = 50;
             counter = 0;
             break;
         case 'p':
-            printk("power mode\n");
-            mode = POWERMODE;
+            if (is_downloading == false) {
+                printk("power mode\n");
+                mode = POWERMODE;
+            }
             break;
+#ifdef SERVER
         case 'l':
             k_gain += 0.1;
             break;
         case 'm':
             k_gain -= 0.1;
+            break;
+#endif
+        case 'r':
+            is_downloading = true;
             break;
         default:
             break;
@@ -239,24 +257,30 @@ void loop_communication_task()
  */
 void loop_application_task()
 {
-    if (mode == IDLEMODE)
+    if (mode == POWERMODE)
     {
-        spin.led.turnOff();
-    }
-    else if (mode == POWERMODE)
-    {
-        spin.led.turnOn();
 
 #ifndef SERVER
         printk("%i:", status);
         printk("%f:", Iref);
 #endif
         printk("%f:", duty_cycle);
-        printk("%f:", Vref);
+        printk("%f:", Vgrid);
         printk("%f:", I2_low_value);
         printk("%f:", I1_low_value);
         printk("%f:\n", V1_low_value);
     }
+    
+if (is_downloading) {
+    printk("begin record\n");
+    for (uint16_t k_download = 0;k_download < (RECORD_SIZE*NB_CURVES); k_download++)
+    {
+        printk("%08x\n", *((uint32_t *)record_array + k_download));
+        task.suspendBackgroundMs(1);
+    }
+    printk("end record\n");
+    is_downloading = false;
+}
     task.suspendBackgroundMs(100);
 }
 
@@ -271,7 +295,7 @@ void loop_critical_task()
 
     meas_data = data.getLatest(I1_LOW);
     if (meas_data < 10000 && meas_data > -10000)
-        I1_low_value = meas_data / 1000.0;
+        I1_low_value = meas_data;
 
     meas_data = data.getLatest(V1_LOW);
     if (meas_data < 10000 && meas_data > -10000)
@@ -283,7 +307,7 @@ void loop_critical_task()
 
     meas_data = data.getLatest(I2_LOW);
     if (meas_data < 10000 && meas_data > -10000)
-        I2_low_value = meas_data / 1000.0;
+        I2_low_value = meas_data;
 
     meas_data = data.getLatest(V_HIGH);
     if (meas_data != -10000)
@@ -296,8 +320,10 @@ void loop_critical_task()
         if (pwm_enable == true)
         {
             twist.stopAll();
+            spin.led.turnOff();
+            k_gain = 1.0;
             tx_consigne.id_and_status = (1 << 6) + 0;
-            rs485Communication.startTransmission();
+            communication.rs485.startTransmission();
         }
 
         pwm_enable = false;
@@ -309,8 +335,8 @@ void loop_critical_task()
         angle += w0 * Ts;
         angle = ot_modulo_2pi(angle);
 
-        Vref = 20.0 * ot_sin(angle);
-        duty_cycle = 0.5 + Vref / (2.0 * Udc);
+        Vgrid = Vgrid_amplitude * ot_sin(angle);
+        duty_cycle = 0.5 + pr_voltage.calculateWithReturn(Vgrid, V1_low_value - V2_low_value) / (2.0 * Udc);
 
         twist.setAllDutyCycle(duty_cycle);
 
@@ -319,11 +345,12 @@ void loop_critical_task()
         else
             tx_consigne.id_and_status = (1 << 6) + 1;
 
-        tx_consigne.Vref_fromSERVER = Vref;
-        tx_consigne.Iref_fromSERVER = k_gain*I1_low_value;
+        Iref = k_gain * I1_low_value;
+        tx_consigne.Vref_fromSERVER = Vgrid;
+        tx_consigne.Iref_fromSERVER = Iref;
         tx_consigne.w0_fromSERVER = w0;
 
-        rs485Communication.startTransmission();
+        communication.rs485.startTransmission();
 
         if (counter_time % 4 == 0)
         {
@@ -331,16 +358,17 @@ void loop_critical_task()
             record_array[counter].V_low = V1_low_value;
             record_array[counter].Vhigh_value = V_high;
             record_array[counter].duty_cycle = duty_cycle;
-            record_array[counter].Iref = 0;
-            record_array[counter].Vref = Vref;
+            record_array[counter].Iref = Iref;
+            record_array[counter].Vgrid = Vgrid;
             record_array[counter].angle = angle;
-            if (counter < 2047)
+            if (counter < (RECORD_SIZE-1))
                 counter++;
         }
 
         if (!pwm_enable)
         {
             pwm_enable = true;
+            spin.led.turnOn();
             twist.startAll();
         }
 
@@ -356,9 +384,8 @@ void loop_critical_task()
     if ((((status & 0x3) == 1 || (status & 0x3) == 2)))
     {
         mode = POWERMODE;
-
-        integral_mem += K_current*Ts*(Iref - I1_low_value);
-        duty_cycle = (Vref + integral_mem + pr_resonant(Iref, I1_low_value, w0, 0, &pr_params))/40.0;
+        pr_value = pr_current.calculateWithReturn(Iref, I1_low_value);
+        duty_cycle = (Vgrid + pr_value )/(2*Udc) + 0.5;
 
         twist.setAllDutyCycle(duty_cycle);
 
@@ -376,9 +403,9 @@ void loop_critical_task()
             record_array[counter].Vhigh_value = V_high;
             record_array[counter].duty_cycle = duty_cycle;
             record_array[counter].Iref = Iref;
-            record_array[counter].Vref = Vref;
-            record_array[counter].angle = w0;
-            if (counter < 2048)
+            record_array[counter].Vgrid = Vgrid;
+            record_array[counter].angle = pr_value;
+            if (counter < (RECORD_SIZE-1))
                 counter++;
         }
         counter_time++;
