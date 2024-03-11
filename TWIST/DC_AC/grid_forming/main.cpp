@@ -258,7 +258,7 @@ void loop_critical_task()
             twist.stopAll();
         }
         // OFFSET MANAGEMENT
-        if (control_loop_counter < nb_offset_meas)
+        if (critical_task_counter < nb_offset_meas)
         {
             I1_offset_tmp += I1_low_value;
             I2_offset_tmp += I2_low_value;

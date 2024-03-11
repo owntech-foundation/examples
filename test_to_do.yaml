@@ -23,22 +23,24 @@ test_a_faire:
     test: true
     readme: true
   - fichier: TWIST/Microgrid/AC_client_server/main.cpp
-    compilation: false
-    test: false
-    readme: false
+    compilation: true
+    test: true
+    readme: true
   - fichier: TWIST/Microgrid/AC_peer_to_peer/main.cpp
     compilation: true
     test: false
     readme: false
   - fichier: TWIST/Microgrid/DC_client_server/main.cpp
-    compilation: false
+    compilation: true
+    comment: "update commmunicationAPI, change Title to # in README"
     test: false
-    readme: false
+    readme: true
   - fichier: TWIST/Microgrid/DC_droop/main.cpp
     compilation: false
     test: false
     readme: false
   - fichier: TWIST/Microgrid/DC_peer_to_peer/main.cpp
-    compilation: false
+    compilation: true
+    comment: "par defaut 20MHz pour la rs485, mise à jour du README en conséquence."
     test: false
     readme: false
