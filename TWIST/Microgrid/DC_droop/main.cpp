@@ -70,13 +70,19 @@ static float meas_data; // temp storage meas value (ctrl task)
 // Droop coeficient configuration 
 #ifdef DROOP
 static float32_t coef_droop = 1.2;
+#define ROLE_TXT "DROOP"
 #endif
 #ifdef DROOP1
 static float32_t coef_droop1 = 1.1;
+#define ROLE_TXT "DROOP1"
 #endif
 #ifdef DROOP2
 static float32_t coef_droop2 = 1.6;
+#define ROLE_TXT "DROOP2"
 #endif
+
+
+
 
 #if defined(DROOP) || defined(DROOP1) || defined(DROOP2)
     float32_t duty_cycle = 0.1;
@@ -107,31 +113,6 @@ enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVER
 uint8_t mode = IDLEMODE;
 
 //--------------SETUP FUNCTIONS-------------------------------
-
-/**
- * Convert I_low RAW value in mA with proper calibration
- */
-float32_t Convert_Ilow_in_Quantum_To_mA(uint16_t IlowInQuantum, float32_t Ilow_Offset_mA, float32_t IlowMeasSlope)
-{
-    float32_t I_low_value_mV_ADC_mV;
-    float32_t I_low_value_shifted_mV;
-    float32_t I_low_value_shifted_mA;
-    float32_t I_low_value_shifted_mA_offset_corrected;
-    float32_t I_low_value_shifted_mA_offset_corrected_slope_corrected;
-
-    uint16_t IlowVoltageShifting_mV = 1024;                // Shifting for Ilow (mV)
-    static uint16_t ACS730_mV_To_mA_Conversion_Ratio = 10; // ACS730 sensitivity: 1mV = 10mA, <=> 100mV/A
-
-    I_low_value_mV_ADC_mV = (IlowInQuantum * 0.5);
-    I_low_value_shifted_mV = (I_low_value_mV_ADC_mV - IlowVoltageShifting_mV);
-    I_low_value_shifted_mA = (I_low_value_shifted_mV * ACS730_mV_To_mA_Conversion_Ratio);
-    I_low_value_shifted_mA_offset_corrected = (I_low_value_shifted_mA - Ilow_Offset_mA);
-    I_low_value_shifted_mA_offset_corrected_slope_corrected = (I_low_value_shifted_mA_offset_corrected / IlowMeasSlope);
-
-    return I_low_value_shifted_mA_offset_corrected_slope_corrected;
-}
-
-
 /**
  * This is the setup routine.
  * It is used to call functions that will initialize your spin, twist, data and/or tasks.
@@ -174,7 +155,7 @@ void loop_communication_task()
         case 'h':
             //----------SERIAL INTERFACE MENU-----------------------
             printk(" ________________________________________\n");
-            printk("|     ------- MENU ---------             |\n");
+            printk("|     ------- MENU : %s ----             |\n", ROLE_TXT);
             printk("|     press i : idle mode                |\n");
             printk("|     press p : power mode               |\n");
             printk("|     press u : vref UP                  |\n");

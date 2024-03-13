@@ -14,8 +14,8 @@ Here you can find ready to be used example for [spin](https://github.com/owntech
     - [AC client server](TWIST/Microgrid/AC_client_server/README.md)
     - [AC peer to peer](TWIST/Microgrid/AC_peer_to_peer/README.md)
     - [DC client server](TWIST/Microgrid/DC_client_server/README.md)
-    - [DC peer to peer](TWIST/Microgrid/DC_droop/README.md)
-    - [DC droop](TWIST/Microgrid/DC_peer_to_peer/README.md)
+    - [DC peer to peer](TWIST/Microgrid/DC_peer_to_peer/README.md)
+    - [DC droop](TWIST/Microgrid/DC_droop/README.md)
 
  - DC AC topology examples
     - [Grid forming](TWIST/DC_AC/grid_forming/README.md)
