@@ -37,6 +37,7 @@
 // from control library
 #include "pr.h"
 #include "trigo.h"
+#include "ScopeMimicry.h"
 
 #include "zephyr/console/console.h"
 
@@ -101,9 +102,27 @@ typedef struct Record
     float32_t pr_value;
 } record_t;
 
-const uint16_t RECORD_SIZE = 2048;
-record_t record_array[RECORD_SIZE];
-uint32_t record_counter;
+static ScopeMimicry scope(1024, 9);
+static bool is_downloading;
+bool a_trigger() {
+    return true;
+}
+
+void dump_scope_datas(ScopeMimicry &scope)  {
+    uint8_t *buffer = scope.get_buffer();
+    uint16_t buffer_size = scope.get_buffer_size() >> 2; // we divide by 4 (4 bytes per float data) 
+    printk("begin record\n");
+    printk("#");
+    for (uint16_t k=0;k < scope.get_nb_channel(); k++) {
+        printk("%s,", scope.get_channel_name(k));
+    }
+    printk("\n");
+    for (uint16_t k=0;k < buffer_size; k++) {
+        printk("%08x\n", *((uint32_t *)buffer + k));
+        task.suspendBackgroundUs(100);
+    }
+    printk("end record\n");
+}
 
 //---------------------------------------------------------------
 
@@ -130,9 +149,19 @@ void setup_routine()
     twist.setVersion(shield_TWIST_V1_3);
 
     data.enableTwistDefaultChannels();
-    // fix to the default values.
-    data.setParameters(I1_LOW, 5.F, -10000.F);
-    data.setParameters(I2_LOW, 5.F, -10000.F);
+
+    scope.connectChannel(I1_low_value, "I1_low_value");
+    scope.connectChannel(I2_low_value, "I2_low_value");
+    scope.connectChannel(V1_low_value, "V1_low_value");
+    scope.connectChannel(V2_low_value, "V2_low_value");
+    scope.connectChannel(V_high, "V_high");
+    scope.connectChannel(duty_cycle, "duty_cycle");
+    scope.connectChannel(Vgrid, "Vgrid");
+    scope.connectChannel(angle, "angle");
+    scope.connectChannel(pr_value, "pr_value");
+    scope.set_delay(0.0);
+    scope.set_trigger(a_trigger);
+    scope.start();
 
     /* buck voltage mode */
     twist.initLegBuck(LEG1);
@@ -176,11 +205,13 @@ void loop_communication_task()
         case 'i':
             printk("idle mode\n");
             mode = IDLEMODE;
-            record_counter = 0;
+            scope.start();
             break;
         case 'p':
-            printk("power mode\n");
-            mode = POWERMODE;
+                if (!is_downloading){
+                    printk("power mode\n");
+                    mode = POWERMODE;
+                }
             break;
         case 'u': 
             if (Vgrid_amplitude < 18.0)
@@ -189,6 +220,9 @@ void loop_communication_task()
         case 'd': 
             if (Vgrid_amplitude > 2.0)
                     Vgrid_amplitude -= 2.0;
+            break;
+        case 'r':
+            is_downloading = true;
             break;
         default:
             break;
@@ -207,8 +241,13 @@ void loop_application_task()
 
     if (mode == IDLEMODE)
     {
-        printk("I1_offset = %f:", I1_offset);
-        printk("I2_offset = %f\n", I2_offset);
+        if (!is_downloading) {
+            printk("I1_offset = %f:", I1_offset);
+            printk("I2_offset = %f\n", I2_offset);
+        } else {
+            dump_scope_datas(scope);
+            is_downloading = false;
+        }
     }
     else if (mode == POWERMODE)
     {
@@ -290,25 +329,7 @@ void loop_critical_task()
             twist.startAll();
         }
 
-        if (critical_task_counter % 1 == 0)
-        {
-            record_array[record_counter].I1_low = I1_low_value;
-            record_array[record_counter].I2_low = I2_low_value;
-            record_array[record_counter].V1_low = V1_low_value;
-            record_array[record_counter].V2_low = V2_low_value;
-            record_array[record_counter].Vhigh_value = V_high;
-            record_array[record_counter].duty_cycle = duty_cycle;
-            record_array[record_counter].Vgrid = Vgrid;
-            record_array[record_counter].angle = angle;
-            record_array[record_counter].pr_value = pr_value;
-            if (record_counter < (RECORD_SIZE-1)) {
-                record_counter++;
-                spin.led.turnOff();
-            } else {
-                spin.led.turnOn();
-            }
-
-        }
+        scope.acquire();
     }
     critical_task_counter++;
 }

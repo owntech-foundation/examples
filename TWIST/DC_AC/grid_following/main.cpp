@@ -35,7 +35,7 @@
 #include "pr.h"
 #include "trigo.h"
 #include "filters.h"
-
+#include "ScopeMimicry.h"
 #include "zephyr/console/console.h"
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
@@ -81,6 +81,8 @@ static const float w0 = 2.F * PI * f0;
 static Pr prop_res;
 static PllSinus pll;
 static PllDatas pll_datas;
+static float32_t pll_w;
+static float32_t pll_angle;
 static uint32_t pll_counter = 0;
 static bool pll_is_locked = false;
 static float32_t pr_value;
@@ -89,29 +91,30 @@ static float32_t Kp = 0.2;
 static float32_t Kr = 3000.0;
 
 uint32_t control_loop_counter;
-typedef struct Record
-{
-    int16_t I1_low;
-    int16_t I2_low;
-    int16_t V1_low;
-    int16_t V2_low;
-    int16_t Ihigh_value;
-    int16_t Iref;
-    int16_t duty_cycle;
-    int16_t Vgrid;
-    int16_t pll_angle;
-    int16_t pll_error;
-    int16_t pll_w;
 
-} record_t;
-
-const uint16_t RECORD_SIZE = 2048;
-const uint16_t NB_CURVES = 11;
-record_t record_array[RECORD_SIZE];
-uint32_t record_counter = 0;
-bool is_downloading = false;
-uint16_t k_download = 0;
 //---------------------------------------------------------------
+static ScopeMimicry scope(1024, 9);
+bool is_downloading = false;
+
+bool a_trigger() {
+    return true;
+}
+
+void dump_scope_datas(ScopeMimicry &scope)  {
+    uint8_t *buffer = scope.get_buffer();
+    uint16_t buffer_size = scope.get_buffer_size() >> 2; // we divide by 4 (4 bytes per float data) 
+    printk("begin record\n");
+    printk("#");
+    for (uint16_t k=0;k < scope.get_nb_channel(); k++) {
+        printk("%s,", scope.get_channel_name(k));
+    }
+    printk("\n");
+    for (uint16_t k=0;k < buffer_size; k++) {
+        printk("%08x\n", *((uint32_t *)buffer + k));
+        task.suspendBackgroundUs(100);
+    }
+    printk("end record\n");
+}
 
 enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVERTER
 {
@@ -144,6 +147,20 @@ void setup_routine()
     twist.initLegBuck(LEG1);
     twist.initLegBoost(LEG2);
 
+    scope.connectChannel(I1_low_value, "I1_low_value");
+    scope.connectChannel(I2_low_value, "I2_low_value");
+    scope.connectChannel(V1_low_value, "V1_low_value");
+    scope.connectChannel(V2_low_value, "V2_low_value");
+    scope.connectChannel(V_high, "V_high");
+    scope.connectChannel(duty_cycle, "duty_cycle");
+    scope.connectChannel(Vgrid, "Vgrid");
+    scope.connectChannel(pll_angle, "pll_angle");
+    scope.connectChannel(pll_w, "pll_w");
+
+    scope.set_delay(0.0);
+    scope.set_trigger(a_trigger);
+    scope.start();
+    
     // Then declare tasks
     uint32_t app_task_number = task.createBackground(loop_application_task);
     uint32_t com_task_number = task.createBackground(loop_communication_task);
@@ -185,7 +202,7 @@ void loop_communication_task()
         case 'i':
             printk("idle mode\n");
             mode_asked = IDLEMODE;
-            record_counter = 0;
+            scope.start();
             Iref_amplitude = 0.4;
             break;
         case 'p':
@@ -193,7 +210,6 @@ void loop_communication_task()
             {
                 printk("power mode\n");
                 mode_asked = POWERMODE;
-                record_counter = 0;
             }
             break;
         case 'u':
@@ -229,17 +245,8 @@ void loop_application_task()
         }
         else 
         {
-            printk("begin download\n");
-            while (k_download < (RECORD_SIZE * NB_CURVES))
-            {
-                printk("%d %04x\n", k_download, *((uint16_t *)record_array + k_download));
-                k_download++;
-                task.suspendBackgroundUs(500);
-
-            }
-            printk("end download\n");
+            dump_scope_datas(scope);
             is_downloading = false;
-            k_download = 0;
         }
     }
     else if (mode == POWERMODE)
@@ -290,26 +297,9 @@ void loop_critical_task()
     { // we must launch the PLL and wait its locking.
         pll_datas = pll.calculateWithReturn(V1_low_value - V2_low_value);
         Iref = Iref_amplitude * ot_sin(pll_datas.angle);
-        if (control_loop_counter % 3 == 0)
-        {
-            record_array[record_counter].I1_low = (int16_t) (256.0 * I1_low_value);
-            record_array[record_counter].I2_low = (int16_t) (256.0 * I2_low_value);
-            record_array[record_counter].V1_low = (int16_t) (256.0 * V1_low_value);
-            record_array[record_counter].V2_low = (int16_t) (256.0 * V2_low_value);
-            record_array[record_counter].Ihigh_value = (int16_t) (256.0 * I_high);
-            record_array[record_counter].duty_cycle = (int16_t) (256.0 * duty_cycle);
-            record_array[record_counter].Iref = (int16_t) (256.0 * Iref); 
-            record_array[record_counter].Vgrid = (int16_t) (256.0 * Vgrid);
-            record_array[record_counter].pll_angle = (int16_t) (256.0 * pll_datas.angle);
-            record_array[record_counter].pll_error = (int16_t) (256.0 * pll_datas.error);
-            record_array[record_counter].pll_w = (int16_t) (256.0 * pll_datas.w / (2.0 * PI));
-            if (record_counter < (RECORD_SIZE-1)) {
-                record_counter++;
-                spin.led.turnOff();
-            } else {
-                spin.led.turnOn();
-            }
-        }
+        pll_w = pll_datas.w;
+        pll_angle = pll_datas.angle;
+        scope.acquire();
     }
     else
     {
