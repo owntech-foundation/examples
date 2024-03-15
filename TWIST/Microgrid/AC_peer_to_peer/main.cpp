@@ -151,7 +151,7 @@ bool a_trigger() {
     return true;
 }
 
-void dump_scope_data(ScopeMimicry &scope)  {
+void dump_scope_datas(ScopeMimicry &scope)  {
     uint8_t *buffer = scope.get_buffer();
     uint16_t buffer_size = scope.get_buffer_size() >> 2; // we divide by 4 (4 bytes per float data) 
     printk("begin record\n");
@@ -303,7 +303,7 @@ void loop_application_task()
     {
         spin.led.turnOff();
         if (is_downloading) {
-            dump_scope_data(scope);
+            dump_scope_datas(scope);
         }
         is_downloading = false;
 

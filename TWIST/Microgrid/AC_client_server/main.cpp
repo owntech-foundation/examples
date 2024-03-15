@@ -39,8 +39,9 @@
 
 #include "trigo.h"
 #include "pr.h"
+#include "ScopeMimicry.h"
 
-#define CLIENT      // Role : SERVER or CLIENT 
+#define SERVER      // Role : SERVER or CLIENT 
 
 #ifdef SERVER
 #define STR_ROLE "SERVER"
@@ -108,30 +109,39 @@ struct consigne_struct
     uint8_t id_and_status; // Contains status
 };
 
-struct consigne_struct tx_consigne;
-struct consigne_struct rx_consigne;
-uint8_t* buffer_tx = (uint8_t*)&tx_consigne;
-uint8_t* buffer_rx =(uint8_t*)&rx_consigne;
+static struct consigne_struct tx_consigne;
+static struct consigne_struct rx_consigne;
+static uint8_t* buffer_tx = (uint8_t*)&tx_consigne;
+static uint8_t* buffer_rx =(uint8_t*)&rx_consigne;
+#ifndef SERVER
+static uint8_t status;
+#endif
+static uint32_t critical_task_counter;
 
-uint8_t status;
-uint32_t counter_time;
+static ScopeMimicry scope(1024, 6); // 6 channels with 1024 datas.
+static bool is_downloading;
+static uint32_t counter;
 
-typedef struct Record
-{
-    float32_t I_low;
-    float32_t V_low;
-    float32_t Vhigh_value;
-    float32_t Iref;
-    float32_t duty_cycle;
-    float32_t Vgrid;
-    float32_t angle;
-} record_t;
+// used with ScopeMimicry
+bool a_trigger() {
+    return true;
+}
 
-bool is_downloading;
-const uint16_t RECORD_SIZE = 2048;
-const uint16_t NB_CURVES = 7;
-record_t record_array[RECORD_SIZE];
-uint32_t counter;
+void dump_scope_datas(ScopeMimicry &scope)  {
+    uint8_t *buffer = scope.get_buffer();
+    uint16_t buffer_size = scope.get_buffer_size() >> 2; // we divide by 4 (4 bytes per float data) 
+    printk("begin record\n");
+    printk("#");
+    for (uint16_t k=0;k < scope.get_nb_channel(); k++) {
+        printk("%s,", scope.get_channel_name(k));
+    }
+    printk("\n");
+    for (uint16_t k=0;k < buffer_size; k++) {
+        printk("%08x\n", *((uint32_t *)buffer + k));
+        task.suspendBackgroundUs(100);
+    }
+    printk("end record\n");
+}
 
 //---------------------------------------------------------------
 
@@ -192,6 +202,15 @@ void setup_routine()
     communication.sync.initSlave(TWIST_v_1_1_4);
 #endif
 
+    scope.connectChannel(I1_low_value, "I_low");
+    scope.connectChannel(V1_low_value, "V_low");
+    scope.connectChannel(V_high, "Vhigh_value");
+    scope.connectChannel(Iref, "Iref");
+    scope.connectChannel(duty_cycle, "duty_cycle");
+    scope.connectChannel(Vgrid, "Vgrid");
+    scope.set_trigger(a_trigger);
+    scope.set_delay(0.0F);
+    scope.start();
     // Then declare tasks
     uint32_t app_task_number = task.createBackground(loop_application_task);
     uint32_t com_task_number = task.createBackground(loop_communication_task);
@@ -225,6 +244,9 @@ void loop_communication_task()
             printk("idle mode\n");
             mode = IDLEMODE;
             counter = 0;
+            printk("scope status : %d\n", scope.has_trigged());
+            printk("scope status: %d\n", scope.acquire());
+
             break;
         case 'p':
             if (is_downloading == false) {
@@ -257,9 +279,15 @@ void loop_communication_task()
  */
 void loop_application_task()
 {
-    if (mode == POWERMODE)
+    if (mode == IDLEMODE) {
+        if (is_downloading)
+        {
+            dump_scope_datas(scope);
+            is_downloading = false;
+        }
+    }
+    else if (mode == POWERMODE)
     {
-
 #ifndef SERVER
         printk("%i:", status);
         printk("%f:", Iref);
@@ -270,17 +298,6 @@ void loop_application_task()
         printk("%f:", I1_low_value);
         printk("%f:\n", V1_low_value);
     }
-    
-if (is_downloading) {
-    printk("begin record\n");
-    for (uint16_t k_download = 0;k_download < (RECORD_SIZE*NB_CURVES); k_download++)
-    {
-        printk("%08x\n", *((uint32_t *)record_array + k_download));
-        task.suspendBackgroundMs(1);
-    }
-    printk("end record\n");
-    is_downloading = false;
-}
     task.suspendBackgroundMs(100);
 }
 
@@ -352,18 +369,7 @@ void loop_critical_task()
 
         communication.rs485.startTransmission();
 
-        if (counter_time % 4 == 0)
-        {
-            record_array[counter].I_low = I1_low_value;
-            record_array[counter].V_low = V1_low_value;
-            record_array[counter].Vhigh_value = V_high;
-            record_array[counter].duty_cycle = duty_cycle;
-            record_array[counter].Iref = Iref;
-            record_array[counter].Vgrid = Vgrid;
-            record_array[counter].angle = angle;
-            if (counter < (RECORD_SIZE-1))
-                counter++;
-        }
+        scope.acquire();
 
         if (!pwm_enable)
         {
@@ -371,9 +377,6 @@ void loop_critical_task()
             spin.led.turnOn();
             twist.startAll();
         }
-
-
-        counter_time++;
     }
 
 #endif
@@ -396,19 +399,7 @@ void loop_critical_task()
             twist.startAll();
         }
 
-        if (counter_time % 4 == 0)
-        {
-            record_array[counter].I_low = I1_low_value;
-            record_array[counter].V_low = V1_low_value;
-            record_array[counter].Vhigh_value = V_high;
-            record_array[counter].duty_cycle = duty_cycle;
-            record_array[counter].Iref = Iref;
-            record_array[counter].Vgrid = Vgrid;
-            record_array[counter].angle = pr_value;
-            if (counter < (RECORD_SIZE-1))
-                counter++;
-        }
-        counter_time++;
+        scope.acquire();
     }
     else
     {
@@ -421,7 +412,9 @@ void loop_critical_task()
         }
     }
 
+
 #endif
+critical_task_counter++;
 
 }
 

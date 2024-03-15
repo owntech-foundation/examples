@@ -72,13 +72,18 @@ After stop i.e. in IDLE mode you can retrieve some data by pressing 'r'. It call
 function `dump_scope_datas()` which send to the console variables recorded during
 the power flow phase.
 
-If you have put the python script `filter_datas_recorded.py` in a `monitor` directory
+But before running, you have to add one line in the file `platfomio.ini`
+
+```ini
+monitor_filters = recorded_datas
+```
+
+And you have put the python script `filter_datas_recorded.py` in a `monitor` directory
 which must be in you parent project directory. Then the script should capture the
 console stream to put it in a txt file named `year-month-day_hour_minutes_secondes_record.txt`.
 
-These files can be plotted using the `plot_records.py` python script if you have the
+These files can be plotted using the `plot_data.py` python script if you have the
 `matplotlib` and `numpy` modules installed.
-
 
 ## Expected results
 
