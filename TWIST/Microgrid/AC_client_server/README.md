@@ -27,6 +27,18 @@ you will need :
 
 ## Instruction to flash the code, and use python script
 
+This example depends on two libraries:
+
+1. control_library
+2. ScopeMimicry
+
+To use them, you have to add the following lines in platformio.ini file:
+```
+lib_deps=
+    control_library = https://github.com/owntech-foundation/control_library.git
+    scope = https://github.com/owntech-foundation/scopemimicry.git 
+```
+
 In src/main.cpp at the line n. 48 you have a macro that defines wether you are flashing the server or the client.
 
 To flash the server, choose :
@@ -51,7 +63,23 @@ tx_data.consigne.Iref_fromSERVER = k_gain*I1_low_value;
 
 This allows you to increase or deacrese the current of the CLIENT. To increase the current gain, in the serial monitor press `l` to decrease it press `m`.
 
-A python script `script.py` is provided to monitor values from ADC. If you want to use it, check this [tutorial](https://gitlab.laas.fr/afarahhass/Test-Controle/-/tree/main_RecordVariable).
+### To view some variables.
+After stop i.e. in IDLE mode you can retrieve some data by pressing 'r'. It calls a
+function `dump_scope_datas()` which send to the console variables recorded during
+the power flow phase.
+
+But before running, you have to add one line in the file `platfomio.ini`
+
+```ini
+monitor_filters = recorded_datas
+```
+
+And you have put the python script `filter_datas_recorded.py` in a `monitor` directory
+which must be in you parent project directory. Then the script should capture the
+console stream to put it in a txt file named `year-month-day_hour_minutes_secondes_record.txt`.
+
+These files can be plotted using the `plot_data.py` python script if you have the
+`matplotlib` and `numpy` modules installed.
 
 ## Expected result
 

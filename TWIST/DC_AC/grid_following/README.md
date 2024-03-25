@@ -9,11 +9,13 @@ The parameters are:
 * $U_{DC} = 40 V$
 * $R_{LOAD} = 15 \Omega$.
 
-
-In the second Twist we use a software phase locked loop ( _"pll"_ ).
+In the second Twist we use a software phase locked loop ( _"PLL"_ ).
 By this way we are synchronised with the grid voltage and we can then inject current
-with a power factor of one. The current is regulated using a proportional resonant (_"pr"_)
+with a power factor of one. The current is regulated using a proportional resonant (_"PR"_)
 regulator.
+
+## Software overview 
+### Import a library
 
 the _"pll"_ and _"pr"_ are provided by the OwnTech control library which must be included 
 in the file `platfomio.ini`.
@@ -22,6 +24,51 @@ in the file `platfomio.ini`.
 lib_deps=
     control_lib = https://github.com/owntech-foundation/control_library.git
 ```
+### Define a regulator
+
+The Proportional Resonant regulator is initialized with the lines above:
+
+```cpp
+PrParams params = PrParams(Ts, Kp, Kr, w0, 0.0F, -Udc, Udc);
+prop_res.init(params);
+```
+
+The parameters are defined with these values:
+
+```cpp
+static Pr prop_res; // controller instanciation. 
+static float32_t Kp = 0.2F;
+static float32_t Kr = 3000.0F;
+static float32_t Ts = control_task_period * 1.0e-6F;
+static float32_t w0 = 2.0 * PI * 50.0;   // pulsation
+```
+
+### Configure the PLL
+
+You have to define a PLL:
+```cpp
+static PllSinus pll;
+static PllDatas pll_datas;
+```
+
+Then initialize it:
+```
+float32_t rise_time = 50e-3;
+pll.init(Ts, Vgrid_amplitude, f0, rise_time);
+```
+
+and use it:
+```cpp
+pll_datas = pll.calculateWithReturn(V1_low_value - V2_low_value);
+```
+
+The calculation return a structure with 3 fields:
+
+1. the pulsation `w` in [rad/s]
+2. the angle `angle` in [rad]
+3. the angle error `error` in [rad/s]
+
+## Link between voltage output and duty cycle
 
 The voltage source is defined by the voltage difference: $U_{12} = V_{1low} - V_{2low}$.
 
@@ -34,4 +81,23 @@ We change at the same time $\alpha_1$ and $\alpha_2$, then we have : $\alpha_1 =
 And then: $U_{12} = (2.\alpha - 1).U_{DC}$
 
 $\alpha = \dfrac{U_{12}}{2.U_{DC}}  + 0.5$
+
+## Retrieve recorded datas
+
+After stop i.e. in IDLE mode you can retrieve some data by pressing 'r'. It calls a
+function `dump_scope_datas()` which send to the console variables recorded during
+the power flow phase.
+
+But before running, you have to add one line in the file `platfomio.ini`
+
+```ini
+monitor_filters = recorded_datas
+```
+
+And you have to put the python script `filter_datas_recorded.py` in a `monitor` directory
+which must be in you parent project directory. Then the script should capture the
+console stream to put it in a txt file named `year-month-day_hour_minutes_secondes_record.txt`.
+
+These files can be plotted using the `plot_data.py` python script if you have the
+`matplotlib` and `numpy` modules installed.
 
