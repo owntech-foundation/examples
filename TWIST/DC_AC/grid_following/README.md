@@ -84,8 +84,20 @@ $\alpha = \dfrac{U_{12}}{2.U_{DC}}  + 0.5$
 
 ## Retrieve recorded datas
 
-During tests, you can get recorded datas by pressing 'r'.
-if you can record the datas printed in a file, you can the use the python script
-`script.py` to format the datas and have a csv file.
+After stop i.e. in IDLE mode you can retrieve some data by pressing 'r'. It calls a
+function `dump_scope_datas()` which send to the console variables recorded during
+the power flow phase.
 
+But before running, you have to add one line in the file `platfomio.ini`
+
+```ini
+monitor_filters = recorded_datas
+```
+
+And you have to put the python script `filter_datas_recorded.py` in a `monitor` directory
+which must be in you parent project directory. Then the script should capture the
+console stream to put it in a txt file named `year-month-day_hour_minutes_secondes_record.txt`.
+
+These files can be plotted using the `plot_data.py` python script if you have the
+`matplotlib` and `numpy` modules installed.
 

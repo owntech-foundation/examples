@@ -53,26 +53,28 @@ static bool pwm_enable = false;            //[bool] state of the PWM (ctrl task)
 uint8_t received_serial_char;
 
 /* Measure variables */
-static float32_t V1_low_value;
-static float32_t V2_low_value;
-static float32_t I1_low_value;
-static float32_t I2_low_value;
-static float32_t V_high;
-static float32_t I_high;
+static float32_t V1_low_value; //[V]
+static float32_t V2_low_value; //[V]
+static float32_t I1_low_value; //[A]
+static float32_t I2_low_value; //[A]
+static float32_t V_high; //[V]
+static float32_t I_high; //[A]
 
 static float32_t I1_offset = 0.0F;
 static float32_t I2_offset = 0.0F;
 static float32_t I1_offset_tmp = 0.F;
 static float32_t I2_offset_tmp = 0.F;
+static const uint32_t NB_OFFSET = 100;
+static const float32_t INV_NB_OFFSET = 1.0F/((float32_t) NB_OFFSET);
 
-static float32_t Iref; 
-static float32_t Vgrid;
-static float32_t Vgrid_amplitude = 16.0F; // amplitude of the voltage.
+static float32_t Iref; // [A] 
+static float32_t Vgrid; //[V]
+static float32_t Vgrid_amplitude = 16.0F; // amplitude of the voltage in [V]
 static float meas_data; // temp storage meas value (ctrl task)
-static float32_t Iref_amplitude = 0.5;
+static float32_t Iref_amplitude = 0.5F; // [A]
 /* duty_cycle*/
 static float32_t duty_cycle;
-static const float32_t Udc = 40.0; // Vhigh assumed to be around 40V
+static const float32_t Udc = 40.0F; // Vhigh assumed to be around 40V
 /* Sinewave settings */
 static const float f0 = 50.0F;
 static const float w0 = 2.F * PI * f0; 
@@ -87,8 +89,8 @@ static uint32_t pll_counter = 0;
 static bool pll_is_locked = false;
 static float32_t pr_value;
 static float32_t Ts = control_task_period * 1.0e-6F;
-static float32_t Kp = 0.2;
-static float32_t Kr = 3000.0;
+static float32_t Kp = 0.2F;
+static float32_t Kr = 3000.0F;
 
 uint32_t control_loop_counter;
 
@@ -140,8 +142,6 @@ void setup_routine()
     twist.setVersion(shield_TWIST_V1_3);
 
     data.enableTwistDefaultChannels();
-    data.setParameters(I1_LOW, 5., -10000.00);
-    data.setParameters(I2_LOW, 5., -10000.00);
 
     /* buck voltage mode */
     twist.initLegBuck(LEG1);
@@ -157,7 +157,7 @@ void setup_routine()
     scope.connectChannel(pll_angle, "pll_angle");
     scope.connectChannel(pll_w, "pll_w");
 
-    scope.set_delay(0.0);
+    scope.set_delay(0.0F);
     scope.set_trigger(a_trigger);
     scope.start();
     
@@ -172,7 +172,7 @@ void setup_routine()
     task.startCritical(); // Uncomment if you use the critical task
 
     // Proportional resonant initialisation.
-    PrParams params(Ts, Kp, Kr, w0, 0.0, -Udc, Udc);
+    PrParams params(Ts, Kp, Kr, w0, 0.0F, -Udc, Udc);
     prop_res.init(params);
     float32_t rise_time = 50e-3;
     pll.init(Ts, Vgrid_amplitude, f0, rise_time);
@@ -203,7 +203,7 @@ void loop_communication_task()
             printk("idle mode\n");
             mode_asked = IDLEMODE;
             scope.start();
-            Iref_amplitude = 0.4;
+            Iref_amplitude = 0.4F;
             break;
         case 'p':
             if (!is_downloading)
@@ -213,12 +213,12 @@ void loop_communication_task()
             }
             break;
         case 'u':
-            if (Iref_amplitude < 0.5)
-                Iref_amplitude += 0.1;
+            if (Iref_amplitude < 0.5F)
+                Iref_amplitude += 0.1F;
             break;
         case 'd':
-            if (Iref_amplitude > 0.2)
-                Iref_amplitude -= 0.1;
+            if (Iref_amplitude > 0.2F)
+                Iref_amplitude -= 0.1F;
             break;
         case 'r': 
             is_downloading = true;
@@ -271,7 +271,7 @@ void loop_critical_task()
 
     meas_data = data.getLatest(I1_LOW);
     if (meas_data < 10000 && meas_data > -10000)
-        I1_low_value = meas_data / 1000.0 - I1_offset;
+        I1_low_value = meas_data - I1_offset;
 
     meas_data = data.getLatest(V1_LOW);
     if (meas_data < 10000 && meas_data > -10000)
@@ -283,7 +283,7 @@ void loop_critical_task()
 
     meas_data = data.getLatest(I2_LOW);
     if (meas_data < 10000 && meas_data > -10000)
-        I2_low_value = meas_data / 1000.0 - I2_offset;
+        I2_low_value = meas_data - I2_offset;
 
     meas_data = data.getLatest(V_HIGH);
     if (meas_data != -10000)
@@ -303,13 +303,13 @@ void loop_critical_task()
     }
     else
     {
-        pll_datas.error = 100;
+        pll_datas.error = 100.0F;
         pll_counter = 0;
         pll.reset(f0);
         pll_is_locked = false;
     }
     // criteria of PLL locked
-    if ((pll_is_locked == false) && (pll_datas.error < 2.5) && (pll_datas.error > -2.5) && (pll_datas.w < 333.0) && (pll_datas.w > 295.0) ) {
+    if ((pll_is_locked == false) && (pll_datas.error < 2.5F) && (pll_datas.error > -2.5F) && (pll_datas.w < 333.0F) && (pll_datas.w > 295.0F) ) {
         pll_counter++;
     }
     if (pll_counter > 400) {
@@ -320,7 +320,7 @@ void loop_critical_task()
         mode = POWERMODE;
         pr_value = prop_res.calculateWithReturn(Iref, I1_low_value);
         Vgrid = V1_low_value - V2_low_value;
-        duty_cycle = (Vgrid + pr_value) / (2 * 40.0) + 0.5;
+        duty_cycle = (Vgrid + pr_value) / (2.0 * Udc) + 0.5F;
         twist.setAllDutyCycle(duty_cycle);
         if (!pwm_enable)
         {
@@ -340,19 +340,19 @@ void loop_critical_task()
             spin.led.turnOff();
             pwm_enable = false;
         }
-        if (control_loop_counter < 100)
+        if (control_loop_counter < NB_OFFSET)
         {
-            I1_offset_tmp += 0.01 * I1_low_value;
-            I2_offset_tmp += 0.01 * I2_low_value;
+            I1_offset_tmp += INV_NB_OFFSET * I1_low_value;
+            I2_offset_tmp += INV_NB_OFFSET * I2_low_value;
             spin.led.turnOn();
         } 
-        if (control_loop_counter == 100)
+        if (control_loop_counter == NB_OFFSET)
         {
             I1_offset = I1_offset_tmp;
             I2_offset = I2_offset_tmp;
             spin.led.turnOff();
         } 
-        if (control_loop_counter > 100) {
+        if (control_loop_counter > NB_OFFSET) {
             spin.led.turnOff();
         }
     }
