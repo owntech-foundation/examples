@@ -35,7 +35,7 @@
 #include "SpinAPI.h"
 
 #include "zephyr/console/console.h"
-
+#include "pid.h"
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
 
@@ -57,12 +57,16 @@ float32_t meas_data;
 static float32_t V1_low_value;
 static float32_t V2_low_value;
 
-// PID parameters
-static float32_t p = 0.1;            // proportional coefficient
-static float32_t i = 125;            // integral coefficient
-static float32_t integrator_mem = 0; // integral memory
-static float Kb = 1e4;               // back-tracking coefficient
-static float32_t pid_period = control_task_period / 1000000.0f;
+static float32_t Ts = control_task_period * 1e-6F;
+static float32_t Kp = 0.1;
+static float32_t Ti = 8.0e-4;  // (Kp/Ki = Ti)
+static float32_t Td = 0.0;
+static float32_t N = 0.0;
+static float32_t upper_bound = 10.0;
+static float32_t lower_bound = -10.0;
+static Pid pid;
+static PidParams pid_params(Ts, Kp, Ti, Td, N, lower_bound, upper_bound); 
+
 
 // reference voltage/current
 static float32_t Vref = 15.0;
@@ -80,41 +84,6 @@ enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVER
 
 uint8_t mode = IDLEMODE;
 
-//--------------SETUP FUNCTIONS-------------------------------
-
-
-float32_t PID_CM(float reference, float measurement)
-{
-    /////
-    // Compute error
-
-    float32_t error = reference - measurement;
-
-    /////
-    // Compute derivative term
-
-    float32_t sum = (p * error) + integrator_mem;
-
-    ////
-    // Current reference
-    float32_t Iref = 0;
-
-    if (sum > 10)
-        Iref = 10;
-    else if (sum < -10)
-        Iref = -10;
-    else
-        Iref = sum;
-
-    /////
-    // Compute integral term with anti-windup
-
-    integrator_mem += ((Iref - sum) * Kb + i * error) * pid_period;
-
-    return Iref;
-}
-
-
 /**
  * This is the setup routine.
  * It is used to call functions that will initialize your spin, twist, data and/or tasks.
@@ -124,8 +93,8 @@ float32_t PID_CM(float reference, float measurement)
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
-    twist.setVersion(shield_TWIST_V1_2);
+    spin.version.setBoardVersion(SPIN_v_1_0);
+    twist.setVersion(shield_TWIST_V1_3);
 
     /* buck voltage mode */
     twist.initAllBuck(CURRENT_MODE);
@@ -144,6 +113,9 @@ void setup_routine()
     task.startBackground(app_task_number);
     task.startBackground(com_task_number);
     task.startCritical(); // Uncomment if you use the critical task
+
+
+    pid.init(pid_params);
 }
 
 //--------------LOOP FUNCTIONS--------------------------------
@@ -158,12 +130,11 @@ void loop_communication_task()
         case 'h':
             //----------SERIAL INTERFACE MENU-----------------------
             printk(" ________________________________________\n");
-            printk("|     ------- MENU ---------             |\n");
+            printk("|     ---- MENU buck current mode ----   |\n");
             printk("|     press i : idle mode                |\n");
-            printk("|     press s : serial mode              |\n");
             printk("|     press p : power mode               |\n");
-            printk("|     press u : duty cycle UP            |\n");
-            printk("|     press d : duty cycle DOWN          |\n");
+            printk("|     press u : voltage reference UP     |\n");
+            printk("|     press d : voltage reference DOWN   |\n");
             printk("|________________________________________|\n\n");
             //------------------------------------------------------
             break;
@@ -237,7 +208,7 @@ void loop_critical_task()
     }
     else if (mode == POWERMODE)
     {
-        Iref = PID_CM(Vref, V1_low_value); // Calculate Iref
+        Iref = pid.calculateWithReturn(Vref, V1_low_value);
 
         PeakRef = 0.1 * Iref + 1.024; // Convert the current in voltage for slope compensation
 

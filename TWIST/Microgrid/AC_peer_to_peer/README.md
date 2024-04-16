@@ -32,33 +32,58 @@ You will need :
 
 It is important to check that the boards you are using have the correct voltage and current measures since they'll be used to compute the duty cycle.
 
-## Instruction to flash the code, and use python script
+## Instruction to flash the code, and view some results
+
+
+### To flash the code
+
+This example depends on two libraries:
+
+1. control_library
+2. ScopeMimicry
+
+To use them, you have to add the following lines in platformio.ini file:
+```
+lib_deps=
+    control_library = https://github.com/owntech-foundation/control_library.git
+    scope = https://github.com/owntech-foundation/scopemimicry.git 
+```
 
 In src/main.cpp at the line n. 48 you have a macro that defines wether you are flashing the inverter or the synchronous rectifier.
 
 To flash the inverter, choose :
 
 ```shell
-#define server
+#define SERVER
 ```
 
 To flash the synchronous rectifier, choose :
 
 ```shell
-#define client
+#define CLIENT
 ```
 
 Here P_ref = 19W to have a 47V output DC voltage. You can change this value in line 87 of src/main.cpp file.
 
 After that, connect to the inverter serial monitor and press `p` to start power flow. Press `i` to stop.
 
-A python script `script.py` is provided to monitor values from ADC such as Vac, or Vdc. If you want to use it, check this [tutorial](https://gitlab.laas.fr/afarahhass/Test-Controle/-/tree/main_RecordVariable).
+### To view some variables.
+After stop i.e. in IDLE mode you can retrieve some data by pressing 'r'. It calls a
+function `dump_scope_datas()` which send to the console variables recorded during
+the power flow phase.
 
-:warning: If you want to use the python script, a stlink is required. You also need to make the following modifications in platformio.ini : 
+But before running, you have to add one line in the file `platfomio.ini`
 
-```python
-default_envs = bootloader_stlink
+```ini
+monitor_filters = recorded_datas
 ```
+
+And you have put the python script `filter_datas_recorded.py` in a `monitor` directory
+which must be in you parent project directory. Then the script should capture the
+console stream to put it in a txt file named `year-month-day_hour_minutes_secondes_record.txt`.
+
+These files can be plotted using the `plot_data.py` python script if you have the
+`matplotlib` and `numpy` modules installed.
 
 ## Expected results
 

@@ -34,13 +34,21 @@
 #include "TaskAPI.h"
 #include "TwistAPI.h"
 #include "SpinAPI.h"
-#include "SyncCommunication.h"
-#include "opalib_control_pid.h"
+#include "CommunicationAPI.h"
+#include "pid.h"
 
 #include "zephyr/console/console.h"
 
-#define SLAVE2
+#define SLAVE // MASTER, SLAVE
 #define VREF 2.048
+
+
+#ifdef MASTER
+#define ROLE_TXT "MASTER"
+#else
+#define ROLE_TXT "SLAVE"
+#endif
+
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
@@ -48,7 +56,7 @@ void setup_routine(); // Setups the hardware and software of the system
 //--------------LOOP FUNCTIONS DECLARATION--------------------
 void loop_communication_task(); // code to be executed in the slow communication task
 void loop_application_task();   // Code to be executed in the background task
-void loop_critical_task();     // Code to be executed in real time in the critical task
+void loop_critical_task();      // Code to be executed in real time in the critical task
 
 //--------------USER VARIABLES DECLARATIONS-------------------
 
@@ -62,8 +70,14 @@ int8_t communication_count = 0;
 /* PID coefficient for a 8.6ms step response*/
 
 static float32_t kp = 0.000215;
-static float32_t ki = 2.86;
-static float32_t kd = 0.0;
+static float32_t Ti = 7.5175e-5;
+static float32_t Td = 0.0;
+static float32_t N = 0.0;
+static float32_t upper_bound = 1.0F;
+static float32_t lower_bound = 0.0F;
+static float32_t Ts = control_task_period * 1e-6;
+static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
+static Pid pid;
 
 /* Measure variables */
 float32_t meas_data;
@@ -102,34 +116,25 @@ uint8_t mode = IDLEMODE;
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(TWIST_v_1_1_2);
-    twist.setVersion(shield_TWIST_V1_2);
-
+    spin.version.setBoardVersion(SPIN_v_1_0);
+    twist.setVersion(shield_TWIST_V1_3);
+    
     /* buck voltage mode */
     twist.initAllBuck();
 
     data.enableTwistDefaultChannels();
 
-    #ifdef MASTER
-    syncCommunication.initMaster(); // start the synchronisation
-    spin.dac.initConstValue(2);
-    spin.dac.setConstValue(2, 1, 0);
-    #endif
+    communication.analog.init();
+#ifdef MASTER
+    communication.sync.initMaster(); // start the synchronisation
+    communication.analog.setAnalogCommValue(0);
+#endif
 
-    #ifdef SLAVE
-    syncCommunication.initSlave(); // wait for synchronisation
-    data.enableShieldChannel(2, EXTRA_MEAS);
-    data.triggerAcquisition(2);
-    #endif
+#ifdef SLAVE
+    communication.sync.initSlave(TWIST_v_1_1_4); // wait for synchronisation
+#endif
 
-    #ifdef SLAVE2
-    syncCommunication.initSlave(); // wait for synchronisation
-    data.enableShieldChannel(2, EXTRA_MEAS);
-    data.triggerAcquisition(2);
-    #endif
-
-
-    opalib_control_init_interleaved_pid(kp, ki, kd, control_task_period);
+    pid.init(pid_params);
 
     // Then declare tasks
     uint32_t app_task_number = task.createBackground(loop_application_task);
@@ -154,12 +159,12 @@ void loop_communication_task()
         case 'h':
             //----------SERIAL INTERFACE MENU-----------------------
             printk(" ________________________________________\n");
+            printk("      %s\n", ROLE_TXT);
             printk("|     ------- MENU ---------             |\n");
             printk("|     press i : idle mode                |\n");
-            printk("|     press s : serial mode              |\n");
             printk("|     press p : power mode               |\n");
-            printk("|     press u : duty cycle UP            |\n");
-            printk("|     press d : duty cycle DOWN          |\n");
+            printk("|     press u : Iref UP                  |\n");
+            printk("|     press d : Iref DOWN                |\n");
             printk("|________________________________________|\n\n");
             //------------------------------------------------------
             break;
@@ -201,8 +206,10 @@ void loop_application_task()
         printk("%f:", I1_low_value);
         printk("%f:", V1_low_value);
         printk("%f:", I2_low_value);
-        printk("%f\n", V2_low_value);
+        printk("%f:", V2_low_value);
     }
+    printk("%f:", PeakRef_Raw);
+    printk("\n");
     task.suspendBackgroundMs(100);
 }
 
@@ -214,21 +221,15 @@ void loop_application_task()
  */
 void loop_critical_task()
 {
-        #ifdef SLAVE
-        meas_data = data.getLatest(EXTRA_MEAS) + 20.0f;
-        if(meas_data != -10000) PeakRef_Raw =  meas_data;
-        if(PeakRef_Raw < 1800) mode = IDLEMODE;
-        else mode = POWERMODE;
-        data.triggerAcquisition(2);
-    #endif
-
-    #ifdef SLAVE2
-        meas_data = data.getLatest(EXTRA_MEAS) + 20.0f;
-        if(meas_data != -10000) PeakRef_Raw =  meas_data;
-        if(PeakRef_Raw < 1800) mode = IDLEMODE;
-        else mode = POWERMODE;
-        data.triggerAcquisition(2);
-    #endif
+#ifdef SLAVE
+    meas_data = communication.analog.getAnalogCommValue() + 20.0f;
+    if (meas_data != -10000)
+        PeakRef_Raw = meas_data;
+    if (PeakRef_Raw < 1800)
+        mode = IDLEMODE;
+    else
+        mode = POWERMODE;
+#endif
 
     meas_data = data.getLatest(I1_LOW);
     if (meas_data < 10000 && meas_data > -10000)
@@ -252,6 +253,9 @@ void loop_critical_task()
         {
             pwr_enable = false;
             twist.stopAll();
+#ifdef MASTER
+            communication.analog.setAnalogCommValue(0);
+#endif
         }
     }
     else if (mode == POWERMODE)
@@ -262,51 +266,33 @@ void loop_critical_task()
             pwr_enable = true;
             twist.startAll();
             count = 0;
-            #ifdef MASTER
-                Iref = 0.6;
-            #endif
+#ifdef MASTER
+            Iref = 0.6F; // initial current reference
+#endif
         }
 
-        #ifdef MASTER
-            count++;
-            if (count == 40000)
-            {
-                Iref = 1;
-            }
-            PeakRef_Raw = (0.100*Iref + 1.024)*(4096/2.048);
+#ifdef MASTER
+        count++;
+        if (count == 40000)
+        {
+            Iref = 1.0F; // update reference value after 4s
+        }
+        PeakRef_Raw = (0.100F * Iref + 1.024F) * (4096.0F / 2.048F);
 
-            duty_cycle = opalib_control_interleaved_pid_calculation(Vref, (V1_low_value)); 
+        duty_cycle = pid.calculateWithReturn(Vref, (V1_low_value));
 
-            /* sending value to slave board*/
-            spin.dac.setConstValue(2, 1, PeakRef_Raw);
-        #endif
+        /* sending value to slave board*/
+        communication.analog.setAnalogCommValue(PeakRef_Raw);
+#endif
 
-        #ifdef SLAVE
-            Iref = ((2.048F*PeakRef_Raw/4096.0F) - 1.024)/0.100;
+#ifdef SLAVE
+        Iref = ((2.048F * PeakRef_Raw / 4096.0F) - 1.024) / 0.100;
 
-            duty_cycle = opalib_control_interleaved_pid_calculation(Iref, (I1_low_value+I2_low_value)); 
-        #endif
+        duty_cycle = pid.calculateWithReturn(Iref, (I1_low_value + I2_low_value));
+#endif
 
-        #ifdef SLAVE2
-            Iref = ((2.048F*PeakRef_Raw/4096.0F) - 1.024)/0.100;
-
-            float32_t last_duty_cycle = duty_cycle;
-            duty_cycle = opalib_control_interleaved_pid_calculation(Iref, (I1_low_value+I2_low_value)); 
-            if ((last_duty_cycle-duty_cycle)>0.001)
-            {
-                duty_cycle = last_duty_cycle - 0.001;
-            }
-            else if ((last_duty_cycle-duty_cycle)<-0.001)
-            {
-                duty_cycle = last_duty_cycle + 0.001;
-            }
-
-        #endif
-    
-    twist.setAllDutyCycle(duty_cycle);
+        twist.setAllDutyCycle(duty_cycle);
     }
-
-
 }
 
 /**

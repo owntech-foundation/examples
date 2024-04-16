@@ -9,16 +9,64 @@ The parameters are:
 * $U_{DC} = 40 V$
 * $R_{LOAD} = 30 \Omega$.
 
+## Software overview
 
-The voltage regulation will be done by a proportional resonant regulator.
-This component is provided by the OwnTech control library which must be included 
-in the file `platformio.ini`.
+### Import libraries
+This example depends on two libraries:
 
+1. control_library
+2. ScopeMimicry
+
+To use them, you have to add the following lines in platformio.ini file:
 ```
 lib_deps=
-    control_lib = https://github.com/owntech-foundation/control_library.git
+    control_library = https://github.com/owntech-foundation/control_library.git
+    scope = https://github.com/owntech-foundation/scopemimicry.git 
 ```
 
+### Define a regulator
+
+The voltage regulation will be done by a proportional resonant regulator.
+This component is provided by the OwnTech control library `control_lib`.
+
+The Proportional Resonant regulator is initialized with the lines above:
+
+```cpp
+PrParams params = PrParams(Ts, Kp, Kr, w0, 0.0F, -Udc, Udc);
+prop_res.init(params);
+```
+
+The parameters are defined with these values:
+
+```cpp
+static Pr prop_res; // controller instanciation. 
+static float32_t Kp = 0.02F;
+static float32_t Kr = 4000.0F;
+static float32_t Ts = control_task_period * 1.0e-6F;
+static float32_t w0 = 2.0 * PI * 50.0;   // pulsation
+static float32_t Udc = 40.0F;
+```
+
+### To view some variables.
+After stop i.e. in IDLE mode you can retrieve some data by pressing 'r'. It calls a
+function `dump_scope_datas()` which send to the console variables recorded during
+the power flow phase.
+
+But before running, you have to add one line in the file `platfomio.ini`
+
+```ini
+monitor_filters = recorded_datas
+```
+
+And you have to put the python script `filter_datas_recorded.py` in a `monitor` directory
+which must be in you parent project directory. Then the script should capture the
+console stream to put it in a txt file named `year-month-day_hour_minutes_secondes_record.txt`.
+
+These files can be plotted using the `plot_data.py` python script if you have the
+`matplotlib` and `numpy` modules installed.
+
+
+## Link between voltage reference and duty cycles.
 The voltage source is defined by the voltage difference: $U_{12} = V_{1low} - V_{2low}$.
 
 Link with the duty cycle:
