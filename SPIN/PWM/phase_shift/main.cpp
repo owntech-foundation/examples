@@ -33,7 +33,6 @@
 #include "TaskAPI.h"
 #include "TwistAPI.h"
 #include "SpinAPI.h"
-#include "pid.h"
 
 #include "zephyr/console/console.h"
 
