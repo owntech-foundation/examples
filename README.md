@@ -1,8 +1,8 @@
-Welcome to the owntech examples repository.
+Welcome to the OwnTech examples repository.
 
-Here you can find ready to be used example for [spin](https://github.com/owntech-foundation/SPIN) and [twist](https://github.com/owntech-foundation/TWIST).
+Here you can find ready to be used example for [SPIN](https://github.com/owntech-foundation/SPIN) and [TWIST](https://github.com/owntech-foundation/TWIST).
 
-# Example for TWIST
+# Examples for TWIST
 
 - DC DC topology examples
     - [Buck voltage mode](TWIST/DC_DC/buck_voltage_mode/README.md)
@@ -20,7 +20,7 @@ Here you can find ready to be used example for [spin](https://github.com/owntech
     - [Grid forming](TWIST/DC_AC/grid_forming/README.md)
     - [Grid following](TWIST/DC_AC/grid_following/README.md)
 
-# Example for SPIN
+# Examples for SPIN
 
 - ADC use examples
     - [Software trigerred ADC](SPIN/ADC/adc_software_trigger/README.md)
