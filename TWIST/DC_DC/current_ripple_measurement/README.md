@@ -42,7 +42,21 @@ border="2px solid;"/>
 </figure>
 
 ## 2. Change Modulation type.
+### Find the `pwm_legs.dtsi` file.
+To see the file `zephyr/boards/shields/twist/pwm_legs.dtsi` in vscode, you must toggle in Expert Mode.
 
+<figure>
+    <img src="Image/expert_mode.png" alt="expert_mode" with="200px" left-margin="auto" right-margint="auto" />
+    <figcaption> toggle in "Expert Mode"</figcaption>
+</figure>
+
+Then you should see the directory tree of `zephyr`. 
+<figure>
+    <img src="Image/zephyr_tree.png" alt="zephyr_tree" with="200px" left-margin="auto" right-margint="auto" />
+    <figcaption>find the pwm_legs.dtsi file.</figcaption>
+</figure>
+
+### Change the modulation type.
 The `trig_ratio` value swipe the carrier ramp.
 But if we are in the `Center_Aligned` mode, there's two ramp and the swipe is only on
 one ramp, in `Lft_aligned` mode there's only one ramp then the swipe is on all the
