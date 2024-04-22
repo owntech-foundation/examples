@@ -1,3 +1,60 @@
+"""
+Copyright (c) 2021-2024 LAAS-CNRS
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation, either version 2.1 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+SPDX-License-Identifier: LGPL-2.1
+"""
+
+"""
+Copyright (c) 2021-2024 LAAS-CNRS
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation, either version 2.1 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+SPDX-License-Identifier: LGPL-2.1
+"""
+
+"""
+Copyright (c) 2021-2024 LAAS-CNRS
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation, either version 2.1 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+SPDX-License-Identifier: LGPL-2.1
+"""
+
 /*
  * Copyright (c) 2021-2024 LAAS-CNRS
  *
@@ -195,28 +252,22 @@ void loop_application_task()
 void loop_critical_task()
 {
     meas_data = data.getLatest(I1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I1_low_value = meas_data;
+    if (meas_data != NO_VALUE) I1_low_value = meas_data;
 
     meas_data = data.getLatest(V1_LOW);
-    if (meas_data != -10000)
-        V1_low_value = meas_data;
+    if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
     meas_data = data.getLatest(V2_LOW);
-    if (meas_data != -10000)
-        V2_low_value = meas_data;
+    if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
     meas_data = data.getLatest(I2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I2_low_value = meas_data;
+    if (meas_data != NO_VALUE) I2_low_value = meas_data;
 
     meas_data = data.getLatest(I_HIGH);
-    if (meas_data < 10000 && meas_data > -10000)
-        I_high = meas_data;
+    if (meas_data != NO_VALUE) I_high = meas_data;
 
     meas_data = data.getLatest(V_HIGH);
-    if (meas_data != -10000)
-        V_high = meas_data;
+    if (meas_data != NO_VALUE) V_high = meas_data;
 
 
 
