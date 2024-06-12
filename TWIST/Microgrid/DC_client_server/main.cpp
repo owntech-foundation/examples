@@ -223,8 +223,7 @@ void loop_critical_task()
 {
 #ifdef SLAVE
     meas_data = communication.analog.getAnalogCommValue() + 20.0f;
-    if (meas_data != -10000)
-        PeakRef_Raw = meas_data;
+    if (meas_data != NO_VALUE) PeakRef_Raw = meas_data;
     if (PeakRef_Raw < 1800)
         mode = IDLEMODE;
     else
@@ -232,20 +231,16 @@ void loop_critical_task()
 #endif
 
     meas_data = data.getLatest(I1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I1_low_value = meas_data;
+    if (meas_data != NO_VALUE) I1_low_value = meas_data;
 
     meas_data = data.getLatest(V1_LOW);
-    if (meas_data != -10000)
-        V1_low_value = meas_data;
+    if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
     meas_data = data.getLatest(V2_LOW);
-    if (meas_data != -10000)
-        V2_low_value = meas_data;
+    if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
     meas_data = data.getLatest(I2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I2_low_value = meas_data;
+    if (meas_data != NO_VALUE) I2_low_value = meas_data;
 
     if (mode == IDLEMODE)
     {

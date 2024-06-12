@@ -270,28 +270,22 @@ void loop_critical_task()
 {
 
     meas_data = data.getLatest(I1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I1_low_value = meas_data - I1_offset;
+    if (meas_data != NO_VALUE) I1_low_value = meas_data - I1_offset;
 
     meas_data = data.getLatest(V1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        V1_low_value = meas_data;
+    if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
     meas_data = data.getLatest(V2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        V2_low_value = meas_data;
+    if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
     meas_data = data.getLatest(I2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I2_low_value = meas_data - I2_offset;
+    if (meas_data != NO_VALUE) I2_low_value = meas_data - I2_offset;
 
     meas_data = data.getLatest(V_HIGH);
-    if (meas_data != -10000)
-        V_high = meas_data;
+    if (meas_data != NO_VALUE) V_high = meas_data;
 
     meas_data = data.getLatest(I_HIGH);
-    if (meas_data != -10000)
-        I_high = meas_data;
+    if (meas_data != NO_VALUE) I_high = meas_data;
 
     if (mode_asked == POWERMODE)
     { // we must launch the PLL and wait its locking.
