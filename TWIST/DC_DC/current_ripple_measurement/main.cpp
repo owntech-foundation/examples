@@ -23,8 +23,7 @@
  *         documentation for detailed information on
  *         how to use Power API: https://docs.owntech.org/
  *
- * @author Clément Foucher <clement.foucher@laas.fr>
- * @author Luiz Villa <luiz.villa@laas.fr>
+ * @author Régis Ruelland <regis.ruelland@laas.fr>
  */
 
 //--------------OWNTECH APIs----------------------------------
