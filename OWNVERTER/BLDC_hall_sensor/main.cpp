@@ -33,8 +33,8 @@
 #include "zephyr/console/console.h"
 
 #define HALL1 PA7
-#define HALL2 PD2
-#define HALL3 PC6
+#define HALL2 PC6
+#define HALL3 PD2
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
@@ -98,6 +98,9 @@ void setup_routine()
 
     /* Set the high switch convention for all legs */
     twist.initAllBuck();
+    spin.pwm.setModulation(PWME, UpDwn);
+    spin.pwm.setSwitchConvention(PWME, PWMx1);
+    spin.pwm.initUnit(PWME);
 
     /* Setup all the measurments */
     data.enableTwistDefaultChannels();
@@ -140,6 +143,7 @@ void loop_communication_task()
             break;
         case 'i':
             printk("idle mode\n");
+            duty_cycle = 0.5;
             mode = IDLEMODE;
             break;
         case 'p':
@@ -169,22 +173,24 @@ void loop_application_task()
     if (mode == IDLEMODE)
     {
         spin.led.turnOff();
-        printk("%f:", hall_state);
         printk("%f:", V1_low_value);
         printk("%f:", I2_low_value);
         printk("%f:", V2_low_value);
         printk("%f:", I_high);
-        printk("%f\n", V_high);
+        printk("%f", V_high);
+        printk("%5d\n", hall_state);
+
     }
     else if (mode == POWERMODE)
     {
         spin.led.turnOn();
-        printk("%f:", hall_state);
+        printk("%5.5f:", duty_cycle);
         printk("%f:", V1_low_value);
         printk("%f:", I2_low_value);
         printk("%f:", V2_low_value);
         printk("%f:", I_high);
-        printk("%f\n", V_high);
+        printk("%f", V_high);
+        printk("%5d\n", hall_state);
     }
     task.suspendBackgroundMs(100);
 }
@@ -200,10 +206,10 @@ void loop_critical_task()
     /* Retrieve the rotor position from hall sensors*/
     hall1_value = spin.gpio.readPin(HALL1);
     hall2_value = spin.gpio.readPin(HALL2);
-    hall2_value = spin.gpio.readPin(HALL3);
+    hall3_value = spin.gpio.readPin(HALL3);
 
     /* Compute the sector from hall values */
-    hall_state = hall1_value + 2*hall2_value + 4*hall3_value;
+    hall_state = hall1_value + 2*hall3_value + 4*hall2_value;
 
     /* Retrieve sensor values */
     meas_data = data.getLatest(I1_LOW);
@@ -234,62 +240,70 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            twist.stopAll();
+            spin.pwm.stopDualOutput(PWMA);
+            spin.pwm.stopDualOutput(PWMC);
+            spin.pwm.stopDualOutput(PWME);
         }
         pwm_enable = false;
     }
     else if (mode == POWERMODE)
     {
-        {
         switch (hall_state)
         {
             /* This switch case implements classic BLDC logic */
             case 0b001:
                 spin.pwm.stopDualOutput(PWMC);
+                spin.pwm.setDutyCycle(PWME, 1.0 - duty_cycle);
                 spin.pwm.startDualOutput(PWME);
                 spin.pwm.setDutyCycle(PWMA, duty_cycle);
-                spin.pwm.setDutyCycle(PWME, 1 - duty_cycle);
+                spin.pwm.startDualOutput(PWMA);
                 break;
             case 0b010:
                 spin.pwm.stopDualOutput(PWMA);
+                spin.pwm.setDutyCycle(PWMC, 1.0 - duty_cycle);
                 spin.pwm.startDualOutput(PWMC);
-                spin.pwm.setDutyCycle(PWMC, duty_cycle);
-                spin.pwm.setDutyCycle(PWME, 1 - duty_cycle);
+                spin.pwm.setDutyCycle(PWME, duty_cycle);
+                spin.pwm.startDualOutput(PWME);
                 break;
             case 0b011:
                 spin.pwm.stopDualOutput(PWME);
+                spin.pwm.setDutyCycle(PWMA, duty_cycle);
                 spin.pwm.startDualOutput(PWMA);
-                spin.pwm.setDutyCycle(PWMA, 1 - duty_cycle);
-                spin.pwm.setDutyCycle(PWMC, duty_cycle);
+                spin.pwm.setDutyCycle(PWMC, 1.0 - duty_cycle);
+                spin.pwm.startDualOutput(PWMC);
                 break;
             case 0b100:
-                spin.pwm.stopDualOutput(PWMC);
-                spin.pwm.startDualOutput(PWME);
-                spin.pwm.setDutyCycle(PWMA, 1 - duty_cycle);
-                spin.pwm.setDutyCycle(PWME, duty_cycle);
+                spin.pwm.stopDualOutput(PWME);
+                spin.pwm.setDutyCycle(PWMA, 1.0 - duty_cycle);
+                spin.pwm.startDualOutput(PWMA);
+                spin.pwm.setDutyCycle(PWMC, duty_cycle);
+                spin.pwm.startDualOutput(PWMC);
                 break;
             case 0b101:
                 spin.pwm.stopDualOutput(PWMA);
+                spin.pwm.setDutyCycle(PWMC, duty_cycle);
                 spin.pwm.startDualOutput(PWMC);
-                spin.pwm.setDutyCycle(PWMC, 1 - duty_cycle);
-                spin.pwm.setDutyCycle(PWME, duty_cycle);
+                spin.pwm.setDutyCycle(PWME, 1.0 - duty_cycle);
+                spin.pwm.startDualOutput(PWME);
                 break;
             case 0b110:
-                spin.pwm.stopDualOutput(PWME);
+                spin.pwm.stopDualOutput(PWMC);
+                spin.pwm.setDutyCycle(PWME, duty_cycle);
+                spin.pwm.startDualOutput(PWME);
+                spin.pwm.setDutyCycle(PWMA, 1.0- duty_cycle);
                 spin.pwm.startDualOutput(PWMA);
-                spin.pwm.setDutyCycle(PWMC, 1 - duty_cycle);
-                spin.pwm.setDutyCycle(PWMA, duty_cycle);
                 break;
         }
-    }
+        
         /* Set POWER ON */
         if (!pwm_enable)
         {
             pwm_enable = true;
-            twist.startAll();
+            spin.pwm.startDualOutput(PWMA);
+            spin.pwm.startDualOutput(PWMC);
+            spin.pwm.startDualOutput(PWME);
         }
     }
-
 }
 
 /**
