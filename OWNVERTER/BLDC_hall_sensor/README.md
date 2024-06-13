@@ -6,11 +6,12 @@ Here is a detailed explanation of the six sectors and the switching sequence for
 
 The six sectors are determined based on the Hall effect sensor outputs, which change as the rotor rotates. The Hall sensors provide three signals (H1, H2, H3), which can be interpreted as a 3-bit binary code. Each unique combination of these signals corresponds to one of the six sectors.
 
-It means that H1 is the first bit, H2 is the second bit and H3 is the third bit. 
-
 In code this is done with :  
 
-```hall_state = hall1_value + 2*hall2_value + 4*hall3_value; ```
+``` hall_state = hall1_value + 2*hall3_value + 4*hall2_value; ```  
+
+Note that this should be adapted depending on the way phases and hall effect sensors are connected to the inverter. It might be necessary to permute the hall
+values to run the motor correctly.  
 
 ### Controling the motor
 
@@ -46,43 +47,13 @@ The commutation sequence involves energizing pairs of motor phases (A, B, C) whi
 
 | Hall Sensors | Sector | Switch U_A | Switch L_A | Switch U_B | Switch L_B | Switch U_C | Switch L_C |
 |--------------|--------|------------|------------|------------|------------|------------|------------|
-| 001          | 1      | 1          | 0          | 0          | 0          | 0          | 1          |
-| 010          | 2      | 0          | 0          | 1          | 0          | 0          | 1          |
-| 011          | 3      | 0          | 1          | 1          | 0          | 0          | 0          |
-| 100          | 4      | 0          | 1          | 0          | 0          | 1          | 0          |
-| 101          | 5      | 0          | 0          | 0          | 1          | 1          | 0          |
-| 110          | 6      | 1          | 0          | 0          | 1          | 0          | 0          |
+| 101          | 1      | 0          | 0          | 1          | 0          | 0          | 1          |
+| 100          | 2      | 0          | 1          | 1          | 0          | 0          | 0          |
+| 110          | 3      | 0          | 1          | 0          | 0          | 1          | 0          |
+| 010          | 4      | 0          | 0          | 0          | 1          | 1          | 0          |
+| 011          | 5      | 1          | 0          | 0          | 1          | 0          | 0          |
+| 001          | 6      | 1          | 0          | 0          | 0          | 0          | 1          |
 
-### Explanation of the Commutation Table
-
-1. **Sector 1 (Hall: 001)**
-   - U_A = 1: Upper switch of phase A is on.
-   - L_B = 1: Lower switch of phase C is on.
-   - Current flows from phase A to phase C.
-
-2. **Sector 2 (Hall: 010)**
-   - U_B = 1: Upper switch of phase B is on.
-   - L_C = 1: Lower switch of phase C is on.
-   - Current flows from phase B to phase C.
-
-3. **Sector 3 (Hall: 011)**
-   - L_C = 1: Lower switch of phase A is on.
-   - U_B = 1: Upper switch of phase B is on.
-   - Current flows from phase B to phase A.
-
-4. **Sector 4 (Hall: 100)**
-   - L_B = 1: Lower switch of phase A is on.
-   - U_B = 1: Upper switch of phase C is on.
-   - Current flows from phase C to phase A.
-
-5. **Sector 5 (Hall: 101)**
-   - L_B = 1: Lower switch of phase B is on.
-   - U_C = 1: Lower switch of phase C is on.
-   - Current flows from phase C to phase B.
-
-6. **Sector 6 (Hall: 110)**
-   - L_C = 1: Lower switch of phase C is on.
-   - U_A = 1: Upper switch of phase A is on.
-   - Current flows from phase A to phase C
+![BLDC_Commutation_Table](Image/sectors_bldc.svg)*Commutation table*.
 
 This sequence ensures that the magnetic field rotates in such a way that the rotor is pulled along with it, allowing for smooth and efficient operation of the BLDC motor. Each transition between sectors corresponds to a change in the Hall sensor readings, which the control logic uses to determine the appropriate switches to energize.
