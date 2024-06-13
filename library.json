@@ -91,6 +91,17 @@
         ]
     },
     {
+        "name": "ripple_measurement",
+        "title": "Current Ripple Measurement",
+        "description": "Current ripple measurement in buck voltage mode, by sweeping adc trigger",
+        "group": "Examples TWIST",
+        "base": "TWIST/DC_DC/current_ripple_measurement",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
         "name": "AC_cient_server",
         "title": "AC client server",
         "description": "implementation of AC client server in microgrid",
