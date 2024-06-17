@@ -36,6 +36,10 @@
 #define HALL2 PC6
 #define HALL3 PD2
 
+#define PHASE_A PWMA
+#define PHASE_B PWMC
+#define PHASE_C PWME
+
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
 
@@ -72,7 +76,12 @@ float32_t duty_cycle = 0.5;
 // static float32_t kp = 0.000215;
 // static float32_t ki = 2.86;
 // static float32_t kd = 0.0;
-
+void chopper(hrtim_tu_number_t high_phase, hrtim_tu_number_t low_phase) {
+	spin.pwm.setDutyCycle(low_phase, 1.0 - duty_cycle);
+	spin.pwm.startDualOutput(low_phase);
+	spin.pwm.setDutyCycle(high_phase, duty_cycle);
+	spin.pwm.startDualOutput(high_phase);
+}
 //---------------------------------------------------------------
 
 enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVERTER
@@ -83,7 +92,7 @@ enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVER
 
 uint8_t mode = IDLEMODE;
 
-/* --------------SETUP FUNCTIONS-------------------------------
+/* --------------SETUP FUNCTIONS-------------------------------*/
 
 /**
  * This is the setup routine.
@@ -98,9 +107,9 @@ void setup_routine()
 
     /* Set the high switch convention for all legs */
     twist.initAllBuck();
-    spin.pwm.setModulation(PWME, UpDwn);
-    spin.pwm.setSwitchConvention(PWME, PWMx1);
-    spin.pwm.initUnit(PWME);
+    spin.pwm.setModulation(PHASE_C, UpDwn);
+    spin.pwm.setSwitchConvention(PHASE_C, PWMx1);
+    spin.pwm.initUnit(PHASE_C);
 
     /* Setup all the measurments */
     data.enableTwistDefaultChannels();
@@ -209,7 +218,7 @@ void loop_critical_task()
     hall3_value = spin.gpio.readPin(HALL3);
 
     /* Compute the sector from hall values */
-    hall_state = hall1_value + 2*hall3_value + 4*hall2_value;
+    hall_state = hall1_value + 2*hall2_value + 4*hall3_value;
 
     /* Retrieve sensor values */
     meas_data = data.getLatest(I1_LOW);
@@ -240,9 +249,9 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            spin.pwm.stopDualOutput(PWMA);
-            spin.pwm.stopDualOutput(PWMC);
-            spin.pwm.stopDualOutput(PWME);
+            spin.pwm.stopDualOutput(PHASE_A);
+            spin.pwm.stopDualOutput(PHASE_B);
+            spin.pwm.stopDualOutput(PHASE_C);
         }
         pwm_enable = false;
     }
@@ -252,46 +261,28 @@ void loop_critical_task()
         {
             /* This switch case implements classic BLDC logic */
             case 0b001:
-                spin.pwm.stopDualOutput(PWMC);
-                spin.pwm.setDutyCycle(PWME, 1.0 - duty_cycle);
-                spin.pwm.startDualOutput(PWME);
-                spin.pwm.setDutyCycle(PWMA, duty_cycle);
-                spin.pwm.startDualOutput(PWMA);
+				spin.pwm.stopDualOutput(PHASE_B);
+				chopper(PHASE_A, PHASE_C);
                 break;
             case 0b010:
-                spin.pwm.stopDualOutput(PWMA);
-                spin.pwm.setDutyCycle(PWMC, 1.0 - duty_cycle);
-                spin.pwm.startDualOutput(PWMC);
-                spin.pwm.setDutyCycle(PWME, duty_cycle);
-                spin.pwm.startDualOutput(PWME);
+				spin.pwm.stopDualOutput(PHASE_C);
+				chopper(PHASE_B, PHASE_A);
                 break;
             case 0b011:
-                spin.pwm.stopDualOutput(PWME);
-                spin.pwm.setDutyCycle(PWMA, duty_cycle);
-                spin.pwm.startDualOutput(PWMA);
-                spin.pwm.setDutyCycle(PWMC, 1.0 - duty_cycle);
-                spin.pwm.startDualOutput(PWMC);
+				spin.pwm.stopDualOutput(PHASE_A);
+				chopper(PHASE_B, PHASE_C);
                 break;
             case 0b100:
-                spin.pwm.stopDualOutput(PWME);
-                spin.pwm.setDutyCycle(PWMA, 1.0 - duty_cycle);
-                spin.pwm.startDualOutput(PWMA);
-                spin.pwm.setDutyCycle(PWMC, duty_cycle);
-                spin.pwm.startDualOutput(PWMC);
+				spin.pwm.stopDualOutput(PHASE_A);
+				chopper(PHASE_C, PHASE_B);
                 break;
             case 0b101:
-                spin.pwm.stopDualOutput(PWMA);
-                spin.pwm.setDutyCycle(PWMC, duty_cycle);
-                spin.pwm.startDualOutput(PWMC);
-                spin.pwm.setDutyCycle(PWME, 1.0 - duty_cycle);
-                spin.pwm.startDualOutput(PWME);
+				spin.pwm.stopDualOutput(PHASE_C);
+				chopper(PHASE_A, PHASE_B);
                 break;
             case 0b110:
-                spin.pwm.stopDualOutput(PWMC);
-                spin.pwm.setDutyCycle(PWME, duty_cycle);
-                spin.pwm.startDualOutput(PWME);
-                spin.pwm.setDutyCycle(PWMA, 1.0- duty_cycle);
-                spin.pwm.startDualOutput(PWMA);
+				spin.pwm.stopDualOutput(PHASE_B);
+				chopper(PHASE_C, PHASE_A);
                 break;
         }
         
@@ -299,9 +290,9 @@ void loop_critical_task()
         if (!pwm_enable)
         {
             pwm_enable = true;
-            spin.pwm.startDualOutput(PWMA);
-            spin.pwm.startDualOutput(PWMC);
-            spin.pwm.startDualOutput(PWME);
+            spin.pwm.startDualOutput(PHASE_A);
+            spin.pwm.startDualOutput(PHASE_B);
+            spin.pwm.startDualOutput(PHASE_C);
         }
     }
 }
