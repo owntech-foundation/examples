@@ -39,3 +39,8 @@ Here you can find ready to be used example for [SPIN](https://github.com/owntech
 
 - TIMER
     - [Incremental encoder](SPIN/TIMER/incremental_encoder/README.md)
+
+# Examples for Ownverter
+
+- Permanent Magnet Synchronous Motor Control
+    - [BLDC with hall sensors](OWNVERTER/BLDC_hall_sensor/README.md)
