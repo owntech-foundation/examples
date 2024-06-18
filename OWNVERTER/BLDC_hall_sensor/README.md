@@ -23,7 +23,7 @@ In each sequence we supply only two windings using two legs of the ownverter.
 Then if for example we supply phase A and B, the associate phase to phase voltage will
 be:
 
-$U_{AB} = (2.\textsf{duty\_cycle} - 1). U_{dc}$
+$U_{AB} = (2.\textsf{duty\\\_cycle} - 1). U_{dc}$
 
 In this example duty_cycle can be increased or lowered by pressing `u` and `d` in the serial monitor. 
 It should directly affect motor speed.
