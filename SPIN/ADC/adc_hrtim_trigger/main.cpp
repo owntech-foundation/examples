@@ -58,7 +58,7 @@ void setup_routine()
     // Setup the hardware first
     spin.version.setBoardVersion(SPIN_v_1_0);
 
-    spin.pwm.setFrequency(200000); // Set frequency of pwm
+    spin.pwm.initFrequency(200000); // Set frequency of pwm
 
     spin.pwm.setModulation(PWMA, UpDwn);
     spin.pwm.setAdcEdgeTrigger(PWMA, EdgeTrigger_up);
