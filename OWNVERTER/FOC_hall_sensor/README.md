@@ -1,12 +1,11 @@
 # Field Oriented Control with hall Sensors.
 
-
 ## Introduction.
 
 This example show how to regulate the torque in a Permanent Magnet Synchonous Machine
 (PMSM) using a Field Oriented Control (FOC) algorithm. 
 
-The FOC is well adapted to PMSM with sinusoîdal back-emf (electro
+The FOC is well adapted to PMSM with sinusoïdal back-emf (electro
 motive forces). The FOC algorithm generate smooth torque value. 
 The current regulators (Proportional-Integral) are in the _"dq"_ frame where values
 should be constant during steady state operation.
@@ -31,7 +30,6 @@ lib_deps=
  scopemimicry = https://github.com/owntech-foundation/scopemimicry.git
 ```
 
-
 ## How the _"sector"_ table is built.
 
 According _"dq"_ transformation, the formula of the back emf should be :
@@ -40,7 +38,7 @@ $E_{u} = - K_{fem}.\omega .sin(\theta)$
 
 $E_{v} = - K_{fem}.\omega .sin(\theta - 2\pi/3)$
 
-$E_{v} = - K_{fem}.\omega .sin(\theta - 4\pi/3)$
+$E_{w} = - K_{fem}.\omega .sin(\theta - 4\pi/3)$
 
 Where $\theta$ is the _"electric"_ angle and $\omega$ is the _"electric"_ pulsation.
 
@@ -68,4 +66,24 @@ angle value, then we can make a lookup table between these two variables.
 | 4      | 5          |
 | 5      | 1          |
 
+## Use this example  
 
+- Wire the motor hall effect sensors and power phase. The colors of the hall effect sensors should match the color of the power phase. 
+- Flash the example to the OwnVerter board.
+- In the serial terminal press `p` to start the motor.
+- At that point, there is no torque reference as `Iq_ref` is equal to `0`
+- Increase the torque reference by pressing `u`. The torque reference is incremented by `0.1A` 
+- Increase the torque reference until the motor starts spinning.
+- Stop the motor by pressing `i`
+- You can retrieve live record by pressing `r`. It will download a data_record containing all declared scope values.
+  - By default the recording is triggered by entering `power mode` (by pressing `p`).
+  - Alternatively you can press `q` to trigger manually the recording at a different instant, or to reset the trigger
+- Plot the values by clicking `Plot recording` in `OwnTech` platformio actions.
+- Live data records can also be plotted using OwnPlot by pressing `m`. This way, the recording will be sent as an infinite loop to OwnPlot.
+
+| Control state | Comment |
+| ---    | ---        |
+| 0      | In this state, the controller is calculating the current offset      |
+| 1      | In this state, the controller is idle          |
+| 2      | In this state, the controller is in power mode          |
+| 3      | In this state, the controller is in error mode. The error mode is entered by repetedely (repedely being defined by `error_counter`) fulfilling the following condition :  `I1_Low` going beyond the bounds `[-AC_CURRENT_LIMIT;+AC_CURRENT_LIMIT]`, `I2_Low` going beyond the bounds `[-AC_CURRENT_LIMIT;+AC_CURRENT_LIMIT]` or `I_High` exceding `DC_CURRENT_LIMIT` |
