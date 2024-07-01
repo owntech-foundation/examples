@@ -140,14 +140,16 @@ void loop_application_task()
     {
         case IDLE:    // IDLE MODE - turns data emission off
             spin.led.turnOff();
-            if(!print_done) {
+            if(!print_done)
+            {
                 printk("IDLE \n");
                 print_done = true;
             }
             break;
         case POWER_OFF:  // POWER_OFF MODE - turns the power off but broadcasts the system state data
             spin.led.toggle();
-            if(!print_done) {
+            if(!print_done)
+            {
                 printk("POWER OFF \n");
                 print_done = true;
             }
@@ -168,7 +170,8 @@ void loop_application_task()
             break;
         case POWER_ON:   // POWER_ON MODE - turns the system on and broadcasts measurement from the physical variables
             spin.led.turnOn();
-            if(!print_done) {
+            if(!print_done)
+            {
                 printk("POWER ON \n");
                 print_done = true;
             }
@@ -202,27 +205,34 @@ void loop_control_task()
     // ------------- GET SENSOR MEASUREMENTS ---------------------
     meas_data = data.getLatest(V1_LOW);
     if (meas_data != NO_VALUE)
+    {
         V1_low_value = meas_data;
-
+    }
     meas_data = data.getLatest(V2_LOW);
     if (meas_data != NO_VALUE)
+    {
         V2_low_value = meas_data;
-
+    }
     meas_data = data.getLatest(V_HIGH);
     if (meas_data != NO_VALUE)
+    {
         V_high_value = meas_data;
-
+    }
     meas_data = data.getLatest(I1_LOW);
     if (meas_data != NO_VALUE)
+    {
         I1_low_value = meas_data;
-
+    }
     meas_data = data.getLatest(I2_LOW);
     if (meas_data != NO_VALUE)
+    {
         I2_low_value = meas_data;
-
+    }
     meas_data = data.getLatest(I_HIGH);
     if (meas_data != NO_VALUE)
+    {
         I_high_value = meas_data;
+    }
 
     //----------- DEPLOYS MODES----------------
     switch(mode){
@@ -237,42 +247,72 @@ void loop_control_task()
             break;
 
         case POWER_ON:     // POWER_ON mode turns the power ON
+            //Tests if the legs were turned on and does it only once ]
+            if(!pwm_enable_leg_1 && power_leg_settings[LEG1].settings[BOOL_LEG])
+            {
+             twist.startLeg(LEG1);
+             pwm_enable_leg_1 = true;
+            }
+            if(!pwm_enable_leg_2 && power_leg_settings[LEG2].settings[BOOL_LEG])
+            {
+             twist.startLeg(LEG2);
+             pwm_enable_leg_2 = true;
+            }
 
             //Tests if the legs were turned on and does it only once ]
-            if(!pwm_enable_leg_1 && power_leg_settings[LEG1].settings[BOOL_LEG]) {twist.startLeg(LEG1); pwm_enable_leg_1 = true;}
-            if(!pwm_enable_leg_2 && power_leg_settings[LEG2].settings[BOOL_LEG]) {twist.startLeg(LEG2); pwm_enable_leg_2 = true;}
-
-            //Tests if the legs were turned on and does it only once ]
-            if(pwm_enable_leg_1 && !power_leg_settings[LEG1].settings[BOOL_LEG]) {twist.stopLeg(LEG1); pwm_enable_leg_1 = false;}
-            if(pwm_enable_leg_2 && !power_leg_settings[LEG2].settings[BOOL_LEG]) {twist.stopLeg(LEG2); pwm_enable_leg_2 = false;}
-
+            if(pwm_enable_leg_1 && !power_leg_settings[LEG1].settings[BOOL_LEG])
+            {
+             twist.stopLeg(LEG1);
+             pwm_enable_leg_1 = false;
+            }
+            if(pwm_enable_leg_2 && !power_leg_settings[LEG2].settings[BOOL_LEG])
+            {
+             twist.stopLeg(LEG2);
+             pwm_enable_leg_2 = false;
+            }
 
             //calls the pid calculation if the converter in either in mode buck or boost for a given dynamically set reference value
             if(power_leg_settings[LEG1].settings[BOOL_BUCK] || power_leg_settings[LEG1].settings[BOOL_BOOST])
+            {
                 power_leg_settings[LEG1].duty_cycle = opalib_control_leg1_pid_calculation(power_leg_settings[LEG1].reference_value , *power_leg_settings[LEG1].tracking_variable);
-
+            }
             if(power_leg_settings[LEG2].settings[BOOL_BUCK] || power_leg_settings[LEG2].settings[BOOL_BOOST])
+            {
                 power_leg_settings[LEG2].duty_cycle = opalib_control_leg2_pid_calculation(power_leg_settings[LEG2].reference_value , *power_leg_settings[LEG2].tracking_variable);
-
-            if(power_leg_settings[LEG1].settings[BOOL_LEG]){
-                if(power_leg_settings[LEG1].settings[BOOL_BOOST]){
+            }
+            if(power_leg_settings[LEG1].settings[BOOL_LEG])
+            {
+                if(power_leg_settings[LEG1].settings[BOOL_BOOST])
+                {
                     twist.setLegDutyCycle(LEG1, (1-power_leg_settings[LEG1].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
-                } else {
+                }
+                else
+                {
                     twist.setLegDutyCycle(LEG1, power_leg_settings[LEG1].duty_cycle ); //uses the normal convention by default
                 }
             }
 
-            if(power_leg_settings[LEG2].settings[BOOL_LEG]){
-                if(power_leg_settings[LEG2].settings[BOOL_BOOST]){
+            if(power_leg_settings[LEG2].settings[BOOL_LEG])
+            {
+                if(power_leg_settings[LEG2].settings[BOOL_BOOST])
+                {
                     twist.setLegDutyCycle(LEG2, (1-power_leg_settings[LEG2].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
-                }else{
+                }
+                else
+                {
                     twist.setLegDutyCycle(LEG2, power_leg_settings[LEG2].duty_cycle); //uses the normal convention by default
                 }
             }
 
-            if(V1_low_value>V1_max) V1_max = V1_low_value;  //gets the maximum V1 voltage value. This is used for the capacitor test
-            if(V2_low_value>V2_max) V2_max = V2_low_value;  //gets the maximum V2 voltage value. This is used for the capacitor test
-
+            if(V1_low_value>V1_max)
+            {
+             V1_max = V1_low_value;  //gets the maximum V1 voltage value. This is used for the capacitor test
+            }
+         
+            if(V2_low_value>V2_max)
+            {
+             V2_max = V2_low_value;  //gets the maximum V2 voltage value. This is used for the capacitor test
+            }
             break;
         default:
             break;
@@ -287,6 +327,5 @@ void loop_control_task()
 int main(void)
 {
     setup_routine();
-
     return 0;
 }
