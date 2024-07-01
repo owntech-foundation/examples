@@ -1,0 +1,777 @@
+Plecs {
+  Name          "PV_MPPT_Digital_Twin"
+  Version       "4.8"
+  CircuitModel  "ContStateSpace"
+  StartTime     "0.0"
+  TimeSpan      "1e-6"
+  Timeout       ""
+  Solver        "radau"
+  MaxStep       "1e-6"
+  InitStep      "-1"
+  FixedStep     "1e-3"
+  Refine        "1"
+  ZCStepSize    "1e-9"
+  RelTol        "1e-3"
+  AbsTol        "-1"
+  TurnOnThreshold "0"
+  NonIdealSwitchResistance "1"
+  SyncFixedStepTasks "2"
+  UseSingleCommonBaseRate "2"
+  LossVariableLimitExceededMsg "3"
+  NegativeSwitchLossMsg "3"
+  DivisionByZeroMsg "2"
+  DatatypeOverflowMsg "2"
+  DatatypeInheritanceConflictMsg "1"
+  ContSampleTimeConflictMsg "1"
+  StiffnessDetectionMsg "2"
+  MaxConsecutiveZCs "1000"
+  AlgebraicLoopWithStateMachineMsg "2"
+  AssertionAction "1"
+  FixedPointDatatypeOverride "1"
+  InitializationCommands ""
+  InitialState  "1"
+  SystemState   ""
+  TaskingMode   "1"
+  TaskConfigurations ""
+  CodeGenParameterInlining "2"
+  CodeGenFloatingPointFormat "2"
+  CodeGenAbsTimeUsageMsg "3"
+  CodeGenBaseName ""
+  CodeGenOutputDir ""
+  CodeGenExtraOpts ""
+  CodeGenTarget "Generic"
+  CodeGenTargetSettings ""
+  ExtendedMatrixPrecision "1"
+  MatrixSignificanceCheck "2"
+  RemoveUnusedStateSpaceOutputs "1"
+  EnableStateSpaceSplitting "2"
+  DisplayStateSpaceSplitting "1"
+  DiscretizationMethod "2"
+  ExternalModeSettings ""
+  AlgebraicLoopMethod "1"
+  AlgebraicLoopTolerance "1e-6"
+  ScriptsDialogGeometry ""
+  ScriptsDialogSplitterPos "0"
+  Terminal {
+    Type          Output
+    Index         "1"
+  }
+  Schematic {
+    Location      [402, 177; 1160, 631]
+    ZoomFactor    1
+    SliderPosition [-1, 0]
+    ShowBrowser   off
+    BrowserWidth  100
+    Component {
+      Type          Constant
+      Name          "Vref"
+      Show          on
+      Position      [295, 200]
+      Direction     right
+      Flipped       on
+      LabelPosition south
+      Frame         [-30, -10; 30, 10]
+      Parameter {
+        Variable      "Value"
+        Value         "17.402004"
+        Show          off
+      }
+      Parameter {
+        Variable      "DataType"
+        Value         "10"
+        Show          off
+      }
+    }
+    Component {
+      Type          Constant
+      Name          "Sun"
+      Show          on
+      Position      [75, 200]
+      Direction     right
+      Flipped       off
+      LabelPosition south
+      Frame         [-15, -10; 15, 10]
+      Parameter {
+        Variable      "Value"
+        Value         "0.5"
+        Show          off
+      }
+      Parameter {
+        Variable      "DataType"
+        Value         "10"
+        Show          off
+      }
+    }
+    Component {
+      Type          PlecsProbe
+      Name          "Probe"
+      Show          on
+      Position      [155, 285]
+      Direction     right
+      Flipped       off
+      LabelPosition south
+      Probe {
+        Component     "PV string"
+        Path          ""
+        Signals       {"Power (W)", "Voltage (V)", "Current (A)"}
+      }
+    }
+    Component {
+      Type          SignalDemux
+      Name          "Demux"
+      Show          off
+      Position      [320, 285]
+      Direction     right
+      Flipped       on
+      LabelPosition south
+      Parameter {
+        Variable      "Width"
+        Value         "3"
+        Show          off
+      }
+    }
+    Component {
+      Type          Scope
+      Name          "String V, I, P"
+      Show          on
+      Position      [545, 285]
+      Direction     up
+      Flipped       off
+      LabelPosition south
+      Location      [1136, 406; 1536, 868]
+      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAbwBvA"
+"G0AQQByAGUAYQAAAAAA/////wAAAJ0A////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAAAA//"
+"///wAAAH4A////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAAB+AP///wAAAAMAAAAAAAAAAPw"
+"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAP////8AAABfAP///wAAAfQAAAIjAAAA"
+"BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
+"AAAAA=="
+      SavedViews    "AAAAAgAAAAA="
+      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAB"
+"wAAAGQAAAAEAAAAZAAAAAUAAABkAAAAAgAAAGQAAAADAAAAZAAAAAEAAABkAAAACAAAAGQAAAAJAA"
+"AAZAAAAAYAAABkAAAA3gAAAAsBAAABAAAAAAAAAAAAAAAAff////8AAACBAAAAAAAAAAsAAACzAAA"
+"AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
+"AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
+"AArAAAAAQAAAAAAAAPoAAAAACs="
+      PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAA"
+"AEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"=="
+      Axes          "3"
+      TimeRange     "0.0"
+      ScrollingMode "1"
+      SingleTimeAxis "1"
+      Open          "0"
+      Ts            "-1"
+      SampleLimit   "0"
+      XAxisLabel    ""
+      ShowLegend    "1"
+      Axis {
+        Name          "Voltage"
+        AutoScale     1
+        MinValue      0
+        MaxValue      1
+        Signals       {}
+        SignalTypes   [ ]
+        AxisLabel     "V"
+        Untangle      0
+        KeepBaseline  off
+        BaselineValue 0
+      }
+      Axis {
+        Name          "Current"
+        AutoScale     1
+        MinValue      0
+        MaxValue      1
+        Signals       {}
+        SignalTypes   [ ]
+        AxisLabel     "A"
+        Untangle      0
+        KeepBaseline  off
+        BaselineValue 0
+      }
+      Axis {
+        Name          "Power"
+        AutoScale     1
+        MinValue      0
+        MaxValue      1
+        Signals       {}
+        SignalTypes   [ ]
+        AxisLabel     "W"
+        Untangle      0
+        KeepBaseline  off
+        BaselineValue 0
+      }
+      Fourier {
+        SingleXAxis       on
+        AxisLabel         "Frequency"
+        Scaling           0
+        PhaseDisplay      0
+        ShowFourierLegend off
+        Axis {
+          Name          ""
+          AutoScale     1
+          MinValue      0
+          MaxValue      1
+          Signals       {}
+          Untangle      0
+          KeepBaseline  off
+          BaselineValue 0
+        }
+        Axis {
+          Name          ""
+          AutoScale     1
+          MinValue      0
+          MaxValue      1
+          Signals       {}
+          Untangle      0
+          KeepBaseline  off
+          BaselineValue 0
+        }
+        Axis {
+          Name          ""
+          AutoScale     1
+          MinValue      0
+          MaxValue      1
+          Signals       {}
+          Untangle      0
+          KeepBaseline  off
+          BaselineValue 0
+        }
+      }
+    }
+    Component {
+      Type          XYPlot
+      Name          "X/Y Plot"
+      Show          on
+      Position      [545, 230]
+      Direction     up
+      Flipped       off
+      LabelPosition south
+      Location      [1138, 543; 1536, 868]
+      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAAvsAAAAQAFoAbwBvA"
+"G0AQQByAGUAYQAAAAAA/////wAAAD8A////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAAAA//"
+"///wAAAH4A////AAAAAwAAAZAAAABq/AEAAAAB+wAAABIAVABpAG0AZQBSAGEAbgBnAGUAAAAAAAA"
+"AAZAAAACWAP///wAAAfIAAAF3AAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBv"
+"AGwAQgBhAHIBAAAAAP////8AAAAAAAAAAA=="
+      SavedViews    "AAAAAgAAAAA="
+      HeaderState   ""
+      PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      TimeRange     "0.0"
+      ShownPeriods  "1"
+      Open          "0"
+      Ts            "-1"
+      SampleLimit   "0"
+      XAxisLabel    "Voltage (V)"
+      AspectRatioX  "-1"
+      AspectRatioY  "-1"
+      PlotStyle     "1"
+      ShowLegend    "1"
+      Axis {
+        Name          ""
+        AutoScale     1
+        MinValue      3.5
+        MaxValue      4
+        Signals       {}
+        AxisLabel     "Current (A)"
+      }
+      Axis {
+        Name          ""
+        AutoScale     1
+        MinValue      190
+        MaxValue      400
+        Signals       {}
+      }
+    }
+    Component {
+      Type          Subsystem
+      Name          "PV string"
+      Show          on
+      Position      [135, 200]
+      Direction     up
+      Flipped       off
+      LabelPosition east
+      Frame         [-10, -20; 10, 20]
+      SampleTime    "-1"
+      CodeGenDiscretizationMethod "2"
+      CodeGenTarget "Generic"
+      MaskType      "PV String"
+      MaskDescription "Models a PV string comprising BP365 65W panels."
+      MaskDisplay   "line([-10 0 10], [-20 -7 -20])"
+      MaskIconFrame on
+      MaskIconOpaque on
+      MaskIconRotates on
+      MaskInit      "load('Isurf_BP365.mat');"
+      Parameter {
+        Variable      "n"
+        Prompt        "Number of PV modules in string"
+        Type          FreeText
+        Value         "1"
+        Show          off
+        Tunable       off
+        TabName       ""
+      }
+      Parameter {
+        Variable      "llstrings"
+        Prompt        "Number of strings in parallel"
+        Type          FreeText
+        Value         "1"
+        Show          off
+        Tunable       off
+        TabName       ""
+      }
+      Parameter {
+        Variable      "C"
+        Prompt        "Output capacitance (F)"
+        Type          FreeText
+        Value         "1e-6"
+        Show          off
+        Tunable       off
+        TabName       ""
+      }
+      Parameter {
+        Variable      "V_init"
+        Prompt        "Initial output voltage (V)"
+        Type          FreeText
+        Value         "1"
+        Show          off
+        Tunable       off
+        TabName       ""
+      }
+      Parameter {
+        Variable      "T"
+        Prompt        "Temperature (C)"
+        Type          FreeText
+        Value         "25"
+        Show          off
+        Tunable       off
+        TabName       ""
+      }
+      Terminal {
+        Type          Port
+        Position      [0, -25]
+        Direction     up
+      }
+      Terminal {
+        Type          Port
+        Position      [0, 25]
+        Direction     down
+      }
+      Terminal {
+        Type          Input
+        Position      [-10, 0]
+        Direction     left
+      }
+      Schematic {
+        Location      [0, 26; 1536, 788]
+        ZoomFactor    1
+        SliderPosition [0, 0]
+        ShowBrowser   off
+        BrowserWidth  100
+        Component {
+          Type          Ammeter
+          Name          "I_PV"
+          Show          off
+          Position      [600, 225]
+          Direction     left
+          Flipped       off
+          LabelPosition south
+        }
+        Component {
+          Type          CurrentSource
+          Name          "I1"
+          Show          on
+          Position      [460, 300]
+          Direction     down
+          Flipped       on
+          LabelPosition east
+          Parameter {
+            Variable      "DiscretizationBehavior"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "StateSpaceInlining"
+            Value         "2"
+            Show          off
+          }
+        }
+        Component {
+          Type          Voltmeter
+          Name          "V1"
+          Show          on
+          Position      [525, 305]
+          Direction     down
+          Flipped       on
+          LabelPosition east
+        }
+        Component {
+          Type          Port
+          Name          "+"
+          Show          on
+          Position      [662, 225]
+          Direction     right
+          Flipped       on
+          LabelPosition south
+          Parameter {
+            Variable      "Index"
+            Value         "1"
+            Show          on
+          }
+          Parameter {
+            Variable      "Width"
+            Value         "-1"
+            Show          off
+          }
+        }
+        Component {
+          Type          Port
+          Name          "-"
+          Show          on
+          Position      [667, 370]
+          Direction     right
+          Flipped       on
+          LabelPosition south
+          Parameter {
+            Variable      "Index"
+            Value         "2"
+            Show          on
+          }
+          Parameter {
+            Variable      "Width"
+            Value         "-1"
+            Show          off
+          }
+        }
+        Component {
+          Type          Input
+          Name          "Sun"
+          Show          on
+          Position      [225, 300]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Index"
+            Value         "3"
+            Show          on
+          }
+          Parameter {
+            Variable      "Width"
+            Value         "-1"
+            Show          off
+          }
+        }
+        Component {
+          Type          Function
+          Name          "1/num_panels"
+          Show          on
+          Position      [410, 190]
+          Direction     left
+          Flipped       off
+          LabelPosition north
+          Frame         [-20, -10; 20, 10]
+          Parameter {
+            Variable      "f(u)"
+            Value         "u[1]/n"
+            Show          off
+          }
+        }
+        Component {
+          Type          Lookup3D
+          Name          "3D-Table"
+          Show          on
+          Position      [405, 300]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "x"
+            Value         "[0:0.05:25]"
+            Show          off
+          }
+          Parameter {
+            Variable      "y"
+            Value         "[0:0.1:1]"
+            Show          off
+          }
+          Parameter {
+            Variable      "z"
+            Value         "[0:25:50]"
+            Show          off
+          }
+          Parameter {
+            Variable      "f(x,y,z)"
+            Value         "IV_BP365*llstrings"
+            Show          off
+          }
+          Parameter {
+            Variable      "ZeroCrossingSignals"
+            Value         "1"
+            Show          off
+          }
+        }
+        Component {
+          Type          Constant
+          Name          "Temperature1"
+          Show          on
+          Position      [225, 335]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Frame         [-10, -10; 10, 10]
+          Parameter {
+            Variable      "Value"
+            Value         "T"
+            Show          off
+          }
+          Parameter {
+            Variable      "DataType"
+            Value         "10"
+            Show          off
+          }
+        }
+        Connection {
+          Type          Wire
+          SrcComponent  "I_PV"
+          SrcTerminal   1
+          Points        [525, 225]
+          Branch {
+            Points        [460, 225]
+            DstComponent  "I1"
+            DstTerminal   2
+          }
+          Branch {
+            DstComponent  "V1"
+            DstTerminal   1
+          }
+        }
+        Connection {
+          Type          Wire
+          SrcComponent  "V1"
+          SrcTerminal   2
+          Points        [525, 370]
+          Branch {
+            Points        [460, 370]
+            DstComponent  "I1"
+            DstTerminal   1
+          }
+          Branch {
+            DstComponent  "-"
+            DstTerminal   1
+          }
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "1/num_panels"
+          SrcTerminal   2
+          Points        [310, 190; 310, 290]
+          DstComponent  "3D-Table"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Sun"
+          SrcTerminal   1
+          DstComponent  "3D-Table"
+          DstTerminal   2
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "3D-Table"
+          SrcTerminal   4
+          DstComponent  "I1"
+          DstTerminal   3
+        }
+        Connection {
+          Type          Wire
+          SrcComponent  "I_PV"
+          SrcTerminal   2
+          DstComponent  "+"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "V1"
+          SrcTerminal   3
+          Points        [500, 305; 500, 190]
+          DstComponent  "1/num_panels"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Temperature1"
+          SrcTerminal   1
+          Points        [310, 335; 310, 310]
+          DstComponent  "3D-Table"
+          DstTerminal   3
+        }
+      }
+      MaskProbe {
+        Name          "Voltage (V)"
+        Probe {
+          Component     "V1"
+          Path          ""
+          Signals       {"Measured voltage"}
+        }
+      }
+      MaskProbe {
+        Name          "Current (A)"
+        Probe {
+          Component     "I_PV"
+          Path          ""
+          Signals       {"Measured current"}
+        }
+      }
+      MaskProbe {
+        Name          "Power (W)"
+      }
+    }
+    Component {
+      Type          VoltageSource
+      Name          "V"
+      Show          on
+      Position      [220, 200]
+      Direction     up
+      Flipped       off
+      LabelPosition west
+      Parameter {
+        Variable      "DiscretizationBehavior"
+        Value         "2"
+        Show          off
+      }
+      Parameter {
+        Variable      "StateSpaceInlining"
+        Value         "1"
+        Show          off
+      }
+    }
+    Component {
+      Type          Output
+      Name          "Out2"
+      Show          on
+      Position      [545, 340]
+      Direction     right
+      Flipped       off
+      LabelPosition south
+      Parameter {
+        Variable      "Index"
+        Value         "1"
+        Show          on
+      }
+      Parameter {
+        Variable      "Width"
+        Value         "-1"
+        Show          off
+      }
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Probe"
+      SrcTerminal   1
+      DstComponent  "Demux"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Demux"
+      SrcTerminal   4
+      DstComponent  "String V, I, P"
+      DstTerminal   3
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "PV string"
+      SrcTerminal   2
+      Points        [135, 255; 220, 255]
+      DstComponent  "V"
+      DstTerminal   2
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Sun"
+      SrcTerminal   1
+      DstComponent  "PV string"
+      DstTerminal   3
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "PV string"
+      SrcTerminal   1
+      Points        [135, 145; 220, 145]
+      DstComponent  "V"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Vref"
+      SrcTerminal   1
+      DstComponent  "V"
+      DstTerminal   3
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Demux"
+      SrcTerminal   3
+      Points        [405, 285]
+      Branch {
+        Points        [490, 285]
+        Branch {
+          DstComponent  "String V, I, P"
+          DstTerminal   2
+        }
+        Branch {
+          Points        [490, 340]
+          DstComponent  "Out2"
+          DstTerminal   1
+        }
+      }
+      Branch {
+        Points        [405, 235]
+        DstComponent  "X/Y Plot"
+        DstTerminal   1
+      }
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Demux"
+      SrcTerminal   2
+      Points        [395, 275]
+      Branch {
+        DstComponent  "String V, I, P"
+        DstTerminal   1
+      }
+      Branch {
+        Points        [395, 225]
+        DstComponent  "X/Y Plot"
+        DstTerminal   2
+      }
+    }
+    Annotation {
+      Name          "<html><body>\n<p><span style=\" font-size:13px; font-weig"
+"ht:600;\">The solar irradiance, referred to here as &quot;Sun,&quot; can be s"
+"et to a value between 0 and 1</span></p></body></html>"
+      Position      [355, 395]
+    } 
+    Annotation {
+      Name          "<html><body>\n<p><span style=\" font-size:13px; font-weig"
+"ht:600;\">The temperature of the PV array can be set to 0, 25, or 50 degrees "
+"Celsius.</span></p></body></html>"
+      Position      [320, 415]
+    } 
+    Annotation {
+      Name          "<html><body>\n<p><span style=\" font-size:13px;\">This is"
+" the model used in the example of a PV module controlled by an MPPT. </span><"
+"/p>\n<p><span style=\" font-size:13px;\">The Vref is the reference voltage se"
+"t by the controller code in Python. </span></p>\n<p><span style=\" font-size:"
+"13px;\">The PV module will impose a current based on this voltage, its irradi"
+"ance, and its temperature. </span></p>\n<p><span style=\" font-size:13px;\">T"
+"he current will follow a typical IV curve of a BP365 65W PV module.</span></p"
+"></body></html>"
+      Position      [325, 90]
+    } 
+    Annotation {
+      Name          "<html><body>\n<p><span style=\" font-size:19px; color:#00"
+"5f44;\">Digital Twin PV example</span></p></body></html>"
+      Position      [150, 30]
+    } 
+  }
+}
