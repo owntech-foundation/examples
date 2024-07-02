@@ -8,7 +8,7 @@
         "type": "git",
         "url": "https://github.com/owntech-foundation/examples.git"
     },
-    "build": 
+    "build":
     {
         "srcFilter": "-<**>"
     },
@@ -162,6 +162,17 @@
         "description": "It is an AC current source which follow a grid voltage. Commonly, a grid-following inverter adjusts its output to match the voltage and frequency of the existing electrical grid",
         "group": "Examples TWIST",
         "base": "TWIST/DC_AC/grid_following",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "python_communication_protocol",
+        "title": "Python Communication Protocol",
+        "description": "This example allows a user to control a Twist in DC-DC buck mode using a Python script.",
+        "group": "Examples TWIST",
+        "base": "TWIST/Communication/python_comm_library",
         "files": [
             "main.cpp",
             "README.md"
