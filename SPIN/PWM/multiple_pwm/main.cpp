@@ -28,13 +28,12 @@
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
-//--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
-#include "TaskAPI.h"
-#include "TwistAPI.h"
-#include "SpinAPI.h"
+//--------------Zephyr----------------------------------------
+#include <zephyr/console/console.h>
 
-#include "zephyr/console/console.h"
+//--------------OWNTECH APIs----------------------------------
+#include "SpinAPI.h"
+#include "TaskAPI.h"
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
@@ -69,9 +68,6 @@ uint8_t mode = IDLEMODE;
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-
     /* PWM A initialization */
     spin.pwm.setModulation(PWMA, UpDwn);
     spin.pwm.setAdcEdgeTrigger(PWMA, EdgeTrigger_up);
@@ -170,7 +166,7 @@ void loop_communication_task()
 void loop_application_task()
 {
     // Task content
-    printk("%f\n", duty_cycle);
+    printk("%f\n", (double)duty_cycle);
 
     // Pause between two runs of the task
     task.suspendBackgroundMs(1000);

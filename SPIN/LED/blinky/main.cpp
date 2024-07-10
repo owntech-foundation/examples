@@ -29,10 +29,8 @@
  */
 
 //--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
-#include "TaskAPI.h"
-#include "TwistAPI.h"
 #include "SpinAPI.h"
+#include "TaskAPI.h"
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
@@ -55,10 +53,7 @@ void loop_critical_task();     // Code to be executed in real time in the critic
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-
-    // Then declare tasks
+    // Declare tasks
     uint32_t background_task_number = task.createBackground(loop_background_task);
     //task.createCritical(loop_critical_task, 500); // Uncomment if you use the critical task
 
