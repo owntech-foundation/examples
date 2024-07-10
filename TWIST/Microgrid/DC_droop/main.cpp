@@ -29,14 +29,16 @@
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
-//--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
-#include "TaskAPI.h"
-#include "TwistAPI.h"
-#include "SpinAPI.h"
-#include "pid.h"
+//--------------Zephyr----------------------------------------
+#include <zephyr/console/console.h>
 
-#include "zephyr/console/console.h"
+//--------------OWNTECH APIs----------------------------------
+#include "SpinAPI.h"
+#include "ShieldAPI.h"
+#include "TaskAPI.h"
+
+//-------------- Libraries------------------------------------
+#include "pid.h"
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
@@ -64,10 +66,10 @@ static float32_t V_high;
 int count = 0;
 static float meas_data; // temp storage meas value (ctrl task)
 
-//Define for selecting the card to be flashed 
+//Define for selecting the card to be flashed
 #define DROOP1
 
-// Droop coeficient configuration 
+// Droop coeficient configuration
 #ifdef DROOP
 static float32_t coef_droop = 1.2;
 #define ROLE_TXT "DROOP"
@@ -86,8 +88,8 @@ static float32_t coef_droop2 = 1.6;
 
 #if defined(DROOP) || defined(DROOP1) || defined(DROOP2)
     float32_t duty_cycle = 0.1;
-    static float32_t reference = 12; //current reference 
-    static float32_t serial_step = 0.1; //current reference 
+    static float32_t reference = 12; //current reference
+    static float32_t serial_step = 0.1; //current reference
 #endif
 
 /* PID coefficient for a 8.6ms step response*/
@@ -121,14 +123,10 @@ uint8_t mode = IDLEMODE;
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_3);
-
     /* buck voltage mode */
-    twist.initAllBuck();
+    shield.power.initAllBuck();
 
-    data.enableTwistDefaultChannels();
+    shield.sensors.enableDefaultTwistSensors();
 
     pid.init(pid_params);
 
@@ -172,7 +170,7 @@ void loop_communication_task()
             mode = POWERMODE;
             break;
         case 'u':
-            
+
             reference += serial_step;
             break;
         case 'd':
@@ -221,41 +219,41 @@ void loop_application_task()
  */
 void loop_critical_task()
 {
-    meas_data = data.getLatest(I1_LOW);
+    meas_data = shield.sensors.getLatestValue(I1_LOW);
     if (meas_data != NO_VALUE) I1_low_value = meas_data;
 
-    meas_data = data.getLatest(V1_LOW);
+    meas_data = shield.sensors.getLatestValue(V1_LOW);
     if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
-    meas_data = data.getLatest(V2_LOW);
+    meas_data = shield.sensors.getLatestValue(V2_LOW);
     if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
-    meas_data = data.getLatest(I2_LOW);
+    meas_data = shield.sensors.getLatestValue(I2_LOW);
     if (meas_data != NO_VALUE) I2_low_value = meas_data;
 
-    meas_data = data.getLatest(I_HIGH);
+    meas_data = shield.sensors.getLatestValue(I_HIGH);
     if (meas_data != NO_VALUE) I_high = meas_data;
 
-    meas_data = data.getLatest(V_HIGH);
+    meas_data = shield.sensors.getLatestValue(V_HIGH);
     if (meas_data != NO_VALUE) V_high = meas_data;
 
     if (mode == IDLEMODE)
     {
         pwm_enable = false;
-        twist.stopAll();
+        shield.power.stopAll();
     }
     else if (mode == POWERMODE)
-    {   
+    {
         if (!pwm_enable)
         {
             pwm_enable = true;
-            twist.startAll();
+            shield.power.startAll();
         }
 
         #ifdef DROOP
             float Vref_droop = reference - (I1_low_value+I2_low_value)*coef_droop;
 
-            duty_cycle = pid.calculateWithReturn(Vref_droop, V1_low_value); 
+            duty_cycle = pid.calculateWithReturn(Vref_droop, V1_low_value);
         #endif
 
         #ifdef DROOP1
@@ -265,10 +263,10 @@ void loop_critical_task()
 
         #ifdef DROOP2
             float Vref_droop = reference - (I1_low_value+I2_low_value)*coef_droop2;
-            duty_cycle = pid.calculateWithReturn(Vref_droop, V1_low_value);  
+            duty_cycle = pid.calculateWithReturn(Vref_droop, V1_low_value);
         #endif
 
-        twist.setAllDutyCycle(duty_cycle);
+        shield.power.setAllDutyCycle(duty_cycle);
 
     }
 
