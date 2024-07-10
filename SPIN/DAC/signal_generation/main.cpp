@@ -29,10 +29,8 @@
  */
 
 //--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
-#include "TaskAPI.h"
-#include "TwistAPI.h"
 #include "SpinAPI.h"
+#include "TaskAPI.h"
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
@@ -55,9 +53,6 @@ static uint32_t dac_value;
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-
     spin.dac.initConstValue(2); // DAC initialization
     spin.dac.setConstValue(2, 1, 0);
 
