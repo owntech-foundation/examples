@@ -26,14 +26,17 @@
  * @author Régis Ruelland <regis.ruelland@laas.fr>
  */
 
+//--------------Zephyr----------------------------------------
+#include <zephyr/console/console.h>
+
 //--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
-#include "TaskAPI.h"
-#include "TwistAPI.h"
 #include "SpinAPI.h"
-#include "arm_math_types.h"
+#include "ShieldAPI.h"
+#include "TaskAPI.h"
+
+//-------------- Libraries------------------------------------
 #include "pid.h"
-#include "zephyr/console/console.h"
+#include "arm_math_types.h"
 #include <ScopeMimicry.h>
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
@@ -87,7 +90,7 @@ static Pid pid;
 static const uint16_t NB_DATAS = 2048;
 static const float32_t minimal_step = 1.0F / (float32_t) NB_DATAS;
 static uint16_t number_of_cycle = 2;
-static ScopeMimicry scope(NB_DATAS, 7); 
+static ScopeMimicry scope(NB_DATAS, 7);
 static bool is_downloading;
 
 //---------------------------------------------------------------
@@ -107,7 +110,7 @@ bool a_trigger() {
 
 void dump_scope_datas(ScopeMimicry &scope)  {
     uint8_t *buffer = scope.get_buffer();
-    uint16_t buffer_size = scope.get_buffer_size() >> 2; // we divide by 4 (4 bytes per float data) 
+    uint16_t buffer_size = scope.get_buffer_size() >> 2; // we divide by 4 (4 bytes per float data)
     printk("begin record\n");
     printk("#");
     for (uint16_t k=0;k < scope.get_nb_channel(); k++) {
@@ -133,16 +136,14 @@ void dump_scope_datas(ScopeMimicry &scope)  {
 void setup_routine()
 {
     // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_3);
     spin.gpio.configurePin(PC6, OUTPUT);
     spin.gpio.configurePin(PB7, OUTPUT);
     spin.gpio.resetPin(PC6); // use the capacitor
     spin.gpio.resetPin(PB7); // use the capacitor
     /* buck voltage mode */
-    twist.initAllBuck();
+    shield.power.initAllBuck();
 
-    data.enableTwistDefaultChannels();
+    shield.sensors.enableDefaultTwistSensors();
 
     pid.init(pid_params);
 
@@ -213,7 +214,7 @@ void loop_communication_task()
         case 'r':
             is_downloading = true;
             break;
-        case 'a': 
+        case 'a':
             enable_acq = !(enable_acq);
             break;
         case 'c':
@@ -237,10 +238,10 @@ void loop_application_task()
             is_downloading = false;
         } else {
         printk("% 7d:", scope.has_trigged());
-        printk("% 7.2f:", duty_cycle);
+        printk("% 7.2f:", (double)duty_cycle);
         printk("% 7d:", num_trig_ratio_point);
-        printk("% 7.2f:", V_high);
-        printk("% 7.2f\n", V1_low_value);
+        printk("% 7.2f:", (double)V_high);
+        printk("% 7.2f\n", (double)V1_low_value);
         }
         spin.led.turnOff();
     }
@@ -248,10 +249,10 @@ void loop_application_task()
     {
         spin.led.turnOn();
         printk("% 7d:", scope.has_trigged());
-        printk("% 7.2f:", duty_cycle);
+        printk("% 7.2f:", (double)duty_cycle);
         printk("% 7d:", num_trig_ratio_point);
-        printk("% 7.2f:", V_high);
-        printk("% 7.2f\n", V1_low_value);
+        printk("% 7.2f:", (double)V_high);
+        printk("% 7.2f\n", (double)V1_low_value);
     }
     task.suspendBackgroundMs(250);
 }
@@ -266,27 +267,27 @@ void loop_critical_task()
 {
 
 
-    meas_data = data.getLatest(I1_LOW);
+    meas_data = shield.sensors.getLatestValue(I1_LOW);
     if (meas_data < 10000 && meas_data > -10000)
         I1_low_value = meas_data;
 
-    meas_data = data.getLatest(V1_LOW);
+    meas_data = shield.sensors.getLatestValue(V1_LOW);
     if (meas_data != -10000)
         V1_low_value = meas_data;
 
-    meas_data = data.getLatest(V2_LOW);
+    meas_data = shield.sensors.getLatestValue(V2_LOW);
     if (meas_data != -10000)
         V2_low_value = meas_data;
 
-    meas_data = data.getLatest(I2_LOW);
+    meas_data = shield.sensors.getLatestValue(I2_LOW);
     if (meas_data < 10000 && meas_data > -10000)
         I2_low_value = meas_data;
 
-    meas_data = data.getLatest(I_HIGH);
+    meas_data = shield.sensors.getLatestValue(I_HIGH);
     if (meas_data < 10000 && meas_data > -10000)
         I_high = meas_data;
 
-    meas_data = data.getLatest(V_HIGH);
+    meas_data = shield.sensors.getLatestValue(V_HIGH);
     if (meas_data != -10000)
         V_high = meas_data;
 
@@ -294,20 +295,20 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            twist.stopAll();
+            shield.power.stopAll();
         }
         pwm_enable = false;
     }
     else if (mode == POWERMODE)
     {
         //duty_cycle = pid.calculateWithReturn(voltage_reference, V1_low_value);
-        twist.setAllDutyCycle(duty_cycle);
+        shield.power.setAllDutyCycle(duty_cycle);
         if (enable_acq) {
             trig_ratio += (end_trig_ratio - begin_trig_ratio) / (float32_t)num_trig_ratio_point;
             if (trig_ratio > end_trig_ratio) { // make a cycle
                 trig_ratio = begin_trig_ratio;
             }
-            twist.setLegTriggerValue(LEG1, trig_ratio);
+            shield.power.setLegTriggerValue(LEG1, trig_ratio);
         }
         scope.acquire();
     }
@@ -315,7 +316,7 @@ void loop_critical_task()
     if (!pwm_enable)
     {
         pwm_enable = true;
-        twist.startAll();
+        shield.power.startAll();
     }
 }
 

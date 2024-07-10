@@ -28,14 +28,16 @@
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
-//--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
-#include "TaskAPI.h"
-#include "TwistAPI.h"
-#include "SpinAPI.h"
-#include "pid.h"
+//--------------Zephyr----------------------------------------
+#include <zephyr/console/console.h>
 
-#include "zephyr/console/console.h"
+//--------------OWNTECH APIs----------------------------------
+#include "SpinAPI.h"
+#include "ShieldAPI.h"
+#include "TaskAPI.h"
+
+//--------------OWNTECH Libraries-----------------------------
+#include "pid.h"
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
@@ -99,14 +101,10 @@ uint8_t mode = IDLEMODE;
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_3);
-
     /* boost voltage mode */
-    twist.initLegBoost(LEG1);
+    shield.power.initLegBoost(LEG1);
 
-    data.enableTwistDefaultChannels();
+    shield.sensors.enableDefaultTwistSensors();
 
     pid.init(pid_params);
 
@@ -176,12 +174,12 @@ void loop_application_task()
     {
         spin.led.turnOn();
 
-        printk("%f:", I1_low_value);
-        printk("%f:", V1_low_value);
-        printk("%f:", I2_low_value);
-        printk("%f:", V2_low_value);
-        printk("%f:", I_high);
-        printk("%f\n", V_high);
+        printk("%f:", (double)I1_low_value);
+        printk("%f:", (double)V1_low_value);
+        printk("%f:", (double)I2_low_value);
+        printk("%f:", (double)V2_low_value);
+        printk("%f:", (double)I_high);
+        printk("%f\n", (double)V_high);
     }
 
     task.suspendBackgroundMs(1000);
@@ -195,22 +193,22 @@ void loop_application_task()
  */
 void loop_critical_task()
 {
-    meas_data = data.getLatest(I1_LOW);
+    meas_data = shield.sensors.getLatestValue(I1_LOW);
     if (meas_data != NO_VALUE) I1_low_value = meas_data;
 
-    meas_data = data.getLatest(V1_LOW);
+    meas_data = shield.sensors.getLatestValue(V1_LOW);
     if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
-    meas_data = data.getLatest(V2_LOW);
+    meas_data = shield.sensors.getLatestValue(V2_LOW);
     if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
-    meas_data = data.getLatest(I2_LOW);
+    meas_data = shield.sensors.getLatestValue(I2_LOW);
     if (meas_data != NO_VALUE) I2_low_value = meas_data;
 
-    meas_data = data.getLatest(I_HIGH);
+    meas_data = shield.sensors.getLatestValue(I_HIGH);
     if (meas_data != NO_VALUE) I_high = meas_data;
 
-    meas_data = data.getLatest(V_HIGH);
+    meas_data = shield.sensors.getLatestValue(V_HIGH);
     if (meas_data != NO_VALUE) V_high = meas_data;
 
 
@@ -219,20 +217,20 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            twist.stopAll();
+            shield.power.stopAll();
         }
         pwm_enable = false;
     }
     else if (mode == POWERMODE)
     {
         duty_cycle = pid.calculateWithReturn(voltage_reference, V_high);
-        twist.setAllDutyCycle(duty_cycle);
+        shield.power.setAllDutyCycle(duty_cycle);
 
         /* Set POWER ON */
         if (!pwm_enable)
         {
             pwm_enable = true;
-            twist.startLeg(LEG1);
+            shield.power.startLeg(LEG1);
         }
     }
 

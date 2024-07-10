@@ -29,15 +29,17 @@
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
-//--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
-#include "TaskAPI.h"
-#include "TwistAPI.h"
-#include "SpinAPI.h"
-#include "CommunicationAPI.h"
-#include "pid.h"
+//--------------Zephyr----------------------------------------
+#include <zephyr/console/console.h>
 
-#include "zephyr/console/console.h"
+//--------------OWNTECH APIs----------------------------------
+#include "SpinAPI.h"
+#include "ShieldAPI.h"
+#include "TaskAPI.h"
+#include "CommunicationAPI.h"
+
+//-------------- Libraries------------------------------------
+#include "pid.h"
 
 #define SLAVE // MASTER, SLAVE
 #define VREF 2.048
@@ -115,14 +117,10 @@ uint8_t mode = IDLEMODE;
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_3);
-    
     /* buck voltage mode */
-    twist.initAllBuck();
+    shield.power.initAllBuck();
 
-    data.enableTwistDefaultChannels();
+    shield.sensors.enableDefaultTwistSensors();
 
     communication.analog.init();
 #ifdef MASTER
@@ -131,7 +129,7 @@ void setup_routine()
 #endif
 
 #ifdef SLAVE
-    communication.sync.initSlave(TWIST_v_1_1_4); // wait for synchronisation
+    communication.sync.initSlave(); // wait for synchronisation
 #endif
 
     pid.init(pid_params);
@@ -203,12 +201,12 @@ void loop_application_task()
     {
         spin.led.turnOn();
 
-        printk("%f:", I1_low_value);
-        printk("%f:", V1_low_value);
-        printk("%f:", I2_low_value);
-        printk("%f:", V2_low_value);
+        printk("%f:", (double)I1_low_value);
+        printk("%f:", (double)V1_low_value);
+        printk("%f:", (double)I2_low_value);
+        printk("%f:", (double)V2_low_value);
     }
-    printk("%f:", PeakRef_Raw);
+    printk("%f:", (double)PeakRef_Raw);
     printk("\n");
     task.suspendBackgroundMs(100);
 }
@@ -230,16 +228,16 @@ void loop_critical_task()
         mode = POWERMODE;
 #endif
 
-    meas_data = data.getLatest(I1_LOW);
+    meas_data = shield.sensors.getLatestValue(I1_LOW);
     if (meas_data != NO_VALUE) I1_low_value = meas_data;
 
-    meas_data = data.getLatest(V1_LOW);
+    meas_data = shield.sensors.getLatestValue(V1_LOW);
     if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
-    meas_data = data.getLatest(V2_LOW);
+    meas_data = shield.sensors.getLatestValue(V2_LOW);
     if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
-    meas_data = data.getLatest(I2_LOW);
+    meas_data = shield.sensors.getLatestValue(I2_LOW);
     if (meas_data != NO_VALUE) I2_low_value = meas_data;
 
     if (mode == IDLEMODE)
@@ -247,7 +245,7 @@ void loop_critical_task()
         if (pwr_enable == true)
         {
             pwr_enable = false;
-            twist.stopAll();
+            shield.power.stopAll();
 #ifdef MASTER
             communication.analog.setAnalogCommValue(0);
 #endif
@@ -259,7 +257,7 @@ void loop_critical_task()
         if (pwr_enable == false)
         {
             pwr_enable = true;
-            twist.startAll();
+            shield.power.startAll();
             count = 0;
 #ifdef MASTER
             Iref = 0.6F; // initial current reference
@@ -286,7 +284,7 @@ void loop_critical_task()
         duty_cycle = pid.calculateWithReturn(Iref, (I1_low_value + I2_low_value));
 #endif
 
-        twist.setAllDutyCycle(duty_cycle);
+        shield.power.setAllDutyCycle(duty_cycle);
     }
 }
 
