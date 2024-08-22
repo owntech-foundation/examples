@@ -90,7 +90,7 @@ void setup_routine()
 void loop_background_task()
 {
     // Task content
-    if (err == 0)
+    if (err == DATA_IS_OK)
     {
         printk("%f\n", (double)adc_value);
     }
