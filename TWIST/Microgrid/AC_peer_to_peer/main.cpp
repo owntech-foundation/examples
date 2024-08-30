@@ -252,38 +252,35 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
-        {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("      ------ MENU :%s             \n", ROLE_TXT);
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'i':
-            printk("idle mode\n");
-            mode = IDLEMODE;
-            printk("trig status :%d\n", scope.has_trigged());
-            scope.start();
-            scope.set_delay(0.0);
-            record_counter = 0;
-            break;
-        case 'p':
-            printk("power mode\n");
-            mode = POWERMODE;
-            break;
-        case 'r':
-            is_downloading = true;
-            break;
-        default:
-            break;
-        }
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("      ------ MENU :%s             \n", ROLE_TXT);
+        printk("|     press i : idle mode                |\n");
+        printk("|     press p : power mode               |\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'i':
+        printk("idle mode\n");
+        mode = IDLEMODE;
+        printk("trig status :%d\n", scope.has_trigged());
+        scope.start();
+        scope.set_delay(0.0);
+        record_counter = 0;
+        break;
+    case 'p':
+        printk("power mode\n");
+        mode = POWERMODE;
+        break;
+    case 'r':
+        is_downloading = true;
+        break;
+    default:
+        break;
     }
 }
 

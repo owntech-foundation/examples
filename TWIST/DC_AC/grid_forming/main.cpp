@@ -225,49 +225,45 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
-        {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     ------- grid forming ------        |\n");
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|     press u : vgrid up                 |\n");
-            printk("|     press p : vgrid down               |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'i':
-            printk("idle mode\n");
-            mode_asked = IDLEMODE;
-            break;
-        case 'p':
-                if (!is_downloading){
-                    printk("power mode\n");
-                    scope.start();
-                    mode_asked = POWERMODE;
-                }
-            break;
-        case 'u': 
-            if (Vgrid_amplitude_ref < 50.0F)
-                    Vgrid_amplitude_ref += .5F;
-            break;
-        case 'd': 
-            if (Vgrid_amplitude_ref > 0.5F)
-                    Vgrid_amplitude_ref -= .5F;
-            break;
-        case 'r':
-            is_downloading = true;
-            break;
-        default:
-            break;
-        }
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("|     ------- grid forming ------        |\n");
+        printk("|     press i : idle mode                |\n");
+        printk("|     press p : power mode               |\n");
+        printk("|     press u : vgrid up                 |\n");
+        printk("|     press p : vgrid down               |\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'i':
+        printk("idle mode\n");
+        mode_asked = IDLEMODE;
+        break;
+    case 'p':
+            if (!is_downloading){
+                printk("power mode\n");
+                scope.start();
+                mode_asked = POWERMODE;
+            }
+        break;
+    case 'u': 
+        if (Vgrid_amplitude_ref < 50.0F)
+                Vgrid_amplitude_ref += .5F;
+        break;
+    case 'd': 
+        if (Vgrid_amplitude_ref > 0.5F)
+                Vgrid_amplitude_ref -= .5F;
+        break;
+    case 'r':
+        is_downloading = true;
+        break;
+    default:
+        break;
     }
-
 }
 
 /**
