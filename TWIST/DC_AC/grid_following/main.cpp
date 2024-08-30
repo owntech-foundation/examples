@@ -144,8 +144,8 @@ void setup_routine()
     data.enableTwistDefaultChannels();
 
     /* buck voltage mode */
-    twist.initLegBuck(LEG1);
-    twist.initLegBoost(LEG2);
+    twist.initBuck(LEG1);
+    twist.initBoost(LEG2);
 
     scope.connectChannel(I1_low_value, "I1_low_value");
     scope.connectChannel(I2_low_value, "I2_low_value");
@@ -311,11 +311,11 @@ void loop_critical_task()
         pr_value = prop_res.calculateWithReturn(Iref, I1_low_value);
         Vgrid = V1_low_value - V2_low_value;
         duty_cycle = (Vgrid + pr_value) / (2.0 * Udc) + 0.5F;
-        twist.setAllDutyCycle(duty_cycle);
+        twist.setDutyCycle(ALL,duty_cycle);
         if (!pwm_enable)
         {
             pwm_enable = true;
-            twist.startAll();
+            twist.start(ALL);
         }
         spin.led.turnOn();
 
@@ -325,7 +325,7 @@ void loop_critical_task()
         mode = IDLEMODE;
         if (pwm_enable == true)
         {
-            twist.stopAll();
+            twist.stop(ALL);
             duty_cycle = 0;
             spin.led.turnOff();
             pwm_enable = false;

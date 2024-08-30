@@ -102,8 +102,8 @@ uint8_t mode = IDLEMODE;
 void setup_routine()
 {
     /* buck voltage mode */
-    shield.power.initAllBuck();
-    shield.power.setLegPhaseShift(LEG2, 180);
+    shield.power.initBuck(ALL);
+    shield.power.setPhaseShift(LEG2, 180);
 
     shield.sensors.enableDefaultTwistSensors();
 
@@ -214,20 +214,20 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            shield.power.stopAll();
+            shield.power.stop(ALL);
         }
         pwm_enable = false;
     }
     else if (mode == POWERMODE)
     {
         duty_cycle = pid.calculateWithReturn(voltage_reference, V1_low_value);
-        shield.power.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
 
         /* Set POWER ON */
         if (!pwm_enable)
         {
             pwm_enable = true;
-            shield.power.startAll();
+            shield.power.start(ALL);
         }
     }
 

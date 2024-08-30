@@ -69,7 +69,7 @@ uint8_t mode = IDLEMODE;
  */
 void setup_routine()
 {
-    spin.pwm.initFrequency(200000); // Set frequency of pwm
+    spin.pwm.initFixedFrequency(200000); // Set frequency of pwm
     spin.pwm.initUnit(PWMA); // timer initialization
 
     spin.pwm.startDualOutput(PWMA); // Start PWM

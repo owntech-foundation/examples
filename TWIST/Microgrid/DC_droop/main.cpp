@@ -124,7 +124,7 @@ uint8_t mode = IDLEMODE;
 void setup_routine()
 {
     /* buck voltage mode */
-    shield.power.initAllBuck();
+    shield.power.initBuck(ALL);
 
     shield.sensors.enableDefaultTwistSensors();
 
@@ -237,14 +237,14 @@ void loop_critical_task()
     if (mode == IDLEMODE)
     {
         pwm_enable = false;
-        shield.power.stopAll();
+        shield.power.stop(ALL);
     }
     else if (mode == POWERMODE)
     {
         if (!pwm_enable)
         {
             pwm_enable = true;
-            shield.power.startAll();
+            shield.power.start(ALL);
         }
 
         #ifdef DROOP
@@ -263,7 +263,7 @@ void loop_critical_task()
             duty_cycle = pid.calculateWithReturn(Vref_droop, V1_low_value);
         #endif
 
-        shield.power.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
 
     }
 

@@ -101,8 +101,8 @@ void setup_routine()
     data.enableTwistDefaultChannels();
     spin.version.setBoardVersion(SPIN_v_0_9);
     twist.setVersion(shield_TWIST_V1_3);
-    twist.initLegBuck(LEG1);
-    twist.initLegBuck(LEG2);
+    twist.initBuck(LEG1);
+    twist.initBuck(LEG2);
 
     AppTask_num = task.createBackground(loop_application_task);
     CommTask_num = task.createBackground(loop_communication_task);
@@ -191,8 +191,8 @@ void loop_control_task()
     switch(mode){
         case IDLE:         // IDLE and POWER_OFF modes turn the power off
         case POWER_OFF:
-            twist.stopLeg(LEG1);
-            twist.stopLeg(LEG2);
+            twist.stop(LEG1);
+            twist.stop(LEG2);
             pwm_enable_leg_1 = false;
             pwm_enable_leg_2 = false;
             V1_max  = 0;
@@ -202,12 +202,12 @@ void loop_control_task()
         case POWER_ON:     // POWER_ON mode turns the power ON
 
             //Tests if the legs were turned off and does it only once ]
-            if(!pwm_enable_leg_1 && power_leg_settings[LEG1].settings[BOOL_LEG]) {twist.startLeg(LEG1); pwm_enable_leg_1 = true;}
-            if(!pwm_enable_leg_2 && power_leg_settings[LEG2].settings[BOOL_LEG]) {twist.startLeg(LEG2); pwm_enable_leg_2 = true;}
+            if(!pwm_enable_leg_1 && power_leg_settings[LEG1].settings[BOOL_LEG]) {twist.start(LEG1); pwm_enable_leg_1 = true;}
+            if(!pwm_enable_leg_2 && power_leg_settings[LEG2].settings[BOOL_LEG]) {twist.start(LEG2); pwm_enable_leg_2 = true;}
 
             //Tests if the legs were turned on and does it only once ]
-            if(pwm_enable_leg_1 && !power_leg_settings[LEG1].settings[BOOL_LEG]) {twist.stopLeg(LEG1); pwm_enable_leg_1 = false;}
-            if(pwm_enable_leg_2 && !power_leg_settings[LEG2].settings[BOOL_LEG]) {twist.stopLeg(LEG2); pwm_enable_leg_2 = false;}
+            if(pwm_enable_leg_1 && !power_leg_settings[LEG1].settings[BOOL_LEG]) {twist.stop(LEG1); pwm_enable_leg_1 = false;}
+            if(pwm_enable_leg_2 && !power_leg_settings[LEG2].settings[BOOL_LEG]) {twist.stop(LEG2); pwm_enable_leg_2 = false;}
 
             //calls the pid calculation if the converter in either in mode buck or boost for a given dynamically set reference value
             if(power_leg_settings[LEG1].settings[BOOL_BUCK] || power_leg_settings[LEG1].settings[BOOL_BOOST]){
@@ -220,17 +220,17 @@ void loop_control_task()
 
             if(power_leg_settings[LEG1].settings[BOOL_LEG]){
                 if(power_leg_settings[LEG1].settings[BOOL_BOOST]){
-                    twist.setLegDutyCycle(LEG1, (1-power_leg_settings[LEG1].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
+                    twist.setDutyCycle(LEG1, (1-power_leg_settings[LEG1].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
                 } else {
-                    twist.setLegDutyCycle(LEG1, power_leg_settings[LEG1].duty_cycle ); //uses the normal convention by default
+                    twist.setDutyCycle(LEG1, power_leg_settings[LEG1].duty_cycle ); //uses the normal convention by default
                 }
             }
 
             if(power_leg_settings[LEG2].settings[BOOL_LEG]){
                 if(power_leg_settings[LEG2].settings[BOOL_BOOST]){
-                    twist.setLegDutyCycle(LEG2, (1-power_leg_settings[LEG2].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
+                    twist.setDutyCycle(LEG2, (1-power_leg_settings[LEG2].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
                 }else{
-                    twist.setLegDutyCycle(LEG2, power_leg_settings[LEG2].duty_cycle); //uses the normal convention by default
+                    twist.setDutyCycle(LEG2, power_leg_settings[LEG2].duty_cycle); //uses the normal convention by default
                 }
             }
 
