@@ -145,40 +145,37 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
-        {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     ------- MENU : %s ----             |\n", ROLE_TXT);
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|     press u : vref UP                  |\n");
-            printk("|     press d : Vref DOWN                |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'i':
-            printk("idle mode\n");
-            mode = IDLEMODE;
-            break;
-        case 'p':
-            printk("power mode\n");
-            mode = POWERMODE;
-            break;
-        case 'u':
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("|     ------- MENU : %s ----             |\n", ROLE_TXT);
+        printk("|     press i : idle mode                |\n");
+        printk("|     press p : power mode               |\n");
+        printk("|     press u : vref UP                  |\n");
+        printk("|     press d : Vref DOWN                |\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'i':
+        printk("idle mode\n");
+        mode = IDLEMODE;
+        break;
+    case 'p':
+        printk("power mode\n");
+        mode = POWERMODE;
+        break;
+    case 'u':
 
-            reference += serial_step;
-            break;
-        case 'd':
-            reference -= serial_step;
-            break;
-        default:
-            break;
-        }
+        reference += serial_step;
+        break;
+    case 'd':
+        reference -= serial_step;
+        break;
+    default:
+        break;
     }
 }
 

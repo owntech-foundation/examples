@@ -149,40 +149,37 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
-        {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("      %s\n", ROLE_TXT);
-            printk("|     ------- MENU ---------             |\n");
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|     press u : Iref UP                  |\n");
-            printk("|     press d : Iref DOWN                |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'i':
-            printk("idle mode\n");
-            mode = IDLEMODE;
-            break;
-        case 'p':
-            printk("power mode\n");
-            mode = POWERMODE;
-            break;
-        case 'u':
-            Iref += 0.10;
-            break;
-        case 'd':
-            Iref -= 0.10;
-            break;
-        default:
-            break;
-        }
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("      %s\n", ROLE_TXT);
+        printk("|     ------- MENU ---------             |\n");
+        printk("|     press i : idle mode                |\n");
+        printk("|     press p : power mode               |\n");
+        printk("|     press u : Iref UP                  |\n");
+        printk("|     press d : Iref DOWN                |\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'i':
+        printk("idle mode\n");
+        mode = IDLEMODE;
+        break;
+    case 'p':
+        printk("power mode\n");
+        mode = POWERMODE;
+        break;
+    case 'u':
+        Iref += 0.10;
+        break;
+    case 'd':
+        Iref -= 0.10;
+        break;
+    default:
+        break;
     }
 }
 

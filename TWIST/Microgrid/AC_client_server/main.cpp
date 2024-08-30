@@ -224,50 +224,46 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
-        {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     ----AC client/server: %s ---       |\n", STR_ROLE);
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'i':
-            printk("idle mode\n");
-            mode = IDLEMODE;
-            counter = 0;
-            printk("scope status : %d\n", scope.has_trigged());
-            printk("scope status: %d\n", scope.acquire());
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("|     ----AC client/server: %s ---       |\n", STR_ROLE);
+        printk("|     press i : idle mode                |\n");
+        printk("|     press p : power mode               |\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'i':
+        printk("idle mode\n");
+        mode = IDLEMODE;
+        counter = 0;
+        printk("scope status : %d\n", scope.has_trigged());
+        printk("scope status: %d\n", scope.acquire());
 
-            break;
-        case 'p':
-            if (is_downloading == false) {
-                printk("power mode\n");
-                mode = POWERMODE;
-            }
-            break;
-#ifdef SERVER
-        case 'l':
-            k_gain += 0.1;
-            break;
-        case 'm':
-            k_gain -= 0.1;
-            break;
-#endif
-        case 'r':
-            is_downloading = true;
-            break;
-        default:
-            break;
+        break;
+    case 'p':
+        if (is_downloading == false) {
+            printk("power mode\n");
+            mode = POWERMODE;
         }
+        break;
+#ifdef SERVER
+    case 'l':
+        k_gain += 0.1;
+        break;
+    case 'm':
+        k_gain -= 0.1;
+        break;
+#endif
+    case 'r':
+        is_downloading = true;
+        break;
+    default:
+        break;
     }
-
 }
 
 /**

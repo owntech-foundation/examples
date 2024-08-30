@@ -182,51 +182,47 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("|     --- grid following example -----   |\n");
+        printk("|     press i : idle mode                |\n");
+        printk("|     press p : power mode               |\n");
+        printk("|     press u : Iref up                  |\n");
+        printk("|     press d : Iref down                |\n");
+        printk("|     press r : retrieve data recorded   |\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'i':
+        printk("idle mode\n");
+        mode_asked = IDLEMODE;
+        scope.start();
+        Iref_amplitude = 0.4F;
+        break;
+    case 'p':
+        if (!is_downloading)
         {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     --- grid following example -----   |\n");
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|     press u : Iref up                  |\n");
-            printk("|     press d : Iref down                |\n");
-            printk("|     press r : retrieve data recorded   |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'i':
-            printk("idle mode\n");
-            mode_asked = IDLEMODE;
-            scope.start();
-            Iref_amplitude = 0.4F;
-            break;
-        case 'p':
-            if (!is_downloading)
-            {
-                printk("power mode\n");
-                mode_asked = POWERMODE;
-            }
-            break;
-        case 'u':
-            if (Iref_amplitude < 0.5F)
-                Iref_amplitude += 0.1F;
-            break;
-        case 'd':
-            if (Iref_amplitude > 0.2F)
-                Iref_amplitude -= 0.1F;
-            break;
-        case 'r': 
-            is_downloading = true;
-        default:
-            break;
+            printk("power mode\n");
+            mode_asked = POWERMODE;
         }
+        break;
+    case 'u':
+        if (Iref_amplitude < 0.5F)
+            Iref_amplitude += 0.1F;
+        break;
+    case 'd':
+        if (Iref_amplitude > 0.2F)
+            Iref_amplitude -= 0.1F;
+        break;
+    case 'r': 
+        is_downloading = true;
+    default:
+        break;
     }
-
 }
 
 /**

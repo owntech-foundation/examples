@@ -96,29 +96,26 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
-        {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     ------- MENU ---------             |\n");
-            printk("|     press u : duty cycle UP            |\n");
-            printk("|     press d : duty cycle DOWN          |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'u':
-            duty_cycle += 0.05;
-            break;
-        case 'd':
-            duty_cycle -= 0.05;
-            break;
-        default:
-            break;
-        }
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("|     ------- MENU ---------             |\n");
+        printk("|     press u : duty cycle UP            |\n");
+        printk("|     press d : duty cycle DOWN          |\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'u':
+        duty_cycle += 0.05;
+        break;
+    case 'd':
+        duty_cycle -= 0.05;
+        break;
+    default:
+        break;
     }
 }
 
