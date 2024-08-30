@@ -118,7 +118,7 @@ uint8_t mode = IDLEMODE;
 void setup_routine()
 {
     /* buck voltage mode */
-    shield.power.initAllBuck();
+    shield.power.initBuck(ALL);
 
     shield.sensors.enableDefaultTwistSensors();
 
@@ -242,7 +242,7 @@ void loop_critical_task()
         if (pwr_enable == true)
         {
             pwr_enable = false;
-            shield.power.stopAll();
+            shield.power.stop(ALL);
 #ifdef MASTER
             communication.analog.setAnalogCommValue(0);
 #endif
@@ -254,7 +254,7 @@ void loop_critical_task()
         if (pwr_enable == false)
         {
             pwr_enable = true;
-            shield.power.startAll();
+            shield.power.start(ALL);
             count = 0;
 #ifdef MASTER
             Iref = 0.6F; // initial current reference
@@ -281,7 +281,7 @@ void loop_critical_task()
         duty_cycle = pid.calculateWithReturn(Iref, (I1_low_value + I2_low_value));
 #endif
 
-        shield.power.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
     }
 }
 

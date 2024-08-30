@@ -102,7 +102,7 @@ uint8_t mode = IDLEMODE;
 void setup_routine()
 {
     /* boost voltage mode */
-    shield.power.initLegBoost(LEG1);
+    shield.power.initBoost(LEG1);
 
     shield.sensors.enableDefaultTwistSensors();
 
@@ -214,20 +214,20 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            shield.power.stopAll();
+            shield.power.stop(ALL);
         }
         pwm_enable = false;
     }
     else if (mode == POWERMODE)
     {
         duty_cycle = pid.calculateWithReturn(voltage_reference, V_high);
-        shield.power.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
 
         /* Set POWER ON */
         if (!pwm_enable)
         {
             pwm_enable = true;
-            shield.power.startLeg(LEG1);
+            shield.power.start(LEG1);
         }
     }
 

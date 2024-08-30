@@ -203,8 +203,8 @@ void setup_routine()
     shield.sensors.enableDefaultTwistSensors();
 
     /* buck voltage mode */
-    shield.power.initLegBuck(LEG1);
-    shield.power.initLegBoost(LEG2);
+    shield.power.initBuck(LEG1);
+    shield.power.initBoost(LEG2);
 
     communication.rs485.configure(buffer_tx, buffer_rx, sizeof(consigne_struct), reception_function, SPEED_20M); // custom configuration for RS485
 
@@ -350,7 +350,7 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            shield.power.stopAll();
+            shield.power.stop(ALL);
             tx_consigne.id_and_status = (1 << 6) + 0;
             communication.rs485.startTransmission();
         }
@@ -364,7 +364,7 @@ void loop_critical_task()
         angle = ot_modulo_2pi(angle);
         Vac_ref = 15.0F;
         duty_cycle = 0.5 + Vac_ref * ot_sin(angle) / (2.0 * Udc);
-        shield.power.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
 
         if (record_counter == 0)
             tx_consigne.id_and_status = (1 << 6) + 2;
@@ -384,7 +384,7 @@ void loop_critical_task()
         if (!pwm_enable)
         {
             pwm_enable = true;
-            shield.power.startAll();
+            shield.power.start(ALL);
         }
 
 
@@ -404,13 +404,13 @@ void loop_critical_task()
         gain_current = pid_current_control.calculateWithReturn(v_dc_ref, V_high);
         I_ac_ref = -gain_current * Vac_meas;
         duty_cycle = (Vac_meas + pr.calculateWithReturn(I_ac_ref, I1_low_value)) / (2.0F * Udc) + 0.5F;
-        shield.power.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
 
         if (!pwm_enable)
         {
             pwm_enable = true;
             spin.led.turnOn();
-            shield.power.startAll();
+            shield.power.start(ALL);
         }
 
         if (critical_task_counter % 4 == 0)
@@ -424,7 +424,7 @@ void loop_critical_task()
         mode = IDLEMODE;
         if (pwm_enable == true)
         {
-            shield.power.stopAll();
+            shield.power.stop(ALL);
             spin.led.turnOff();
             pwm_enable = false;
         }

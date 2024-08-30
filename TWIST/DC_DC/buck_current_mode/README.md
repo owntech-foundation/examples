@@ -63,7 +63,7 @@ We initialize the leg control in buck current mode with the lines above:
 
 ```cpp
  /* Initialize buck with current mode*/
-    twist.initAllBuck(CURRENT_MODE);
+    twist.initBuck(ALL,CURRENT_MODE);
 ```
 
 ### Important functions
@@ -71,8 +71,8 @@ We initialize the leg control in buck current mode with the lines above:
 For current mode, there are two specific functions to control the current of both legs.
 
 ```cpp
-twist.setLegSlopeCompensation(LEG1, 1.4, 1.0);
-twist.setLegSlopeCompensation(LEG2, 1.4, 1.0);
+twist.setSlopeCompensation(LEG1, 1.4, 1.0);
+twist.setSlopeCompensation(LEG2, 1.4, 1.0);
 ```
 
 It sets in **volt** the higher and lower point of the sawtooth used for the slope compensation.

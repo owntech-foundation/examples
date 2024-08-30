@@ -185,8 +185,8 @@ void setup_routine()
     shield.sensors.enableDefaultTwistSensors();
 
     /* buck voltage mode */
-    shield.power.initLegBuck(LEG1);
-    shield.power.initLegBoost(LEG2);
+    shield.power.initBuck(LEG1);
+    shield.power.initBoost(LEG2);
 
     communication.rs485.configure(buffer_tx, buffer_rx, sizeof(consigne_struct), reception_function, SPEED_20M); // custom configuration for RS485
 
@@ -325,7 +325,7 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            shield.power.stopAll();
+            shield.power.stop(ALL);
             spin.led.turnOff();
             k_gain = 1.0;
             tx_consigne.id_and_status = (1 << 6) + 0;
@@ -344,7 +344,7 @@ void loop_critical_task()
         Vgrid = Vgrid_amplitude * ot_sin(angle);
         duty_cycle = 0.5 + pr_voltage.calculateWithReturn(Vgrid, V1_low_value - V2_low_value) / (2.0 * Udc);
 
-        shield.power.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
 
         if (counter == 0)
             tx_consigne.id_and_status = (1 << 6) + 2;
@@ -364,7 +364,7 @@ void loop_critical_task()
         {
             pwm_enable = true;
             spin.led.turnOn();
-            shield.power.startAll();
+            shield.power.start(ALL);
         }
     }
 
@@ -379,13 +379,13 @@ void loop_critical_task()
         pr_value = pr_current.calculateWithReturn(Iref, I1_low_value);
         duty_cycle = (Vgrid + pr_value )/(2*Udc) + 0.5;
 
-        shield.power.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
 
         if (!pwm_enable)
         {
             pwm_enable = true;
             spin.led.turnOn();
-            shield.power.startAll();
+            shield.power.start(ALL);
         }
 
         scope.acquire();
@@ -395,7 +395,7 @@ void loop_critical_task()
         mode = IDLEMODE;
         if (pwm_enable == true)
         {
-            shield.power.stopAll();
+            shield.power.stop(ALL);
             spin.led.turnOff();
             pwm_enable = false;
         }

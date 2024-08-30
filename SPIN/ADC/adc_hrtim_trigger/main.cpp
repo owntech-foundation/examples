@@ -54,7 +54,7 @@ uint8_t err;
  */
 void setup_routine()
 {
-    spin.pwm.initFrequency(200000); // Set frequency of pwm
+    spin.pwm.initFixedFrequency(200000); // Set frequency of pwm
 
     spin.pwm.setModulation(PWMA, UpDwn);
     spin.pwm.setAdcEdgeTrigger(PWMA, EdgeTrigger_up);

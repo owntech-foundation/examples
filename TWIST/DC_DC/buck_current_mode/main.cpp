@@ -96,12 +96,12 @@ uint8_t mode = IDLEMODE;
 void setup_routine()
 {
     /* buck voltage mode */
-    shield.power.initAllBuck(CURRENT_MODE);
+    shield.power.initBuck(ALL,CURRENT_MODE);
 
     shield.sensors.enableDefaultTwistSensors();
 
     /* initial setting slope compensation*/
-    shield.power.setAllSlopeCompensation(1.4, 1.0);
+    shield.power.setSlopeCompensation(ALL,1.4, 1.0);
 
     // Then declare tasks
     uint32_t app_task_number = task.createBackground(loop_application_task);
@@ -196,7 +196,7 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            shield.power.stopAll();
+            shield.power.stop(ALL);
         }
         pwm_enable = false;
     }
@@ -207,13 +207,13 @@ void loop_critical_task()
         PeakRef = 0.1 * Iref + 1.024; // Convert the current in voltage for slope compensation
 
         // /*set slope compensation*/
-        shield.power.setAllSlopeCompensation(PeakRef, PeakRef - 0.5);
+        shield.power.setSlopeCompensation(ALL,PeakRef, PeakRef - 0.5);
 
         /* Set POWER ON */
         if (!pwm_enable)
         {
             pwm_enable = true;
-            shield.power.startAll();
+            shield.power.start(ALL);
         }
     }
 

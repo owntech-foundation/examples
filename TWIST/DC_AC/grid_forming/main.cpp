@@ -205,8 +205,8 @@ void setup_routine()
     prop_res.init(params);
 
     /* buck voltage mode */
-    twist.initLegBuck(LEG1);
-    twist.initLegBoost(LEG2);
+    twist.initBuck(LEG1);
+    twist.initBoost(LEG2);
 
     // Then declare tasks
     uint32_t app_task_number = task.createBackground(loop_application_task);
@@ -364,7 +364,7 @@ void loop_critical_task()
         // FIRST WE STOP THE PWM
         if (pwm_enable == true)
         {
-            twist.stopAll();
+            twist.stop(ALL);
             spin.led.turnOff();
             pwm_enable = false;
         }
@@ -378,12 +378,12 @@ void loop_critical_task()
         if (duty_cycle > 0.5F) {
             duty_cycle = 0.5F;
         }
-        twist.setLegDutyCycle(LEG2, 1-duty_cycle);
-        twist.setLegDutyCycle(LEG1, duty_cycle);
+        twist.setDutyCycle(LEG2, 1-duty_cycle);
+        twist.setDutyCycle(LEG1, duty_cycle);
         // WE START THE PWM
         if (!pwm_enable)
         {
-            twist.startAll();
+            twist.start(ALL);
             pwm_enable = true;
         }
     }
@@ -394,7 +394,7 @@ void loop_critical_task()
         Vgrid_ref = Vgrid_amplitude * ot_sin(angle);
         pr_value = prop_res.calculateWithReturn(Vgrid_ref, V1_low_value - V2_low_value);
         duty_cycle = pr_value / (2.0F * V_high_filt) + 0.5F; 
-        twist.setAllDutyCycle(duty_cycle);
+        twist.setDutyCycle(ALL,duty_cycle);
 
     }
     if (critical_task_counter%3 == 0) {

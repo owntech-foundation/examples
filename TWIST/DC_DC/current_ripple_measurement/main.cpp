@@ -141,7 +141,7 @@ void setup_routine()
     spin.gpio.resetPin(PC6); // use the capacitor
     spin.gpio.resetPin(PB7); // use the capacitor
     /* buck voltage mode */
-    shield.power.initAllBuck();
+    shield.power.initBuck(ALL);
 
     shield.sensors.enableDefaultTwistSensors();
 
@@ -295,20 +295,20 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            shield.power.stopAll();
+            shield.power.stop(ALL);
         }
         pwm_enable = false;
     }
     else if (mode == POWERMODE)
     {
         //duty_cycle = pid.calculateWithReturn(voltage_reference, V1_low_value);
-        shield.power.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
         if (enable_acq) {
             trig_ratio += (end_trig_ratio - begin_trig_ratio) / (float32_t)num_trig_ratio_point;
             if (trig_ratio > end_trig_ratio) { // make a cycle
                 trig_ratio = begin_trig_ratio;
             }
-            shield.power.setLegTriggerValue(LEG1, trig_ratio);
+            shield.power.setTriggerValue(LEG1, trig_ratio);
         }
         scope.acquire();
     }
@@ -316,7 +316,7 @@ void loop_critical_task()
     if (!pwm_enable)
     {
         pwm_enable = true;
-        shield.power.startAll();
+        shield.power.start(ALL);
     }
 }
 
