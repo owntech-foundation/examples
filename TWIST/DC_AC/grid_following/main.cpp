@@ -248,9 +248,9 @@ void loop_application_task()
     else if (mode == POWERMODE)
     {
 
-        printk("%f:", Iref_amplitude);
-        printk("%f:", duty_cycle);
-        printk("%f:", V1_low_value);
+        printk("%.3f:", Iref_amplitude);
+        printk("%.3f:", duty_cycle);
+        printk("%.3f:", V1_low_value);
         printk("\n");
     }
     task.suspendBackgroundMs(100);

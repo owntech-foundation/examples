@@ -171,11 +171,11 @@ void loop_application_task()
     {
         spin.led.turnOn();
 
-        printk("%f:", (double)I1_low_value);
-        printk("%f:", (double)V1_low_value);
-        printk("%f:", (double)I2_low_value);
-        printk("%f:", (double)V2_low_value);
-        printk("%f:", (double)I_high);
+        printk("%.3f:", (double)I1_low_value);
+        printk("%.3f:", (double)V1_low_value);
+        printk("%.3f:", (double)I2_low_value);
+        printk("%.3f:", (double)V2_low_value);
+        printk("%.3f:", (double)I_high);
         printk("%f\n", (double)V_high);
     }
 
