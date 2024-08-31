@@ -12,10 +12,11 @@ This example will implement a voltage mode buck converter to control the output.
 
 ![schema](Image/buck_m.png)
 
-You will need :
-- 1 TWIST
-- A dc power supply (20-60V)
-- A resistor (or a dc electronic load)
+!!! warning Hardware pre-requisites 
+    You will need :
+    - 1 TWIST
+    - A dc power supply (20-60V)
+    - A resistor (or a dc electronic load)
 
 ## Software setup
 
