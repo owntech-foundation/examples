@@ -31,8 +31,8 @@ data.enableAcquisition(2, 35) // Enable acquisition for ADC2, for channel 5 (loc
 When we want to retrieve measures from ADC2 all we need to do is trigger ADC2 and retrieve measured value in GPIO C4 / pin number 35 :
 
 ```cpp
-    data.triggerAcquisition(2);
-    adc_value = data.getLatest(2, 35);
+   spin.data.triggerAcquisition(2);
+    adc_value =spin.data.getLatest(2, 35);
 ```
 
 There is a total of 8 possible pin from where you can get analog measures :

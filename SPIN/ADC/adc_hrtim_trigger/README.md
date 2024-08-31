@@ -64,8 +64,8 @@ data.enableAcquisition(2, 35) // Enable acquisition for ADC2, for channel 5 (loc
 When we want to retrieve measures from ADC2 all we need to do is trigger ADC2 and retrieve measured value in GPIO C4 / pin number 35 :
 
 ```cpp
-    data.triggerAcquisition(2);
-    adc_value = data.getLatest(2, 35);
+   spin.data.triggerAcquisition(2);
+    adc_value =spin.data.getLatest(2, 35);
 ```
 
 There is a total of 8 possible pin from where you can get analog measures :
@@ -104,14 +104,14 @@ then set ADC1 channel 5 to be trigerred by ADCTRIG_3 :
 
 ```cpp
     spin.adc.configureTriggerSource(1, hrtim_ev3); // ADC 2 configured to be triggered by the PWM
-    data.enableAcquisition(1, 30); // ADC 2 enabled
+   spin.data.enableAcquisition(1, 30); // ADC 2 enabled
 ```
 
 Finally you can retrieve data from the ADC : 
 
 ```cpp
-    data.triggerAcquisition(1);
-    adc_value = data.getLatest(1, 30);
+   spin.data.triggerAcquisition(1);
+    adc_value =spin.data.getLatest(1, 30);
 ```
 
 ## Expetected results

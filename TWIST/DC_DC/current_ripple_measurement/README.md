@@ -2,7 +2,7 @@
 
 In this example we use one leg of twist with no load.
 
-We experiment the method `twist.setTriggerValue(LEG1, trig_ratio);`,
+We experiment the method `shield.power.setTriggerValue(LEG1, trig_ratio);`,
 where `trig_ratio` is a variable between [0, 1]
 
 We are in open loop and fix a duty cyle.
