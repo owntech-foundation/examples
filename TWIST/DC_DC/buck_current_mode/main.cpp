@@ -169,9 +169,12 @@ void loop_application_task()
     {
         spin.led.turnOn();
 
+        printk("%.3f:", (double)Vref);
         printk("%.3f:", (double)V1_low_value);
         printk("%.3f:", (double)V2_low_value);
-        printk("%f\n", (double)PeakRef);
+        printk("%.3f:", (double)PeakRef);
+        printk("\n");
+
     }
     task.suspendBackgroundMs(1000);
 }
