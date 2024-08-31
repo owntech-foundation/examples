@@ -137,15 +137,12 @@ uint8_t mode_asked = IDLEMODE;
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_3);
-
-    data.enableTwistDefaultChannels();
+ 
+    shield.sensors.enableDefaultTwistSensors();
 
     /* buck voltage mode */
-    twist.initBuck(LEG1);
-    twist.initBoost(LEG2);
+    shield.power.initBuck(LEG1);
+    shield.power.initBoost(LEG2);
 
     scope.connectChannel(I1_low_value, "I1_low_value");
     scope.connectChannel(I2_low_value, "I2_low_value");
@@ -265,22 +262,22 @@ void loop_application_task()
 void loop_critical_task()
 {
 
-    meas_data = data.getLatest(I1_LOW);
+    meas_data = shield.sensors.getLatest(I1_LOW);
     if (meas_data != NO_VALUE) I1_low_value = meas_data - I1_offset;
 
-    meas_data = data.getLatest(V1_LOW);
+    meas_data = shield.sensors.getLatest(V1_LOW);
     if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
-    meas_data = data.getLatest(V2_LOW);
+    meas_data = shield.sensors.getLatest(V2_LOW);
     if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
-    meas_data = data.getLatest(I2_LOW);
+    meas_data = shield.sensors.getLatest(I2_LOW);
     if (meas_data != NO_VALUE) I2_low_value = meas_data - I2_offset;
 
-    meas_data = data.getLatest(V_HIGH);
+    meas_data = shield.sensors.getLatest(V_HIGH);
     if (meas_data != NO_VALUE) V_high = meas_data;
 
-    meas_data = data.getLatest(I_HIGH);
+    meas_data = shield.sensors.getLatest(I_HIGH);
     if (meas_data != NO_VALUE) I_high = meas_data;
 
     if (mode_asked == POWERMODE)
@@ -311,11 +308,11 @@ void loop_critical_task()
         pr_value = prop_res.calculateWithReturn(Iref, I1_low_value);
         Vgrid = V1_low_value - V2_low_value;
         duty_cycle = (Vgrid + pr_value) / (2.0 * Udc) + 0.5F;
-        twist.setDutyCycle(ALL,duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
         if (!pwm_enable)
         {
             pwm_enable = true;
-            twist.start(ALL);
+            shield.power.start(ALL);
         }
         spin.led.turnOn();
 
@@ -325,7 +322,7 @@ void loop_critical_task()
         mode = IDLEMODE;
         if (pwm_enable == true)
         {
-            twist.stop(ALL);
+            shield.power.stop(ALL);
             duty_cycle = 0;
             spin.led.turnOff();
             pwm_enable = false;

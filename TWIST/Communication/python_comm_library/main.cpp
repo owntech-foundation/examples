@@ -98,11 +98,10 @@ static float32_t local_analog_value=0;
 
 void setup_routine()
 {
-    data.enableTwistDefaultChannels();
-    spin.version.setBoardVersion(SPIN_v_0_9);
-    twist.setVersion(shield_TWIST_V1_3);
-    twist.initBuck(LEG1);
-    twist.initBuck(LEG2);
+    shield.sensors.enableDefaultTwistSensors();
+
+    shield.power.initBuck(LEG1);
+    shield.power.initBuck(LEG2);
 
     AppTask_num = task.createBackground(loop_application_task);
     CommTask_num = task.createBackground(loop_communication_task);
@@ -163,27 +162,27 @@ void loop_application_task()
 void loop_control_task()
 {
     // ------------- GET SENSOR MEASUREMENTS ---------------------
-    meas_data = data.getLatest(V1_LOW);
+    meas_data = shield.sensors.getLatest(V1_LOW);
     if (meas_data != NO_VALUE)
         V1_low_value = meas_data;
 
-    meas_data = data.getLatest(V2_LOW);
+    meas_data = shield.sensors.getLatest(V2_LOW);
     if (meas_data != NO_VALUE)
         V2_low_value = meas_data;
 
-    meas_data = data.getLatest(V_HIGH);
+    meas_data = shield.sensors.getLatest(V_HIGH);
     if (meas_data != NO_VALUE)
         V_high_value = meas_data;
 
-    meas_data = data.getLatest(I1_LOW);
+    meas_data = shield.sensors.getLatest(I1_LOW);
     if (meas_data != NO_VALUE)
         I1_low_value = meas_data;
 
-    meas_data = data.getLatest(I2_LOW);
+    meas_data = shield.sensors.getLatest(I2_LOW);
     if (meas_data != NO_VALUE)
         I2_low_value = meas_data;
 
-    meas_data = data.getLatest(I_HIGH);
+    meas_data = shield.sensors.getLatest(I_HIGH);
     if (meas_data != NO_VALUE)
         I_high_value = meas_data;
 
@@ -191,8 +190,8 @@ void loop_control_task()
     switch(mode){
         case IDLE:         // IDLE and POWER_OFF modes turn the power off
         case POWER_OFF:
-            twist.stop(LEG1);
-            twist.stop(LEG2);
+            shield.power.stop(LEG1);
+            shield.power.stop(LEG2);
             pwm_enable_leg_1 = false;
             pwm_enable_leg_2 = false;
             V1_max  = 0;
@@ -202,12 +201,12 @@ void loop_control_task()
         case POWER_ON:     // POWER_ON mode turns the power ON
 
             //Tests if the legs were turned off and does it only once ]
-            if(!pwm_enable_leg_1 && power_leg_settings[LEG1].settings[BOOL_LEG]) {twist.start(LEG1); pwm_enable_leg_1 = true;}
-            if(!pwm_enable_leg_2 && power_leg_settings[LEG2].settings[BOOL_LEG]) {twist.start(LEG2); pwm_enable_leg_2 = true;}
+            if(!pwm_enable_leg_1 && power_leg_settings[LEG1].settings[BOOL_LEG]) {shield.power.start(LEG1); pwm_enable_leg_1 = true;}
+            if(!pwm_enable_leg_2 && power_leg_settings[LEG2].settings[BOOL_LEG]) {shield.power.start(LEG2); pwm_enable_leg_2 = true;}
 
             //Tests if the legs were turned on and does it only once ]
-            if(pwm_enable_leg_1 && !power_leg_settings[LEG1].settings[BOOL_LEG]) {twist.stop(LEG1); pwm_enable_leg_1 = false;}
-            if(pwm_enable_leg_2 && !power_leg_settings[LEG2].settings[BOOL_LEG]) {twist.stop(LEG2); pwm_enable_leg_2 = false;}
+            if(pwm_enable_leg_1 && !power_leg_settings[LEG1].settings[BOOL_LEG]) {shield.power.stop(LEG1); pwm_enable_leg_1 = false;}
+            if(pwm_enable_leg_2 && !power_leg_settings[LEG2].settings[BOOL_LEG]) {shield.power.stop(LEG2); pwm_enable_leg_2 = false;}
 
             //calls the pid calculation if the converter in either in mode buck or boost for a given dynamically set reference value
             if(power_leg_settings[LEG1].settings[BOOL_BUCK] || power_leg_settings[LEG1].settings[BOOL_BOOST]){
@@ -220,17 +219,17 @@ void loop_control_task()
 
             if(power_leg_settings[LEG1].settings[BOOL_LEG]){
                 if(power_leg_settings[LEG1].settings[BOOL_BOOST]){
-                    twist.setDutyCycle(LEG1, (1-power_leg_settings[LEG1].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
+                    shield.power.setDutyCycle(LEG1, (1-power_leg_settings[LEG1].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
                 } else {
-                    twist.setDutyCycle(LEG1, power_leg_settings[LEG1].duty_cycle ); //uses the normal convention by default
+                    shield.power.setDutyCycle(LEG1, power_leg_settings[LEG1].duty_cycle ); //uses the normal convention by default
                 }
             }
 
             if(power_leg_settings[LEG2].settings[BOOL_LEG]){
                 if(power_leg_settings[LEG2].settings[BOOL_BOOST]){
-                    twist.setDutyCycle(LEG2, (1-power_leg_settings[LEG2].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
+                    shield.power.setDutyCycle(LEG2, (1-power_leg_settings[LEG2].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
                 }else{
-                    twist.setDutyCycle(LEG2, power_leg_settings[LEG2].duty_cycle); //uses the normal convention by default
+                    shield.power.setDutyCycle(LEG2, power_leg_settings[LEG2].duty_cycle); //uses the normal convention by default
                 }
             }
 
