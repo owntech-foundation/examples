@@ -307,10 +307,10 @@ void loop_application_task()
 
 #ifndef SERVER
         printk("%i:", status);
-        printk("%f:", v_dc_ref);
-        printk("%f:", duty_cycle);
-        printk("%f:", I2_low_value);
-        printk("%f:", I1_low_value);
+        printk("%.3f:", v_dc_ref);
+        printk("%.3f:", duty_cycle);
+        printk("%.3f:", I2_low_value);
+        printk("%.3f:", I1_low_value);
         printk("%f:\n", V1_low_value);
 #endif
     }
