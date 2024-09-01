@@ -32,7 +32,7 @@ When we want to retrieve measures from ADC2 all we need to do is trigger ADC2 an
 
 ```cpp
    spin.data.triggerAcquisition(2);
-    adc_value =spin.data.getLatest(2, 35);
+    adc_value =spin.data.getLatestValue(2, 35);
 ```
 
 There is a total of 8 possible pin from where you can get analog measures :

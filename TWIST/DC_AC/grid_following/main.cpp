@@ -28,9 +28,8 @@
  */
 
 //--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
 #include "TaskAPI.h"
-#include "TwistAPI.h"
+#include "ShieldAPI.h"
 #include "SpinAPI.h"
 #include "pr.h"
 #include "trigo.h"
@@ -262,22 +261,22 @@ void loop_application_task()
 void loop_critical_task()
 {
 
-    meas_data = shield.sensors.getLatest(I1_LOW);
+    meas_data = shield.sensors.getLatestValue(I1_LOW);
     if (meas_data != NO_VALUE) I1_low_value = meas_data - I1_offset;
 
-    meas_data = shield.sensors.getLatest(V1_LOW);
+    meas_data = shield.sensors.getLatestValue(V1_LOW);
     if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
-    meas_data = shield.sensors.getLatest(V2_LOW);
+    meas_data = shield.sensors.getLatestValue(V2_LOW);
     if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
-    meas_data = shield.sensors.getLatest(I2_LOW);
+    meas_data = shield.sensors.getLatestValue(I2_LOW);
     if (meas_data != NO_VALUE) I2_low_value = meas_data - I2_offset;
 
-    meas_data = shield.sensors.getLatest(V_HIGH);
+    meas_data = shield.sensors.getLatestValue(V_HIGH);
     if (meas_data != NO_VALUE) V_high = meas_data;
 
-    meas_data = shield.sensors.getLatest(I_HIGH);
+    meas_data = shield.sensors.getLatestValue(I_HIGH);
     if (meas_data != NO_VALUE) I_high = meas_data;
 
     if (mode_asked == POWERMODE)
