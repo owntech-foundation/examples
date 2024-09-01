@@ -47,23 +47,40 @@ static float32_t w0 = 2.0 * PI * 50.0;   // pulsation
 static float32_t Udc = 40.0F;
 ```
 
+## 3. Run the example.
+
+!!! tip Finger in the trigger    
+
+    To capture the current ripple you have to follow these steps:
+    - press the **`p`** key to go in `POWER_MODE`
+    - press the **`t`** key to activate the trigger of the `ScopeMimicry` instance.
+    - press the **`i`** key to come back in `IDLE_MODE`
+    - press the **`r`** key to retrieve the data.
+
+
+After these steps you should see in your directory a new folder called `Data_records` appear.
+Within it you will find three files with the following naming convention : 
+
+- `Year-month-day-hour-minute-second.txt` - a raw data file
+- `Year-month-day-hour-minute-second.csv` - a post-treated csv file
+- `Year-month-day-hour-minute-second.png` - an automatically generated png file
+
+As an example here are two acquisitions:
+
+![data records](Image/data_records.png)
+
+In the code there's some parameters you can change:
+- `num_trig_ration_point`: it sets the number of trig_ratio value will be sweep
+  between `begin_trig_ratio` and `end_trig_ratio`
+- `begin_trig_ratio` : beginning value of the sweep.
+- `end_trig_ratio`: end value of the sweep.
+
+
 ### To view some variables.
 After stop i.e. in IDLE mode you can retrieve some data by pressing 'r'. It calls a
 function `dump_scope_datas()` which send to the console variables recorded during
 the power flow phase.
 
-But before running, you have to add one line in the file `platfomio.ini`
-
-```ini
-monitor_filters = recorded_datas
-```
-
-And you have to put the python script `filter_datas_recorded.py` in a `monitor` directory
-which must be in you parent project directory. Then the script should capture the
-console stream to put it in a txt file named `year-month-day_hour_minutes_secondes_record.txt`.
-
-These files can be plotted using the `plot_data.py` python script if you have the
-`matplotlib` and `numpy` modules installed.
 
 
 ## Link between voltage reference and duty cycles.
