@@ -70,7 +70,7 @@ static bool enable_acq;
 static float32_t trig_ratio;
 static float32_t begin_trig_ratio = 0.05;
 static float32_t end_trig_ratio = 0.95;
-static uint32_t num_trig_ratio_point = 10;
+static uint32_t num_trig_ratio_point = 1024;
 //static float32_t voltage_reference = 5.0; //voltage reference
 
 /* PID coefficient for a 8.6ms step response*/
@@ -266,30 +266,23 @@ void loop_application_task()
 void loop_critical_task()
 {
 
-
     meas_data = shield.sensors.getLatestValue(I1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I1_low_value = meas_data;
+    if (meas_data != NO_VALUE) I1_low_value = meas_data;
 
     meas_data = shield.sensors.getLatestValue(V1_LOW);
-    if (meas_data != -10000)
-        V1_low_value = meas_data;
+    if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
     meas_data = shield.sensors.getLatestValue(V2_LOW);
-    if (meas_data != -10000)
-        V2_low_value = meas_data;
+    if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
     meas_data = shield.sensors.getLatestValue(I2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I2_low_value = meas_data;
+    if (meas_data != NO_VALUE) I2_low_value = meas_data;
 
     meas_data = shield.sensors.getLatestValue(I_HIGH);
-    if (meas_data < 10000 && meas_data > -10000)
-        I_high = meas_data;
+    if (meas_data != NO_VALUE) I_high = meas_data;
 
     meas_data = shield.sensors.getLatestValue(V_HIGH);
-    if (meas_data != -10000)
-        V_high = meas_data;
+    if (meas_data != NO_VALUE) V_high = meas_data;
 
     if (mode == IDLEMODE)
     {
