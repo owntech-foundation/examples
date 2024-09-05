@@ -63,6 +63,10 @@ static float32_t I2_low_value;
 static float32_t I_high;
 static float32_t V_high;
 
+static float32_t temp_1_value;
+static float32_t temp_2_value;
+
+
 static float meas_data; // temp storage meas value (ctrl task)
 
 float32_t duty_cycle = 0.3;
@@ -171,12 +175,26 @@ void loop_application_task()
     {
         spin.led.turnOn();
 
+        shield.sensors.triggerTwistTempMeas(TEMP_SENSOR_1);
+        shield.sensors.triggerTwistTempMeas(TEMP_SENSOR_2);
+
+        meas_data = shield.sensors.getLatestValue(TEMP_SENSOR_1);
+        if (meas_data != NO_VALUE) temp_1_value = meas_data;
+
+        meas_data = shield.sensors.getLatestValue(TEMP_SENSOR_2);
+        if (meas_data != NO_VALUE) temp_2_value = meas_data;
+
+
         printk("%.3f:", (double)I1_low_value);
         printk("%.3f:", (double)V1_low_value);
+        printk("%.3f:", (double)voltage_reference);
         printk("%.3f:", (double)I2_low_value);
         printk("%.3f:", (double)V2_low_value);
+        printk("%.3f:", (double)voltage_reference);
         printk("%.3f:", (double)I_high);
         printk("%.3f:", (double)V_high);
+        printk("%.3f:", (double)temp_1_value);
+        printk("%.3f:", (double)temp_2_value);
         printk("\n");
     }
     task.suspendBackgroundMs(100);

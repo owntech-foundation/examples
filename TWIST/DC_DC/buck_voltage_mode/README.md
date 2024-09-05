@@ -83,15 +83,19 @@ Here's sequence when the help menu is activated with `h`, the power mode is then
     When you send `p` the Twist board will send you back a stream of data on the following format: 
     
     ```c 
-    I1:V1:I2:V2:IH:VH
+    I1:V1:VREF:I2:V2:VREF:IH:VH:T1:T2
     ```
     Where: 
     - `I1` is the current in `LEG1` of the `LOW` side
     - `V1` is the voltage in `LEG1` of the `LOW` side
+    - `VREF` is the reference voltage set for `LEG1` and `LEG2`vof the `LOW` side
     - `I2` is the current in `LEG1` of the `LOW` side
     - `V2` is the voltage in `LEG2` of the `LOW` side
+    - `VREF` is the reference voltage set for `LEG1` and `LEG2`vof the `LOW` side
     - `IH` is the current in `LEG2` of the `LOW` side
     - `VH` is the voltage on the `HIGH` side
+    - `T1` is the temperature from the NTC thermistor in `LEG1` of the `LOW` side
+    - `T2` is the temperature from the NTC thermistor in `LEG2` of the `LOW` side
 
     For instance when you reveive this: 
 
