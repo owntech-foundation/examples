@@ -44,12 +44,12 @@
 #include "pr.h"
 #include "ScopeMimicry.h"
 
-#define SERVER      // Role : SERVER or CLIENT
+#define GENERATOR      // Role : GENERATOR or CONSUMER
 
-#ifdef SERVER
-#define ROLE_TXT "SERVER"
+#ifdef GENERATOR
+#define ROLE_TXT "GENERATOR"
 #else
-#define ROLE_TXT "CLIENT"
+#define ROLE_TXT "CONSUMER"
 #endif
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
@@ -82,15 +82,15 @@ static float32_t duty_cycle;
 /* Sinewave settings */
 static const float f0 = 50.F;
 static const float w0 = 2 * PI * f0;
-#ifdef SERVER
+#ifdef GENERATOR
 static float angle = 0;
 static float Vac_ref;
 #endif
-static const float Udc = 50.0;
+static const float Udc = 25.0;
 static const float32_t Ts = control_task_period * 1e-6F;
 /* PEER 2 PEER variables */
 static float32_t I_ac_ref;
-#ifdef CLIENT
+#ifdef CONSUMER
 static float32_t Vac_meas;
 static float32_t gain_current = -0.20;
 
@@ -103,13 +103,14 @@ static const float32_t lower_bound = -2.0;
 static Pid pid_current_control;
 static const PidParams pid_params(Ts, Kp, Ti, Td, N, lower_bound, upper_bound);
 #endif
-static float32_t P_ref = 10; // 20W power reference from server to client
-static const float Rdc = 115;
+static float32_t P_ref = 20; // 20W power reference from generator to consumer
+static const float Rdc = 10;
 static float32_t v_dc_ref = sqrt(P_ref*Rdc); // must be superior to at least 20V
 
 
 static ScopeMimicry scope(1024, 9);
 static bool is_downloading = false;
+static bool trigger = false;
 //------------- PR RESONANT -------------------------------------
 static const float32_t Kp_pr = 0.2;
 static const float32_t Kr = 3000.0;
@@ -122,7 +123,7 @@ static const PrParams pr_params(Ts, Kp_pr, Kr, w0, 0.0, pr_lower_bound, pr_upper
 
 struct consigne_struct
 {
-    float32_t P_ref_fromSERVER;
+    float32_t P_ref_fromGENERATOR;
     uint8_t id_and_status; // Contains status
 };
 
@@ -149,7 +150,7 @@ uint8_t mode = IDLEMODE;
 
 // trigger function for scope manager
 bool a_trigger() {
-    return true;
+    return trigger;
 }
 
 void dump_scope_datas(ScopeMimicry &scope)  {
@@ -176,7 +177,7 @@ void dump_scope_datas(ScopeMimicry &scope)  {
 void reception_function(void)
 {
 
-#ifdef CLIENT
+#ifdef CONSUMER
     if (rx_consigne.id_and_status >> 6 == 1)
     {
         status = rx_consigne.id_and_status;
@@ -184,7 +185,7 @@ void reception_function(void)
         if ((rx_consigne.id_and_status & 2) == 1)
             scope.start();
 
-        P_ref = rx_consigne.P_ref_fromSERVER;
+        P_ref = rx_consigne.P_ref_fromGENERATOR;
     }
 #endif
 
@@ -208,12 +209,12 @@ void setup_routine()
 
     communication.rs485.configure(buffer_tx, buffer_rx, sizeof(consigne_struct), reception_function, SPEED_20M); // custom configuration for RS485
 
-#ifdef SERVER
+#ifdef GENERATOR
     communication.sync.initMaster(); // start the synchronisation
 #endif
 
-#ifndef SERVER
-    communication.sync.initSlave(TWIST_v_1_1_4);
+#ifndef GENERATOR
+    communication.sync.initSlave();
 #endif
 
     // Then declare tasks
@@ -226,7 +227,7 @@ void setup_routine()
     task.startBackground(com_task_number);
     task.startCritical(); // Uncomment if you use the critical task
 
-#ifndef SERVER
+#ifndef GENERATOR
     pid_current_control.init(pid_params);
     pid_current_control.reset(-gain_current); // output initialisation of the pid.
 #endif
@@ -267,17 +268,18 @@ void loop_communication_task()
     case 'i':
         printk("idle mode\n");
         mode = IDLEMODE;
-        printk("trig status :%d\n", scope.has_trigged());
-        scope.start();
-        scope.set_delay(0.0);
         record_counter = 0;
         break;
     case 'p':
         printk("power mode\n");
         mode = POWERMODE;
         break;
+    case 't':
+        trigger=true;
+        break;
     case 'r':
         is_downloading = true;
+        trigger = false;
         break;
     default:
         break;
@@ -305,14 +307,18 @@ void loop_application_task()
     {
         spin.led.turnOn();
 
-#ifndef SERVER
+#ifndef GENERATOR
         printk("%i:", status);
         printk("%.3f:", v_dc_ref);
+        printk("%.3f:", V_high);
         printk("%.3f:", duty_cycle);
         printk("%.3f:", I2_low_value);
         printk("%.3f:", I1_low_value);
         printk("%f:\n", V1_low_value);
 #endif
+
+
+
     }
     task.suspendBackgroundMs(100);
 }
@@ -344,7 +350,7 @@ void loop_critical_task()
     meas_data = shield.sensors.getLatestValue(I_HIGH);
     if (meas_data != NO_VALUE) I_high = meas_data;
 
-#ifdef SERVER
+#ifdef GENERATOR
 
     if (mode == IDLEMODE)
     {
@@ -362,7 +368,7 @@ void loop_critical_task()
 
         angle += w0 * Ts;
         angle = ot_modulo_2pi(angle);
-        Vac_ref = 15.0F;
+        Vac_ref = 10.0F;
         duty_cycle = 0.5 + Vac_ref * ot_sin(angle) / (2.0 * Udc);
         shield.power.setDutyCycle(ALL,duty_cycle);
 
@@ -371,7 +377,7 @@ void loop_critical_task()
         else
             tx_consigne.id_and_status = (1 << 6) + 1;
 
-        tx_consigne.P_ref_fromSERVER = P_ref;
+        tx_consigne.P_ref_fromGENERATOR = P_ref;
 
         communication.rs485.startTransmission();
 
@@ -394,7 +400,7 @@ void loop_critical_task()
 #endif
 
     ////
-#ifndef SERVER ////// CLIENT
+#ifndef GENERATOR ////// CONSUMER
 
     if ((((status & 0x3) == 1 || (status & 0x3) == 2)))
     {
