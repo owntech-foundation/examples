@@ -91,6 +91,17 @@
         ]
     },
     {
+        "name": "scope_simple_example",
+        "title": "Simple scope example",
+        "description": "Simple example of triggering the scope to acquire a step response.",
+        "group": "Examples TWIST",
+        "base": "TWIST/DC_DC/scope_simple_example",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
         "name": "ripple_measurement",
         "title": "Current Ripple Measurement",
         "description": "Current ripple measurement in buck voltage mode, by sweeping adc trigger",
