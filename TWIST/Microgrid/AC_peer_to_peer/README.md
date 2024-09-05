@@ -7,9 +7,9 @@ Peer-to-peer communication in power electronics involves two converters, a DC/AC
 <img src="Image/p2p_schematic.svg" alt="Schematic p2p" width="600" height="400">
 
 
-DC/AC Converter (**single phase inverter**): This converter is responsible for converting direct current (DC) power into alternating current (AC) power. It may be connected to renewable energy sources (such as solar panels or wind turbines) or batteries, which produce DC power. The DC/AC converter's task is to generate AC power for use in the electrical network.
+`GENERATOR` DC/AC Converter (**single phase inverter**): This converter is responsible for converting direct current (DC) power into alternating current (AC) power. It may be connected to renewable energy sources (such as solar panels or wind turbines) or batteries, which produce DC power. The DC/AC converter's task is to generate AC power for use in the electrical network.
 
-AC/DC Converter (**single phase synchronous rectifier**): This converter performs the opposite function. It converts AC power back into DC power. This conversion is necessary when the electrical network requires DC power for various applications, such as charging batteries or powering DC devices.
+`CONSUMER` AC/DC Converter (**single phase synchronous rectifier**): This converter performs the opposite function. It converts AC power back into DC power. This conversion is necessary when the electrical network requires DC power for various applications, such as charging batteries or powering DC devices.
 
 In a peer-to-peer communication system, these converters communicate with each other to optimize power exchange. The DC/AC converter informs the AC/DC converter of the available power it can deliver. This information includes details like the power's magnitude and frequency.
 
@@ -54,36 +54,23 @@ In src/main.cpp at the line n. 48 you have a macro that defines wether you are f
 To flash the inverter, choose :
 
 ```shell
-#define SERVER
+#define GENERATOR
 ```
 
 To flash the synchronous rectifier, choose :
 
 ```shell
-#define CLIENT
+#define CONSUMER
 ```
 
-Here P_ref = 19W to have a 47V output DC voltage. You can change this value in line 87 of src/main.cpp file.
+Here P_ref = 20W to have a 14V output DC voltage. You can change this value in line 87 of src/main.cpp file.
 
 After that, connect to the inverter serial monitor and press `p` to start power flow. Press `i` to stop.
 
 ### To view some variables.
-After stop i.e. in IDLE mode you can retrieve some data by pressing 'r'. It calls a
-function `dump_scope_datas()` which send to the console variables recorded during
-the power flow phase.
+While running, press `t` to trigger the scope.
+After stop i.e. in IDLE mode you can retrieve some data by pressing `r`. 
 
-But before running, you have to add one line in the file `platfomio.ini`
-
-```ini
-monitor_filters = recorded_datas
-```
-
-And you have put the python script `filter_datas_recorded.py` in a `monitor` directory
-which must be in you parent project directory. Then the script should capture the
-console stream to put it in a txt file named `year-month-day_hour_minutes_secondes_record.txt`.
-
-These files can be plotted using the `plot_data.py` python script if you have the
-`matplotlib` and `numpy` modules installed.
 
 ## Expected results
 
