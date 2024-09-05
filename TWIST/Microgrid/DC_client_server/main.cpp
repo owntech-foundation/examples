@@ -41,14 +41,14 @@
 //-------------- Libraries------------------------------------
 #include "pid.h"
 
-#define SLAVE // MASTER, SLAVE
+#define MAIN // MAIN, AUXILIARY
 #define VREF 2.048
 
 
-#ifdef MASTER
-#define ROLE_TXT "MASTER"
+#ifdef MAIN
+#define ROLE_TXT "MAIN"
 #else
-#define ROLE_TXT "SLAVE"
+#define ROLE_TXT "AUXILIARY"
 #endif
 
 
@@ -67,7 +67,7 @@ static uint32_t control_task_period = 100; //[us] period of the control task
 
 /* power enable variable*/
 bool pwr_enable = false;
-bool slave_listen = false;
+bool aux_listen = false;
 int8_t communication_count = 0;
 /* PID coefficient for a 8.6ms step response*/
 
@@ -90,10 +90,10 @@ static float32_t I2_low_value;
 
 // reference voltage/current
 float32_t duty_cycle = 0.5;
-#ifdef MASTER
+#ifdef MAIN
 static float32_t Vref = 12.0;
 #endif
-static float32_t Iref;
+static float32_t Iref = 0.3;
 static float32_t PeakRef_Raw;
 int count = 0;
 
@@ -123,12 +123,12 @@ void setup_routine()
     shield.sensors.enableDefaultTwistSensors();
 
     communication.analog.init();
-#ifdef MASTER
+#ifdef MAIN
     communication.sync.initMaster(); // start the synchronisation
     communication.analog.setAnalogCommValue(0);
 #endif
 
-#ifdef SLAVE
+#ifdef AUXILIARY
     communication.sync.initSlave(); // wait for synchronisation
 #endif
 
@@ -198,11 +198,12 @@ void loop_application_task()
     {
         spin.led.turnOn();
 
-        printk("%.3f:", (double)I1_low_value);
-        printk("%.3f:", (double)V1_low_value);
-        printk("%.3f:", (double)I2_low_value);
-        printk("%.3f:", (double)V2_low_value);
     }
+    printk("%.3f:", (double)I1_low_value);
+    printk("%.3f:", (double)V1_low_value);
+    printk("%.3f:", (double)I2_low_value);
+    printk("%.3f:", (double)V2_low_value);
+    printk("%.3f:", (double)Iref);
     printk("%.3f:", (double)PeakRef_Raw);
     printk("\n");
     task.suspendBackgroundMs(100);
@@ -216,10 +217,13 @@ void loop_application_task()
  */
 void loop_critical_task()
 {
-#ifdef SLAVE
+#ifdef AUXILIARY
     meas_data = communication.analog.getAnalogCommValue() + 20.0f;
     if (meas_data != NO_VALUE) PeakRef_Raw = meas_data;
-    if (PeakRef_Raw < 1800)
+
+    Iref = ((2.048F * PeakRef_Raw / 4096.0F) - 1.024) / 0.100;
+
+    if (Iref < 0.3)
         mode = IDLEMODE;
     else
         mode = POWERMODE;
@@ -243,7 +247,7 @@ void loop_critical_task()
         {
             pwr_enable = false;
             shield.power.stop(ALL);
-#ifdef MASTER
+#ifdef MAIN
             communication.analog.setAnalogCommValue(0);
 #endif
         }
@@ -256,29 +260,20 @@ void loop_critical_task()
             pwr_enable = true;
             shield.power.start(ALL);
             count = 0;
-#ifdef MASTER
-            Iref = 0.6F; // initial current reference
-#endif
         }
 
-#ifdef MASTER
-        count++;
-        if (count == 40000)
-        {
-            Iref = 1.0F; // update reference value after 4s
-        }
+#ifdef MAIN
         PeakRef_Raw = (0.100F * Iref + 1.024F) * (4096.0F / 2.048F);
 
         duty_cycle = pid.calculateWithReturn(Vref, (V1_low_value));
 
-        /* sending value to slave board*/
+        /* sending value to aux board*/
         communication.analog.setAnalogCommValue(PeakRef_Raw);
 #endif
 
-#ifdef SLAVE
-        Iref = ((2.048F * PeakRef_Raw / 4096.0F) - 1.024) / 0.100;
+#ifdef AUXILIARY        
 
-        duty_cycle = pid.calculateWithReturn(Iref, (I1_low_value + I2_low_value));
+        duty_cycle = pid.calculateWithReturn(Iref/2 , (I2_low_value));
 #endif
 
         shield.power.setDutyCycle(ALL,duty_cycle);
