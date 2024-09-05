@@ -176,7 +176,7 @@ void loop_application_task()
         printk("\n");
 
     }
-    task.suspendBackgroundMs(1000);
+    task.suspendBackgroundMs(200);
 }
 
 /**
