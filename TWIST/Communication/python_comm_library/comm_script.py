@@ -31,8 +31,8 @@ import serial
 import sys
 sys.path.append('./owntech/lib/USB/comm_protocol/src/')
 
-import find_devices
-from  Twist_Class import Twist_Device
+from owntech.lib.USB.comm_protocol.src import find_devices
+from  owntech.lib.USB.comm_protocol.src.Shield_Class import Shield_Device
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -45,13 +45,13 @@ import numpy as np
 leg_to_test = "LEG1"                               #leg to be tested in this script
 reference_names = ["V1","V2","VH","I1","I2","IH"]  #names of the sensors of the board
 
-twist_vid = 0x2fe3
-twist_pid = 0x0101
+shield_vid = 0x2fe3
+shield_pid = 0x0101
 
-Twist_ports = find_devices.find_twist_device_ports(twist_vid, twist_pid)
-print(Twist_ports)
+Shield_ports = find_devices.find_shield_device_ports(shield_vid, shield_pid)
+print(Shield_ports)
 
-Twist = Twist_Device(twist_port= Twist_ports[0])
+Shield = Shield_Device(shield_port= Shield_ports[0])
 
 
 #Reference
@@ -100,13 +100,13 @@ def update(frame):
     reference = reference + ref_step
     if reference == ref_max_value : reference = ref_base_value
 
-    Twist.sendCommand("REFERENCE","LEG1","V1",reference)            # Send Voltage reference to LEG 1
-    Twist.sendCommand("REFERENCE","LEG2","V2",reference)            # Send Voltage reference to LEG 2
+    Shield.sendCommand("REFERENCE","LEG1","V1",reference)            # Send Voltage reference to LEG 1
+    Shield.sendCommand("REFERENCE","LEG2","V2",reference)            # Send Voltage reference to LEG 2
     time.sleep(10e-3)                                           # Pause to ensure stability
 
     # Measurement to Plot in Real Time
-    ydata1.append(Twist.getMeasurement('V1')  )                  # Append the I1 measure to ydata1
-    ydata2.append(Twist.getMeasurement('V2'))                    # Append the I2 measure to ydata2
+    ydata1.append(Shield.getMeasurement('V1')  )                  # Append the I1 measure to ydata1
+    ydata2.append(Shield.getMeasurement('V2'))                    # Append the I2 measure to ydata2
     # Add to the line
     line1.set_data(xdata, ydata1)
     line2.set_data(xdata, ydata2)
@@ -115,25 +115,25 @@ def update(frame):
 
 
 # ---------------HARDWARE IN THE LOOP PV EMULATOR CODE ------------------------------------
-message1 = Twist.sendCommand("IDLE")
+message1 = Shield.sendCommand("IDLE")
 print(message1)
 
-message = Twist.sendCommand( "BUCK", "LEG1", "ON")
+message = Shield.sendCommand( "BUCK", "LEG1", "ON")
 print(message)
 
-message = Twist.sendCommand( "BUCK", "LEG2", "ON")
+message = Shield.sendCommand( "BUCK", "LEG2", "ON")
 print(message)
 
-message = Twist.sendCommand("LEG","LEG1","ON")
+message = Shield.sendCommand("LEG","LEG1","ON")
 print(message)
 
-message = Twist.sendCommand("LEG","LEG2","ON")
+message = Shield.sendCommand("LEG","LEG2","ON")
 print(message)
 
-message1 = Twist.sendCommand("REFERENCE","LEG1","V1",5)
+message1 = Shield.sendCommand("REFERENCE","LEG1","V1",5)
 print(message1)
 
-message = Twist.sendCommand("POWER_ON")
+message = Shield.sendCommand("POWER_ON")
 print(message)
 
 
@@ -142,5 +142,5 @@ try:
   plt.grid()
   plt.show()
 finally:
-  message1 = Twist.sendCommand("IDLE")
+  message1 = Shield.sendCommand("IDLE")
   print(message1)
