@@ -18,7 +18,7 @@ The wiring of the system is given by the image below:
 ![Communication setup](Image/Comm_system.png)
 
 You will need :
-- 1 TWIST
+- 1 TWIST (it works with the OWNVERTER too!)
 - 1 dc power supply (20-60V)
 - 1 power load
 - 1 PC
@@ -27,53 +27,30 @@ You will need :
 
 ## Embedded Firmware setup
 
-We import `control_pid` and `communication_library` in `platformio.ini` via the line :
+We import the `communication_library` in `platformio.ini` via the line. Be careful to include the `#generic_shield_comm` at the end, since it will get the right version of the protocol :
 
 ```ini
 lib_deps=
-    control_library = https://github.com/owntech-foundation/control_library.git
-    comm_protocol = https://github.com/owntech-foundation/python_twist_comm_protocol.git
+    comm_protocol = https://github.com/owntech-foundation/python_twist_comm_protocol.git#generic_shield_comm
 ```
 
 ## Embedded Firmware explanation
 
-
-We can use this library to initialize a PID control with the function :
-
-```cpp
-pid1.init(pid_params);
-pid2.init(pid_params);
-```
-
-the initial parameters are defined using the following lines :
-
-```cpp
-#include "pid.h"
-static uint32_t control_task_period = 100; //[us] period of the control task
-static float32_t kp = 0.000215;
-static float32_t Ti = 7.5175e-5;
-static float32_t Td = 0.0;
-static float32_t N = 0.0;
-static float32_t upper_bound = 1.0F;
-static float32_t lower_bound = 0.0F;
-static float32_t Ts = control_task_period * 1e-6;
-static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
-
-```
+The emebedded firmware will configure the `TWIST` or `OWNVERTER` board to be able to communicate with your computer via python. 
 
 The software deploys a communication system with three modes:
 
 1. **IDLE**
-   - application_task: stops broadcasting data
-   - critical_task: stops the power flow
+   - :dart: in the application_task: stops broadcasting data
+   - :zap: in the critical_task: stops the power flow
 
 2. **POWER_OFF**
-   - application_task: broadcasts system status data on the serial port
-   - critical_task: stops the power flow
+   - :dart: in the application_task: broadcasts system status data on the serial port
+   - :zap: in the critical_task: stops the power flow
 
 3. **POWER_ON**
-   - application_task: broadcasts sensor data on the serial port together with other data
-   - critical_task: starts the power flow, controls the power flow with a PID
+   - :dart: in the application_task: broadcasts sensor data on the serial port together with other data
+   - :zap: in the critical_task: starts the power flow, controls the power flow with a PID
 
 !!! Tip How the system works
     Characters are sent via the Serial port to the `SPIN` board.
