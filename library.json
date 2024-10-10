@@ -197,6 +197,7 @@
         "base": "TWIST/Communication/python_comm_library",
         "files": [
             "main.cpp",
+            "comm_script.py",
             "README.md"
         ]
     },
