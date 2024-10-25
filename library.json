@@ -47,17 +47,6 @@
     ],
     "examples": [
     {
-        "name": "foc_hall_sensor",
-        "title": "Motor control using FOC and hall sensors",
-        "description": "an example which show the use of a Field Oriented Control algorithm even with discrete hall sensors",
-        "group": "Examples OWNVERTER",
-        "base": "TWIST/OWNVERTER/FOC_hall_sensor",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
         "name": "boost_voltage_mode",
         "title": "Voltage Mode Boost",
         "description": "Voltage mode boost converter using PID controller for TWIST",
@@ -272,6 +261,17 @@
         "description": "Using a timer with a rotary incrmental encoder",
         "group": "Examples SPIN",
         "base": "SPIN/TIMER/incremental_encoder",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "foc_hall_sensor",
+        "title": "Motor control using FOC and hall sensors",
+        "description": "an example which show the use of a Field Oriented Control algorithm with discrete hall sensors",
+        "group": "Examples OWNVERTER",
+        "base": "OWNVERTER/FOC_hall_sensor",
         "files": [
             "main.cpp",
             "README.md"
