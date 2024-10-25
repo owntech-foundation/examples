@@ -18,25 +18,26 @@
  */
 
 /**
- * @brief  This file it the main entry point of the
- *         OwnTech Power API. Please check the OwnTech
- *         documentation for detailed information on
- *         how to use Power API: https://docs.owntech.org/
+ * @brief  This file is an example of a Field Oriented Control for
+ *         OwnTech OwnVerter board.
+ *         Please check example documentation to get more details
+ *         how to use this example: https://docs.owntech.org/examples/
  *
- * @author Clément Foucher <clement.foucher@laas.fr>
- * @author Luiz Villa <luiz.villa@laas.fr>
+ * @author Régis Ruelland <regis.ruelland@laas.fr>
+ * @author Jean Alinei <jean.alinei@laas.fr>
  */
 //--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
+// #include "DataAPI.h"
 #include "ScopeMimicry.h"
 #include "SpinAPI.h"
 #include "TaskAPI.h"
-#include "TwistAPI.h"
+#include "ShieldAPI.h"
 #include "arm_math_types.h"
 #include "control_factory.h"
 #include "transform.h"
 #include "trigo.h"
 #include "zephyr/console/console.h"
+
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
 
@@ -161,7 +162,7 @@ uint8_t asked_mode = IDLEMODE;
 
 const uint16_t SCOPE_SIZE = 512;
 uint16_t k_app_idx;
-ScopeMimicry scope(SCOPE_SIZE, 10);
+ScopeMimicry scope(SCOPE_SIZE, 12);
 static bool is_downloading;
 static bool memory_print;
 
@@ -222,12 +223,12 @@ float32_t pulsation_estimator(int16_t sector, float32_t time)
 
 inline void retrieve_analog_datas()
 {
-	meas_data = data.getLatest(I1_LOW);
+	meas_data = shield.sensors.getLatestValue(I1_LOW);
 	if (meas_data != NO_VALUE) {
 		I1_low_value = meas_data + I1_offset;
 	}
 
-	meas_data = data.getLatest(I2_LOW);
+	meas_data = shield.sensors.getLatestValue(I2_LOW);
 	if (meas_data != NO_VALUE) {
 		I2_low_value = meas_data + I2_offset;
 	}
@@ -237,22 +238,22 @@ inline void retrieve_analog_datas()
 		tmpI2_offset += I2_low_value;
 	}
 
-	meas_data = data.getLatest(V_HIGH);
+	meas_data = shield.sensors.getLatestValue(V_HIGH);
 	if (meas_data != NO_VALUE) {
 		V_high = meas_data;
 	}
 
-	meas_data = data.getLatest(I_HIGH);
+	meas_data = shield.sensors.getLatestValue(I_HIGH);
 	if (meas_data != NO_VALUE) {
 		I_high = -meas_data; // normal when we see the kicad
 	}
 
-	meas_data = data.getLatest(V1_LOW);
+	meas_data = shield.sensors.getLatestValue(V1_LOW);
 	if (meas_data != NO_VALUE) {
 		V1_low_value = meas_data;
 	}
 
-	meas_data = data.getLatest(V2_LOW);
+	meas_data = shield.sensors.getLatestValue(V2_LOW);
 	if (meas_data != NO_VALUE) {
 		V2_low_value = meas_data;
 	}
@@ -293,7 +294,7 @@ inline void overcurrent_mngt()
 inline void stop_pwm_and_reset_states_ifnot()
 {
 	if (pwm_enable == true) {
-		twist.stopAll();
+		shield.power.stop(ALL);
 		// reset filters and pid
 		init_filt_and_reg();
 		pwm_enable = false;
@@ -324,23 +325,23 @@ inline void control_torque()
 inline void compute_duties()
 {
 	inverse_Vhigh = 1.0 / MIN_DC_VOLTAGE;
-	duty_abc.a = (Vabc.a * inverse_Vhigh + 0.5); // + dead_time_comp(Iabc.a, comp_dt);
-	duty_abc.b = (Vabc.b * inverse_Vhigh + 0.5); // + dead_time_comp(Iabc.b, comp_dt);
-	duty_abc.c = (Vabc.c * inverse_Vhigh + 0.5); // + dead_time_comp(Iabc.c, comp_dt);
+	duty_abc.a = (Vabc.a * inverse_Vhigh + 0.5);
+	duty_abc.b = (Vabc.b * inverse_Vhigh + 0.5);
+	duty_abc.c = (Vabc.c * inverse_Vhigh + 0.5);
 }
 
 inline void apply_duties()
 {
-	twist.setLegDutyCycle(LEG1, duty_abc.a);
-	twist.setLegDutyCycle(LEG2, duty_abc.b);
-	twist.setLegDutyCycle(LEG3, duty_abc.c);
+	shield.power.setDutyCycle(LEG1, duty_abc.a);
+	shield.power.setDutyCycle(LEG2, duty_abc.b);
+	shield.power.setDutyCycle(LEG3, duty_abc.c);
 }
 
 void start_pwms_ifnot()
 {
 	if (!pwm_enable) {
 		pwm_enable = true;
-		twist.startAll();
+		shield.power.start(ALL);
 	}
 }
 
@@ -378,9 +379,8 @@ void init_variables()
 void setup_routine()
 {
 	// Setup the hardware first
-	twist.setVersion(shield_ownverter);
-	twist.initAllBuck();
-	data.enableTwistDefaultChannels();
+	shield.power.initBuck(ALL);
+	shield.sensors.enableDefaultOwnverterSensors();
 
 	spin.gpio.configurePin(HALL1, INPUT);
 	spin.gpio.configurePin(HALL2, INPUT);
@@ -391,12 +391,14 @@ void setup_routine()
 	scope.connectChannel(Vq, "Vq");                         /* 1 */
 	scope.connectChannel(Vd, "Vd");                         /* 2 */
 	scope.connectChannel(I1_low_value, "I1_low_value");     /* 3 */
-	scope.connectChannel(Iq_meas, "Iq_meas");               /* 4 */
-	scope.connectChannel(angle_filtered, "angle_filtered"); /* 5 */
-	scope.connectChannel(Ib_ref, "Ib_ref");                 /* 6 */
-	scope.connectChannel(hall_angle, "hall_angle");         /* 7 */
-	scope.connectChannel(Ia_ref, "Ia_ref");                 /* 8 */
-	scope.connectChannel(control_state_f, "control_state"); /* 9 */
+	scope.connectChannel(I2_low_value, "I2_low_value");     /* 4 */
+	scope.connectChannel(I_high, "I_high_value");     	  /* 5 */
+	scope.connectChannel(Iq_meas, "Iq_meas");               /* 6 */
+	scope.connectChannel(angle_filtered, "angle_filtered"); /* 7 */
+	scope.connectChannel(Ib_ref, "Ib_ref");                 /* 8 */
+	scope.connectChannel(hall_angle, "hall_angle");         /* 9 */
+	scope.connectChannel(Ia_ref, "Ia_ref");                 /* 10 */
+	scope.connectChannel(control_state_f, "control_state"); /* 11 */
 	scope.set_trigger(&mytrigger);
 	scope.set_delay(0.0);
 	scope.start();
@@ -570,3 +572,4 @@ int main(void)
 
 	return 0;
 }
+
