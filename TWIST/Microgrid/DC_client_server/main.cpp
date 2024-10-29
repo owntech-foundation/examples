@@ -29,24 +29,26 @@
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
+//--------------Zephyr----------------------------------------
+#include <zephyr/console/console.h>
+
 //--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
-#include "TaskAPI.h"
-#include "TwistAPI.h"
 #include "SpinAPI.h"
+#include "ShieldAPI.h"
+#include "TaskAPI.h"
 #include "CommunicationAPI.h"
+
+//-------------- Libraries------------------------------------
 #include "pid.h"
 
-#include "zephyr/console/console.h"
-
-#define SLAVE // MASTER, SLAVE
+#define MAIN // MAIN, AUXILIARY
 #define VREF 2.048
 
 
-#ifdef MASTER
-#define ROLE_TXT "MASTER"
+#ifdef MAIN
+#define ROLE_TXT "MAIN"
 #else
-#define ROLE_TXT "SLAVE"
+#define ROLE_TXT "AUXILIARY"
 #endif
 
 
@@ -65,7 +67,7 @@ static uint32_t control_task_period = 100; //[us] period of the control task
 
 /* power enable variable*/
 bool pwr_enable = false;
-bool slave_listen = false;
+bool aux_listen = false;
 int8_t communication_count = 0;
 /* PID coefficient for a 8.6ms step response*/
 
@@ -88,10 +90,10 @@ static float32_t I2_low_value;
 
 // reference voltage/current
 float32_t duty_cycle = 0.5;
-#ifdef MASTER
+#ifdef MAIN
 static float32_t Vref = 12.0;
 #endif
-static float32_t Iref;
+static float32_t Iref = 0.3;
 static float32_t PeakRef_Raw;
 int count = 0;
 
@@ -115,23 +117,19 @@ uint8_t mode = IDLEMODE;
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_3);
-    
     /* buck voltage mode */
-    twist.initAllBuck();
+    shield.power.initBuck(ALL);
 
-    data.enableTwistDefaultChannels();
+    shield.sensors.enableDefaultTwistSensors();
 
     communication.analog.init();
-#ifdef MASTER
+#ifdef MAIN
     communication.sync.initMaster(); // start the synchronisation
     communication.analog.setAnalogCommValue(0);
 #endif
 
-#ifdef SLAVE
-    communication.sync.initSlave(TWIST_v_1_1_4); // wait for synchronisation
+#ifdef AUXILIARY
+    communication.sync.initSlave(); // wait for synchronisation
 #endif
 
     pid.init(pid_params);
@@ -151,40 +149,37 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
-        {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("      %s\n", ROLE_TXT);
-            printk("|     ------- MENU ---------             |\n");
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|     press u : Iref UP                  |\n");
-            printk("|     press d : Iref DOWN                |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'i':
-            printk("idle mode\n");
-            mode = IDLEMODE;
-            break;
-        case 'p':
-            printk("power mode\n");
-            mode = POWERMODE;
-            break;
-        case 'u':
-            Iref += 0.10;
-            break;
-        case 'd':
-            Iref -= 0.10;
-            break;
-        default:
-            break;
-        }
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("      %s\n", ROLE_TXT);
+        printk("|     ------- MENU ---------             |\n");
+        printk("|     press i : idle mode                |\n");
+        printk("|     press p : power mode               |\n");
+        printk("|     press u : Iref UP                  |\n");
+        printk("|     press d : Iref DOWN                |\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'i':
+        printk("idle mode\n");
+        mode = IDLEMODE;
+        break;
+    case 'p':
+        printk("power mode\n");
+        mode = POWERMODE;
+        break;
+    case 'u':
+        Iref += 0.10;
+        break;
+    case 'd':
+        Iref -= 0.10;
+        break;
+    default:
+        break;
     }
 }
 
@@ -203,12 +198,13 @@ void loop_application_task()
     {
         spin.led.turnOn();
 
-        printk("%f:", I1_low_value);
-        printk("%f:", V1_low_value);
-        printk("%f:", I2_low_value);
-        printk("%f:", V2_low_value);
     }
-    printk("%f:", PeakRef_Raw);
+    printk("%.3f:", (double)I1_low_value);
+    printk("%.3f:", (double)V1_low_value);
+    printk("%.3f:", (double)I2_low_value);
+    printk("%.3f:", (double)V2_low_value);
+    printk("%.3f:", (double)Iref);
+    printk("%.3f:", (double)PeakRef_Raw);
     printk("\n");
     task.suspendBackgroundMs(100);
 }
@@ -221,39 +217,37 @@ void loop_application_task()
  */
 void loop_critical_task()
 {
-#ifdef SLAVE
+#ifdef AUXILIARY
     meas_data = communication.analog.getAnalogCommValue() + 20.0f;
-    if (meas_data != -10000)
-        PeakRef_Raw = meas_data;
-    if (PeakRef_Raw < 1800)
+    if (meas_data != NO_VALUE) PeakRef_Raw = meas_data;
+
+    Iref = ((2.048F * PeakRef_Raw / 4096.0F) - 1.024) / 0.100;
+
+    if (Iref < 0.3)
         mode = IDLEMODE;
     else
         mode = POWERMODE;
 #endif
 
-    meas_data = data.getLatest(I1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I1_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(I1_LOW);
+    if (meas_data != NO_VALUE) I1_low_value = meas_data;
 
-    meas_data = data.getLatest(V1_LOW);
-    if (meas_data != -10000)
-        V1_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(V1_LOW);
+    if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
-    meas_data = data.getLatest(V2_LOW);
-    if (meas_data != -10000)
-        V2_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(V2_LOW);
+    if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
-    meas_data = data.getLatest(I2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I2_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(I2_LOW);
+    if (meas_data != NO_VALUE) I2_low_value = meas_data;
 
     if (mode == IDLEMODE)
     {
         if (pwr_enable == true)
         {
             pwr_enable = false;
-            twist.stopAll();
-#ifdef MASTER
+            shield.power.stop(ALL);
+#ifdef MAIN
             communication.analog.setAnalogCommValue(0);
 #endif
         }
@@ -264,34 +258,25 @@ void loop_critical_task()
         if (pwr_enable == false)
         {
             pwr_enable = true;
-            twist.startAll();
+            shield.power.start(ALL);
             count = 0;
-#ifdef MASTER
-            Iref = 0.6F; // initial current reference
-#endif
         }
 
-#ifdef MASTER
-        count++;
-        if (count == 40000)
-        {
-            Iref = 1.0F; // update reference value after 4s
-        }
+#ifdef MAIN
         PeakRef_Raw = (0.100F * Iref + 1.024F) * (4096.0F / 2.048F);
 
         duty_cycle = pid.calculateWithReturn(Vref, (V1_low_value));
 
-        /* sending value to slave board*/
+        /* sending value to aux board*/
         communication.analog.setAnalogCommValue(PeakRef_Raw);
 #endif
 
-#ifdef SLAVE
-        Iref = ((2.048F * PeakRef_Raw / 4096.0F) - 1.024) / 0.100;
+#ifdef AUXILIARY        
 
-        duty_cycle = pid.calculateWithReturn(Iref, (I1_low_value + I2_low_value));
+        duty_cycle = pid.calculateWithReturn(Iref/2 , (I2_low_value));
 #endif
 
-        twist.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
     }
 }
 

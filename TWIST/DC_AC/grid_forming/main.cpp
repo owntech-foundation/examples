@@ -29,9 +29,8 @@
  */
 
 //--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
 #include "TaskAPI.h"
-#include "TwistAPI.h"
+#include "ShieldAPI.h"
 #include "SpinAPI.h"
 
 // from control library
@@ -45,6 +44,8 @@
 #define DUTY_MIN 0.1F
 #define DUTY_MAX 0.9F
 #define UDC_STARTUP 15.0F
+#define NUM_SCOPE_CHANNELS 11
+#define SIZE_SCOPE_BUFFER 1024
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
 
@@ -55,27 +56,29 @@ void loop_critical_task();     // Code to be executed in real time in the critic
 
 //--------------USER VARIABLES DECLARATIONS-------------------
 static const uint32_t control_task_period = 100; //[us] period of the control task
-static bool pwm_enable = false;            //[bool] state of the PWM (ctrl task)
+static bool pwm_enable = false;             //[bool] state of the PWM (ctrl task)
+static bool trigger = false;                //[bool] state to trigger the PWM (ctrl task)
 
 uint8_t received_serial_char;
 
 /* Measure variables */
-static float32_t V1_low_value; // [V]
-static float32_t V2_low_value; // [V]
-static float32_t I1_low_value; // [A]
-static float32_t I2_low_value; // [A]
-static float32_t V_high; // [V]
-static float32_t I_high; // [A]
-static float32_t V_high_filt; // [V]
+static float32_t V1_low_value;  // [V]
+static float32_t V2_low_value;  // [V]
+static float32_t I1_low_value;  // [A]
+static float32_t I2_low_value;  // [A]
+static float32_t V_high;        // [V]
+static float32_t I_high;        // [A]
+static float32_t V_high_filt;   // [V]
+
+static float32_t V_AC;          // [V]
 
 
-
-static float meas_data; // temp storage meas value (ctrl task)
+static float meas_data; // temporary storage meas value (ctrl task)
 
 /* duty_cycle*/
 static float32_t duty_cycle;// [No unit]
 
-static float32_t Udc = 40.0F; // dc voltage supply assumed [V]
+static float32_t Udc = 25.0F; // dc voltage supply assumed [V]
 static const float f0 = 50.0F; // fundamental frequency [Hz]
 static const float32_t w0 = 2.0F * PI * f0;   // pulsation [rad/s]
 /* Sinewave settings */
@@ -96,7 +99,7 @@ static uint32_t critical_task_counter;
 
 // the scope help us to record datas during the critical task
 // its a library which must be included in platformio.ini
-static ScopeMimicry scope(1024, 9); 
+static ScopeMimicry scope(SIZE_SCOPE_BUFFER, NUM_SCOPE_CHANNELS); 
 static bool is_downloading;
 //---------------------------------------------------------------
 
@@ -114,15 +117,34 @@ static float32_t spying_mode = 0;
 static const float32_t MAX_CURRENT = 8.0F;
 
 bool a_trigger() {
-    return (mode == POWERMODE);
+    return trigger;
 }
 
+
 /**
- * @brief print recorded data of the ScopeMimicry instance to console
- * we use this function in coordination with a miniterm python filter on the host side.
- * `filter_recorded_data.py` to save the data in a file and format them in float.
+ * @brief Dumps the data from the scope buffer for recording or analysis.
  *
- * @param scope 
+ * This function retrieves and prints the data from a `ScopeMimicry` object's 
+ * buffer. The buffer size is adjusted to account for the fact that each data 
+ * point is a 4-byte floating-point value. The function outputs the recorded 
+ * data, channel names, and then suspends the background task for a short period 
+ * after printing each data point to avoid overwhelming the output stream.
+ *
+ * @param scope  A reference to a `ScopeMimicry` object containing the 
+ *               buffer and channel information.
+ * 
+ * @details 
+ * - The function begins by printing "begin record" to signify the start 
+ *   of the data dump.
+ * - It then prints the names of all channels followed by a comma.
+ * - For each data point in the buffer, it prints the hexadecimal representation 
+ *   of the data and suspends the background task for 100 microseconds.
+ * - Finally, it prints "end record" to indicate the completion of the data dump.
+ *
+ * @note This function is used in coordination with a miniterm python filter on 
+ *       the host side. `filter_recorded_data.py` to save the data in a file and
+ *       format them in float.
+ *
  */
 void dump_scope_datas(ScopeMimicry &scope)  {
     uint8_t *buffer = scope.get_buffer();
@@ -140,7 +162,21 @@ void dump_scope_datas(ScopeMimicry &scope)  {
     printk("end record\n");
 }
 
-// UTILS FUNCTIONS FOR CONTROL
+/**
+ * @brief Constrains a value within a specified range.
+ *
+ * This function limits the input value `x` to the specified range 
+ * defined by `min` and `max`. If `x` exceeds `max`, the function 
+ * returns `max`. If `x` is less than `min`, the function returns `min`. 
+ * Otherwise, it returns `x`.
+ *
+ * @param x    The input value to be constrained.
+ * @param min  The minimum allowed value.
+ * @param max  The maximum allowed value.
+ * 
+ * @returns The constrained value of `x`, ensuring it falls within the 
+ *          range [min, max].
+ */
 float32_t saturate(const float32_t x, float32_t min, float32_t max) {
     if (x > max) { 
         return max;
@@ -151,6 +187,14 @@ float32_t saturate(const float32_t x, float32_t min, float32_t max) {
     return x;
 }
 
+/**
+ * @brief Give a sign linked to a tolerance value
+ *
+ * @param x    signal toleranced
+ * @param tol  tolerance value
+ * 
+ * @returns -1 if under tol, or 1 if above tol
+ */
 float32_t sign(float32_t x, float32_t tol=1e-3) {
     if (x > tol) {
         return 1.0F;
@@ -161,7 +205,16 @@ float32_t sign(float32_t x, float32_t tol=1e-3) {
     return 0.0F; 
 }
 
-float32_t rate_limiter(const float32_t ref, float32_t value, const float32_t rate) {
+/**
+ * @brief Ramps up a signal at a given rate
+ *
+ * @param ref    signal final amplitude
+ * @param value  initial value
+ * @param rate   rate to reach reference
+ * 
+ * @returns current value ramping up.
+ */
+float32_t rate_limiter(float32_t ref, float32_t value, float32_t rate) {
     value += Ts * rate * sign(ref - value);
     return value;
 }
@@ -176,25 +229,20 @@ float32_t rate_limiter(const float32_t ref, float32_t value, const float32_t rat
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_3);
 
-    data.enableTwistDefaultChannels();
+    shield.sensors.enableDefaultTwistSensors();
     // DISABLE DC LOW CAPACITORS
-    spin.gpio.configurePin(PC6, OUTPUT);
-    spin.gpio.configurePin(PB7, OUTPUT);
-    spin.gpio.resetPin(PC6);
-    spin.gpio.resetPin(PB7);
 
     scope.connectChannel(I1_low_value, "I1_low_value");
-    scope.connectChannel(I_high, "iHigh");
+    scope.connectChannel(I_high, "I_High");
     scope.connectChannel(V1_low_value, "V1_low_value");
     scope.connectChannel(V2_low_value, "V2_low_value");
-    scope.connectChannel(V_high_filt, "V_high_filt");
+    scope.connectChannel(V_AC, "V_AC");
+    scope.connectChannel(V_high, "V_High");
     scope.connectChannel(duty_cycle, "duty_cycle");
     scope.connectChannel(Vgrid_ref, "Vgrid_ref");
     scope.connectChannel(Vgrid_amplitude, "Vgrid_amplitude");
+    scope.connectChannel(Vgrid_amplitude_ref, "Vgrid_amp_ref");
     scope.connectChannel(spying_mode, "mode");
     scope.set_delay(0.0F);
     scope.set_trigger(a_trigger);
@@ -205,8 +253,12 @@ void setup_routine()
     prop_res.init(params);
 
     /* buck voltage mode */
-    twist.initLegBuck(LEG1);
-    twist.initLegBoost(LEG2);
+    shield.power.initBuck(LEG1);
+    shield.power.initBoost(LEG2);
+
+    shield.power.connectCapacitor(ALL);
+    // shield.power.connectCapacitor(ALL);
+
 
     // Then declare tasks
     uint32_t app_task_number = task.createBackground(loop_application_task);
@@ -225,49 +277,49 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
-        {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     ------- grid forming ------        |\n");
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|     press u : vgrid up                 |\n");
-            printk("|     press p : vgrid down               |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'i':
-            printk("idle mode\n");
-            mode_asked = IDLEMODE;
-            break;
-        case 'p':
-                if (!is_downloading){
-                    printk("power mode\n");
-                    scope.start();
-                    mode_asked = POWERMODE;
-                }
-            break;
-        case 'u': 
-            if (Vgrid_amplitude_ref < 50.0F)
-                    Vgrid_amplitude_ref += .5F;
-            break;
-        case 'd': 
-            if (Vgrid_amplitude_ref > 0.5F)
-                    Vgrid_amplitude_ref -= .5F;
-            break;
-        case 'r':
-            is_downloading = true;
-            break;
-        default:
-            break;
-        }
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("|     ------- grid forming ------        |\n");
+        printk("|     press i : idle mode                |\n");
+        printk("|     press p : power mode               |\n");
+        printk("|     press u : vgrid up                 |\n");
+        printk("|     press p : vgrid down               |\n");
+        printk("|     press t : trigger scope acquisition|\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'i':
+        printk("idle mode\n");
+        mode_asked = IDLEMODE;
+        break;
+    case 'p':
+            if (!is_downloading){
+                printk("power mode\n");
+                mode_asked = POWERMODE;
+            }
+        break;
+    case 'u': 
+        if (Vgrid_amplitude_ref < 50.0F)
+                Vgrid_amplitude_ref += .5F;
+        break;
+    case 'd': 
+        if (Vgrid_amplitude_ref > 0.5F)
+                Vgrid_amplitude_ref -= .5F;
+        break;
+    case 'r':
+        is_downloading = true;
+        trigger = false;
+        break;
+    case 't':
+        trigger = true;    
+        break;
+    default:
+        break;
     }
-
 }
 
 /**
@@ -319,6 +371,8 @@ switch (mode) {
         printk("%d:", mode);
         printk("% 6.2f:", Vgrid_amplitude_ref);
         printk("% 6.2f:", Vgrid_amplitude);
+        printk("% 7.3f:", I1_low_value);
+        printk("% 7.3f:", I2_low_value);
         printk("% 6.2f:\n", V1_low_value);
     }
     task.suspendBackgroundMs(100);
@@ -333,31 +387,27 @@ switch (mode) {
 void loop_critical_task()
 {
     // RETRIEVE MEASUREMENTS 
-    meas_data = data.getLatest(I1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I1_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(I1_LOW);
+    if (meas_data != NO_VALUE) I1_low_value = meas_data;
 
-    meas_data = data.getLatest(V1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        V1_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(V1_LOW);
+    if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
-    meas_data = data.getLatest(V2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        V2_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(V2_LOW);
+    if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
-    meas_data = data.getLatest(I2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I2_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(I2_LOW);
+    if (meas_data != NO_VALUE) I2_low_value = meas_data;
 
-    meas_data = data.getLatest(V_HIGH);
-    if (meas_data != -10000)
-        V_high = meas_data;
+    meas_data = shield.sensors.getLatestValue(V_HIGH);
+    if (meas_data != NO_VALUE) V_high = meas_data;
 
-    meas_data = data.getLatest(I_HIGH);
-    if (meas_data != -10000)
-        I_high = meas_data;
+    meas_data = shield.sensors.getLatestValue(I_HIGH);
+    if (meas_data != NO_VALUE) I_high = meas_data;
 
     V_high_filt = vHighFilter.calculateWithReturn(V_high);
+
+    V_AC = V1_low_value-V2_low_value;
 
     // MANAGE OVERCURRENT
     if (I1_low_value > MAX_CURRENT 
@@ -374,7 +424,7 @@ void loop_critical_task()
         // FIRST WE STOP THE PWM
         if (pwm_enable == true)
         {
-            twist.stopAll();
+            shield.power.stop(ALL);
             spin.led.turnOff();
             pwm_enable = false;
         }
@@ -388,12 +438,12 @@ void loop_critical_task()
         if (duty_cycle > 0.5F) {
             duty_cycle = 0.5F;
         }
-        twist.setLegDutyCycle(LEG2, 1-duty_cycle);
-        twist.setLegDutyCycle(LEG1, duty_cycle);
+        shield.power.setDutyCycle(LEG2, 1-duty_cycle);
+        shield.power.setDutyCycle(LEG1, duty_cycle);
         // WE START THE PWM
         if (!pwm_enable)
         {
-            twist.startAll();
+            shield.power.start(ALL);
             pwm_enable = true;
         }
     }
@@ -401,13 +451,13 @@ void loop_critical_task()
     {
         angle = ot_modulo_2pi(angle + w0 * Ts); 
         Vgrid_amplitude = rate_limiter(Vgrid_amplitude_ref, Vgrid_amplitude, 10.F); 
-        Vgrid_ref = Vgrid_amplitude * ot_sin(angle);
-        pr_value = prop_res.calculateWithReturn(Vgrid_ref, V1_low_value - V2_low_value);
+        Vgrid_ref = Vgrid_amplitude_ref * ot_sin(angle);
+        pr_value = prop_res.calculateWithReturn(Vgrid_ref, V_AC);
         duty_cycle = pr_value / (2.0F * V_high_filt) + 0.5F; 
-        twist.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
 
     }
-    if (critical_task_counter%3 == 0) {
+    if (critical_task_counter%1 == 3) {
         spying_mode = (float32_t) mode;
         scope.acquire();
     }

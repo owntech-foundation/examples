@@ -28,14 +28,17 @@
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
-//--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
-#include "TaskAPI.h"
-#include "TwistAPI.h"
-#include "SpinAPI.h"
+//--------------Zephyr----------------------------------------
+#include <zephyr/console/console.h>
 
-#include "zephyr/console/console.h"
+//--------------OWNTECH APIs----------------------------------
+#include "SpinAPI.h"
+#include "ShieldAPI.h"
+#include "TaskAPI.h"
+
+//--------------OWNTECH Libraries-----------------------------
 #include "pid.h"
+
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
 
@@ -65,7 +68,7 @@ static float32_t N = 0.0;
 static float32_t upper_bound = 10.0;
 static float32_t lower_bound = -10.0;
 static Pid pid;
-static PidParams pid_params(Ts, Kp, Ti, Td, N, lower_bound, upper_bound); 
+static PidParams pid_params(Ts, Kp, Ti, Td, N, lower_bound, upper_bound);
 
 
 // reference voltage/current
@@ -92,17 +95,13 @@ uint8_t mode = IDLEMODE;
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_3);
-
     /* buck voltage mode */
-    twist.initAllBuck(CURRENT_MODE);
+    shield.power.initBuck(ALL,CURRENT_MODE);
 
-    data.enableTwistDefaultChannels();
+    shield.sensors.enableDefaultTwistSensors();
 
     /* initial setting slope compensation*/
-    twist.setAllSlopeCompensation(1.4, 1.0);
+    shield.power.setSlopeCompensation(ALL,1.4, 1.0);
 
     // Then declare tasks
     uint32_t app_task_number = task.createBackground(loop_application_task);
@@ -122,39 +121,36 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
-        {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     ---- MENU buck current mode ----   |\n");
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|     press u : voltage reference UP     |\n");
-            printk("|     press d : voltage reference DOWN   |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'i':
-            printk("idle mode\n");
-            mode = IDLEMODE;
-            break;
-        case 'p':
-            printk("power mode\n");
-            mode = POWERMODE;
-            break;
-        case 'u':
-            Vref += 0.5;
-            break;
-        case 'd':
-            Vref -= 0.5;
-            break;
-        default:
-            break;
-        }
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("|     ---- MENU buck current mode ----   |\n");
+        printk("|     press i : idle mode                |\n");
+        printk("|     press p : power mode               |\n");
+        printk("|     press u : voltage reference UP     |\n");
+        printk("|     press d : voltage reference DOWN   |\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'i':
+        printk("idle mode\n");
+        mode = IDLEMODE;
+        break;
+    case 'p':
+        printk("power mode\n");
+        mode = POWERMODE;
+        break;
+    case 'u':
+        Vref += 0.5;
+        break;
+    case 'd':
+        Vref -= 0.5;
+        break;
+    default:
+        break;
     }
 }
 
@@ -173,11 +169,14 @@ void loop_application_task()
     {
         spin.led.turnOn();
 
-        printk("%f:", V1_low_value);
-        printk("%f:", V2_low_value);
-        printk("%f\n", PeakRef);
+        printk("%.3f:", (double)Vref);
+        printk("%.3f:", (double)V1_low_value);
+        printk("%.3f:", (double)V2_low_value);
+        printk("%.3f:", (double)PeakRef);
+        printk("\n");
+
     }
-    task.suspendBackgroundMs(1000);
+    task.suspendBackgroundMs(200);
 }
 
 /**
@@ -189,20 +188,18 @@ void loop_application_task()
 void loop_critical_task()
 {
 
-    meas_data = data.getLatest(V1_LOW);
-    if (meas_data != -10000)
-        V1_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(V1_LOW);
+    if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
-    meas_data = data.getLatest(V2_LOW);
-    if (meas_data != -10000)
-        V2_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(V2_LOW);
+    if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
 
     if (mode == IDLEMODE)
     {
         if (pwm_enable == true)
         {
-            twist.stopAll();
+            shield.power.stop(ALL);
         }
         pwm_enable = false;
     }
@@ -213,13 +210,13 @@ void loop_critical_task()
         PeakRef = 0.1 * Iref + 1.024; // Convert the current in voltage for slope compensation
 
         // /*set slope compensation*/
-        twist.setAllSlopeCompensation(PeakRef, PeakRef - 0.5);
+        shield.power.setSlopeCompensation(ALL,PeakRef, PeakRef - 0.5);
 
         /* Set POWER ON */
         if (!pwm_enable)
         {
             pwm_enable = true;
-            twist.startAll();
+            shield.power.start(ALL);
         }
     }
 

@@ -29,10 +29,8 @@
  */
 
 //--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
-#include "TaskAPI.h"
-#include "TwistAPI.h"
 #include "SpinAPI.h"
+#include "TaskAPI.h"
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
@@ -43,6 +41,7 @@ void loop_critical_task();     // Code to be executed in real time in the critic
 
 //--------------USER VARIABLES DECLARATIONS-------------------
 static float32_t adc_value;
+uint8_t err;
 
 
 //--------------SETUP FUNCTIONS-------------------------------
@@ -55,10 +54,7 @@ static float32_t adc_value;
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-
-    spin.pwm.setFrequency(200000); // Set frequency of pwm
+    spin.pwm.initFixedFrequency(200000); // Set frequency of pwm
 
     spin.pwm.setModulation(PWMA, UpDwn);
     spin.pwm.setAdcEdgeTrigger(PWMA, EdgeTrigger_up);
@@ -72,9 +68,8 @@ void setup_routine()
 
     spin.pwm.startDualOutput(PWMA); // Start PWM
 
-    spin.adc.configureTriggerSource(2, hrtim_ev1); // ADC 2 configured to be triggered by the PWM
-
-    data.enableAcquisition(2, 35); // ADC 2 enabled
+    spin.data.configureTriggerSource(ADC_2, hrtim_ev1); // ADC 2 configured to be triggered by the PWM
+    spin.data.enableAcquisition(35, ADC_2); // Acquisition on pin 35
 
     // Then declare tasks
     uint32_t background_task_number = task.createBackground(loop_background_task);
@@ -95,10 +90,17 @@ void setup_routine()
 void loop_background_task()
 {
     // Task content
-    printk("%f \n", adc_value);
+    if (err == DATA_IS_OK)
+    {
+        printk("%f\n", (double)adc_value);
+    }
+    else
+    {
+        printk("No new value\n");
+    }
 
     // Pause between two runs of the task
-    task.suspendBackgroundMs(100);
+    task.suspendBackgroundMs(1000);
 }
 
 /**
@@ -109,7 +111,7 @@ void loop_background_task()
  */
 void loop_critical_task()
 {
-    adc_value = data.getLatest(2, 35);
+    adc_value = spin.data.getLatestValue(35, &err); // Get latest value acquired on pin 35
 }
 
 /**

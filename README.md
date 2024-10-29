@@ -9,6 +9,7 @@ Here you can find ready to be used example for [SPIN](https://github.com/owntech
     - [Buck current mode](TWIST/DC_DC/buck_current_mode/README.md)
     - [Boost voltage mode](TWIST/DC_DC/boost_voltage_mode/README.md)
     - [Interleaved Buck](TWIST/DC_DC/interleaved/README.md)
+    - [Current ripple measure in buck voltage mode](TWIST/DC_DC/current_ripple_measurement/README.md)
 
 - Microgrid examples
     - [AC client server](TWIST/Microgrid/AC_client_server/README.md)

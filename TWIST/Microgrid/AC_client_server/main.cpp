@@ -29,19 +29,21 @@
  * @author Régis Ruelland <regis.ruelland@laas.fr>
  */
 
+//--------------Zephyr----------------------------------------
+#include <zephyr/console/console.h>
+
 //--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
+#include "SpinAPI.h"
+#include "ShieldAPI.h"
 #include "TaskAPI.h"
-#include "TwistAPI.h"
 #include "CommunicationAPI.h"
 
-#include "zephyr/console/console.h"
-
+//-------------- Libraries------------------------------------
 #include "trigo.h"
 #include "pr.h"
 #include "ScopeMimicry.h"
 
-#define SERVER      // Role : SERVER or CLIENT 
+#define SERVER      // Role : SERVER or CLIENT
 
 #ifdef SERVER
 #define STR_ROLE "SERVER"
@@ -86,14 +88,14 @@ static float32_t w0 = 2 * PI *f0;
 static float32_t Ts = control_task_period * 1.0e-6f;
 #ifdef SERVER
 static float angle = 0;
-static float32_t Vgrid_amplitude = 12.0; 
+static float32_t Vgrid_amplitude = 12.0;
 static float32_t k_gain = 1.0;
 
 static Pr pr_voltage;
 static float32_t Kp_v = 0.02F;
 static float32_t Kr_v = 4000.0F;
 static PrParams pr_voltage_params(Ts, Kp_v, Kr_v, w0, 0.0, -Udc, Udc);
-#else 
+#else
 static float32_t Kp_i = 0.2;
 static float32_t Kr_i = 3000.0;
 static Pr pr_current;
@@ -129,7 +131,7 @@ bool a_trigger() {
 
 void dump_scope_datas(ScopeMimicry &scope)  {
     uint8_t *buffer = scope.get_buffer();
-    uint16_t buffer_size = scope.get_buffer_size() >> 2; // we divide by 4 (4 bytes per float data) 
+    uint16_t buffer_size = scope.get_buffer_size() >> 2; // we divide by 4 (4 bytes per float data)
     printk("begin record\n");
     printk("#");
     for (uint16_t k=0;k < scope.get_nb_channel(); k++) {
@@ -180,15 +182,11 @@ void reception_function(void)
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_3);
-
-    data.enableTwistDefaultChannels();
+    shield.sensors.enableDefaultTwistSensors();
 
     /* buck voltage mode */
-    twist.initLegBuck(LEG1);
-    twist.initLegBoost(LEG2);
+    shield.power.initBuck(LEG1);
+    shield.power.initBoost(LEG2);
 
     communication.rs485.configure(buffer_tx, buffer_rx, sizeof(consigne_struct), reception_function, SPEED_20M); // custom configuration for RS485
 
@@ -226,50 +224,46 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
-        {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     ----AC client/server: %s ---       |\n", STR_ROLE);
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'i':
-            printk("idle mode\n");
-            mode = IDLEMODE;
-            counter = 0;
-            printk("scope status : %d\n", scope.has_trigged());
-            printk("scope status: %d\n", scope.acquire());
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("|     ----AC client/server: %s ---       |\n", STR_ROLE);
+        printk("|     press i : idle mode                |\n");
+        printk("|     press p : power mode               |\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'i':
+        printk("idle mode\n");
+        mode = IDLEMODE;
+        counter = 0;
+        printk("scope status : %d\n", scope.has_trigged());
+        printk("scope status: %d\n", scope.acquire());
 
-            break;
-        case 'p':
-            if (is_downloading == false) {
-                printk("power mode\n");
-                mode = POWERMODE;
-            }
-            break;
-#ifdef SERVER
-        case 'l':
-            k_gain += 0.1;
-            break;
-        case 'm':
-            k_gain -= 0.1;
-            break;
-#endif
-        case 'r':
-            is_downloading = true;
-            break;
-        default:
-            break;
+        break;
+    case 'p':
+        if (is_downloading == false) {
+            printk("power mode\n");
+            mode = POWERMODE;
         }
+        break;
+#ifdef SERVER
+    case 'l':
+        k_gain += 0.1;
+        break;
+    case 'm':
+        k_gain -= 0.1;
+        break;
+#endif
+    case 'r':
+        is_downloading = true;
+        break;
+    default:
+        break;
     }
-
 }
 
 /**
@@ -290,13 +284,13 @@ void loop_application_task()
     {
 #ifndef SERVER
         printk("%i:", status);
-        printk("%f:", Iref);
+        printk("%.3f:", Iref);
 #endif
-        printk("%f:", duty_cycle);
-        printk("%f:", Vgrid);
-        printk("%f:", I2_low_value);
-        printk("%f:", I1_low_value);
-        printk("%f:\n", V1_low_value);
+        printk("%.3f:", (double)duty_cycle);
+        printk("%.3f:", (double)Vgrid);
+        printk("%.3f:", (double)I2_low_value);
+        printk("%.3f:", (double)I1_low_value);
+        printk("%f:\n", (double)V1_low_value);
     }
     task.suspendBackgroundMs(100);
 }
@@ -310,25 +304,20 @@ void loop_application_task()
 void loop_critical_task()
 {
 
-    meas_data = data.getLatest(I1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I1_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(I1_LOW);
+    if (meas_data != NO_VALUE) I1_low_value = meas_data;
 
-    meas_data = data.getLatest(V1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        V1_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(V1_LOW);
+    if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
-    meas_data = data.getLatest(V2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        V2_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(V2_LOW);
+    if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
-    meas_data = data.getLatest(I2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I2_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(I2_LOW);
+    if (meas_data != NO_VALUE) I2_low_value = meas_data;
 
-    meas_data = data.getLatest(V_HIGH);
-    if (meas_data != -10000)
-        V_high = meas_data;
+    meas_data = shield.sensors.getLatestValue(V_HIGH);
+    if (meas_data != NO_VALUE) V_high = meas_data;
 
 #ifdef SERVER
 
@@ -336,7 +325,7 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            twist.stopAll();
+            shield.power.stop(ALL);
             spin.led.turnOff();
             k_gain = 1.0;
             tx_consigne.id_and_status = (1 << 6) + 0;
@@ -355,7 +344,7 @@ void loop_critical_task()
         Vgrid = Vgrid_amplitude * ot_sin(angle);
         duty_cycle = 0.5 + pr_voltage.calculateWithReturn(Vgrid, V1_low_value - V2_low_value) / (2.0 * Udc);
 
-        twist.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
 
         if (counter == 0)
             tx_consigne.id_and_status = (1 << 6) + 2;
@@ -375,7 +364,7 @@ void loop_critical_task()
         {
             pwm_enable = true;
             spin.led.turnOn();
-            twist.startAll();
+            shield.power.start(ALL);
         }
     }
 
@@ -390,13 +379,13 @@ void loop_critical_task()
         pr_value = pr_current.calculateWithReturn(Iref, I1_low_value);
         duty_cycle = (Vgrid + pr_value )/(2*Udc) + 0.5;
 
-        twist.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
 
         if (!pwm_enable)
         {
             pwm_enable = true;
             spin.led.turnOn();
-            twist.startAll();
+            shield.power.start(ALL);
         }
 
         scope.acquire();
@@ -406,7 +395,7 @@ void loop_critical_task()
         mode = IDLEMODE;
         if (pwm_enable == true)
         {
-            twist.stopAll();
+            shield.power.stop(ALL);
             spin.led.turnOff();
             pwm_enable = false;
         }

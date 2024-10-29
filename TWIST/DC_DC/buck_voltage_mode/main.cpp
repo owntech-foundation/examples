@@ -28,14 +28,16 @@
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
-//--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
-#include "TaskAPI.h"
-#include "TwistAPI.h"
-#include "SpinAPI.h"
-#include "pid.h"
+//--------------Zephyr----------------------------------------
+#include <zephyr/console/console.h>
 
-#include "zephyr/console/console.h"
+//--------------OWNTECH APIs----------------------------------
+#include "SpinAPI.h"
+#include "ShieldAPI.h"
+#include "TaskAPI.h"
+
+//--------------OWNTECH Libraries-----------------------------
+#include "pid.h"
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
@@ -60,6 +62,10 @@ static float32_t I1_low_value;
 static float32_t I2_low_value;
 static float32_t I_high;
 static float32_t V_high;
+
+static float32_t temp_1_value;
+static float32_t temp_2_value;
+
 
 static float meas_data; // temp storage meas value (ctrl task)
 
@@ -99,14 +105,10 @@ uint8_t mode = IDLEMODE;
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_3);
-
     /* buck voltage mode */
-    twist.initAllBuck();
+    shield.power.initBuck(ALL);
 
-    data.enableTwistDefaultChannels();
+    shield.sensors.enableDefaultTwistSensors();
 
     pid.init(pid_params);
 
@@ -125,39 +127,36 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
-        {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     ---- MENU buck voltage mode ----   |\n");
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|     press u : voltage reference UP     |\n");
-            printk("|     press d : voltage reference DOWN   |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'i':
-            printk("idle mode\n");
-            mode = IDLEMODE;
-            break;
-        case 'p':
-            printk("power mode\n");
-            mode = POWERMODE;
-            break;
-        case 'u':
-            voltage_reference += 0.5;
-            break;
-        case 'd':
-            voltage_reference -= 0.5;
-            break;
-        default:
-            break;
-        }
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("|     ---- MENU buck voltage mode ----   |\n");
+        printk("|     press i : idle mode                |\n");
+        printk("|     press p : power mode               |\n");
+        printk("|     press u : voltage reference UP     |\n");
+        printk("|     press d : voltage reference DOWN   |\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'i':
+        printk("idle mode\n");
+        mode = IDLEMODE;
+        break;
+    case 'p':
+        printk("power mode\n");
+        mode = POWERMODE;
+        break;
+    case 'u':
+        voltage_reference += 0.5;
+        break;
+    case 'd':
+        voltage_reference -= 0.5;
+        break;
+    default:
+        break;
     }
 }
 
@@ -176,12 +175,27 @@ void loop_application_task()
     {
         spin.led.turnOn();
 
-        printk("%f:", I1_low_value);
-        printk("%f:", V1_low_value);
-        printk("%f:", I2_low_value);
-        printk("%f:", V2_low_value);
-        printk("%f:", I_high);
-        printk("%f\n", V_high);
+        shield.sensors.triggerTwistTempMeas(TEMP_SENSOR_1);
+        shield.sensors.triggerTwistTempMeas(TEMP_SENSOR_2);
+
+        meas_data = shield.sensors.getLatestValue(TEMP_SENSOR_1);
+        if (meas_data != NO_VALUE) temp_1_value = meas_data;
+
+        meas_data = shield.sensors.getLatestValue(TEMP_SENSOR_2);
+        if (meas_data != NO_VALUE) temp_2_value = meas_data;
+
+
+        printk("%.3f:", (double)I1_low_value);
+        printk("%.3f:", (double)V1_low_value);
+        printk("%.3f:", (double)voltage_reference);
+        printk("%.3f:", (double)I2_low_value);
+        printk("%.3f:", (double)V2_low_value);
+        printk("%.3f:", (double)voltage_reference);
+        printk("%.3f:", (double)I_high);
+        printk("%.3f:", (double)V_high);
+        printk("%.3f:", (double)temp_1_value);
+        printk("%.3f:", (double)temp_2_value);
+        printk("\n");
     }
     task.suspendBackgroundMs(100);
 }
@@ -194,29 +208,23 @@ void loop_application_task()
  */
 void loop_critical_task()
 {
-    meas_data = data.getLatest(I1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I1_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(I1_LOW);
+    if (meas_data != NO_VALUE) I1_low_value = meas_data;
 
-    meas_data = data.getLatest(V1_LOW);
-    if (meas_data != -10000)
-        V1_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(V1_LOW);
+    if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
-    meas_data = data.getLatest(V2_LOW);
-    if (meas_data != -10000)
-        V2_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(V2_LOW);
+    if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
-    meas_data = data.getLatest(I2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I2_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(I2_LOW);
+    if (meas_data != NO_VALUE) I2_low_value = meas_data;
 
-    meas_data = data.getLatest(I_HIGH);
-    if (meas_data < 10000 && meas_data > -10000)
-        I_high = meas_data;
+    meas_data = shield.sensors.getLatestValue(I_HIGH);
+    if (meas_data != NO_VALUE) I_high = meas_data;
 
-    meas_data = data.getLatest(V_HIGH);
-    if (meas_data != -10000)
-        V_high = meas_data;
+    meas_data = shield.sensors.getLatestValue(V_HIGH);
+    if (meas_data != NO_VALUE) V_high = meas_data;
 
 
 
@@ -224,20 +232,20 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            twist.stopAll();
+            shield.power.stop(ALL);
         }
         pwm_enable = false;
     }
     else if (mode == POWERMODE)
     {
         duty_cycle = pid.calculateWithReturn(voltage_reference, V1_low_value);
-        twist.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
 
         /* Set POWER ON */
         if (!pwm_enable)
         {
             pwm_enable = true;
-            twist.startAll();
+            shield.power.start(ALL);
         }
     }
 

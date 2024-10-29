@@ -28,9 +28,8 @@
  */
 
 //--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
 #include "TaskAPI.h"
-#include "TwistAPI.h"
+#include "ShieldAPI.h"
 #include "SpinAPI.h"
 #include "pr.h"
 #include "trigo.h"
@@ -137,15 +136,12 @@ uint8_t mode_asked = IDLEMODE;
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.version.setBoardVersion(SPIN_v_1_0);
-    twist.setVersion(shield_TWIST_V1_3);
-
-    data.enableTwistDefaultChannels();
+ 
+    shield.sensors.enableDefaultTwistSensors();
 
     /* buck voltage mode */
-    twist.initLegBuck(LEG1);
-    twist.initLegBoost(LEG2);
+    shield.power.initBuck(LEG1);
+    shield.power.initBoost(LEG2);
 
     scope.connectChannel(I1_low_value, "I1_low_value");
     scope.connectChannel(I2_low_value, "I2_low_value");
@@ -182,51 +178,47 @@ void setup_routine()
 
 void loop_communication_task()
 {
-    while (1)
+    received_serial_char = console_getchar();
+    switch (received_serial_char)
     {
-        received_serial_char = console_getchar();
-        switch (received_serial_char)
+    case 'h':
+        //----------SERIAL INTERFACE MENU-----------------------
+        printk(" ________________________________________\n");
+        printk("|     --- grid following example -----   |\n");
+        printk("|     press i : idle mode                |\n");
+        printk("|     press p : power mode               |\n");
+        printk("|     press u : Iref up                  |\n");
+        printk("|     press d : Iref down                |\n");
+        printk("|     press r : retrieve data recorded   |\n");
+        printk("|________________________________________|\n\n");
+        //------------------------------------------------------
+        break;
+    case 'i':
+        printk("idle mode\n");
+        mode_asked = IDLEMODE;
+        scope.start();
+        Iref_amplitude = 0.4F;
+        break;
+    case 'p':
+        if (!is_downloading)
         {
-        case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     --- grid following example -----   |\n");
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|     press u : Iref up                  |\n");
-            printk("|     press d : Iref down                |\n");
-            printk("|     press r : retrieve data recorded   |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
-            break;
-        case 'i':
-            printk("idle mode\n");
-            mode_asked = IDLEMODE;
-            scope.start();
-            Iref_amplitude = 0.4F;
-            break;
-        case 'p':
-            if (!is_downloading)
-            {
-                printk("power mode\n");
-                mode_asked = POWERMODE;
-            }
-            break;
-        case 'u':
-            if (Iref_amplitude < 0.5F)
-                Iref_amplitude += 0.1F;
-            break;
-        case 'd':
-            if (Iref_amplitude > 0.2F)
-                Iref_amplitude -= 0.1F;
-            break;
-        case 'r': 
-            is_downloading = true;
-        default:
-            break;
+            printk("power mode\n");
+            mode_asked = POWERMODE;
         }
+        break;
+    case 'u':
+        if (Iref_amplitude < 0.5F)
+            Iref_amplitude += 0.1F;
+        break;
+    case 'd':
+        if (Iref_amplitude > 0.2F)
+            Iref_amplitude -= 0.1F;
+        break;
+    case 'r': 
+        is_downloading = true;
+    default:
+        break;
     }
-
 }
 
 /**
@@ -252,9 +244,9 @@ void loop_application_task()
     else if (mode == POWERMODE)
     {
 
-        printk("%f:", Iref_amplitude);
-        printk("%f:", duty_cycle);
-        printk("%f:", V1_low_value);
+        printk("%.3f:", Iref_amplitude);
+        printk("%.3f:", duty_cycle);
+        printk("%.3f:", V1_low_value);
         printk("\n");
     }
     task.suspendBackgroundMs(100);
@@ -269,29 +261,23 @@ void loop_application_task()
 void loop_critical_task()
 {
 
-    meas_data = data.getLatest(I1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I1_low_value = meas_data - I1_offset;
+    meas_data = shield.sensors.getLatestValue(I1_LOW);
+    if (meas_data != NO_VALUE) I1_low_value = meas_data - I1_offset;
 
-    meas_data = data.getLatest(V1_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        V1_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(V1_LOW);
+    if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
-    meas_data = data.getLatest(V2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        V2_low_value = meas_data;
+    meas_data = shield.sensors.getLatestValue(V2_LOW);
+    if (meas_data != NO_VALUE) V2_low_value = meas_data;
 
-    meas_data = data.getLatest(I2_LOW);
-    if (meas_data < 10000 && meas_data > -10000)
-        I2_low_value = meas_data - I2_offset;
+    meas_data = shield.sensors.getLatestValue(I2_LOW);
+    if (meas_data != NO_VALUE) I2_low_value = meas_data - I2_offset;
 
-    meas_data = data.getLatest(V_HIGH);
-    if (meas_data != -10000)
-        V_high = meas_data;
+    meas_data = shield.sensors.getLatestValue(V_HIGH);
+    if (meas_data != NO_VALUE) V_high = meas_data;
 
-    meas_data = data.getLatest(I_HIGH);
-    if (meas_data != -10000)
-        I_high = meas_data;
+    meas_data = shield.sensors.getLatestValue(I_HIGH);
+    if (meas_data != NO_VALUE) I_high = meas_data;
 
     if (mode_asked == POWERMODE)
     { // we must launch the PLL and wait its locking.
@@ -321,11 +307,11 @@ void loop_critical_task()
         pr_value = prop_res.calculateWithReturn(Iref, I1_low_value);
         Vgrid = V1_low_value - V2_low_value;
         duty_cycle = (Vgrid + pr_value) / (2.0 * Udc) + 0.5F;
-        twist.setAllDutyCycle(duty_cycle);
+        shield.power.setDutyCycle(ALL,duty_cycle);
         if (!pwm_enable)
         {
             pwm_enable = true;
-            twist.startAll();
+            shield.power.start(ALL);
         }
         spin.led.turnOn();
 
@@ -335,7 +321,7 @@ void loop_critical_task()
         mode = IDLEMODE;
         if (pwm_enable == true)
         {
-            twist.stopAll();
+            shield.power.stop(ALL);
             duty_cycle = 0;
             spin.led.turnOff();
             pwm_enable = false;
