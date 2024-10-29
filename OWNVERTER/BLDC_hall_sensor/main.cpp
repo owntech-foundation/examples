@@ -21,24 +21,24 @@
  * @brief  This file is an application example for
  *         BLDC motor control using OwnVerter.
  *
+ * @author Régis Ruelland <regis.ruelland@laas.fr>
  * @author Jean Alinei <jean.alinei@owntech.org>
  */
 
 //--------------OWNTECH APIs----------------------------------
-#include "DataAPI.h"
 #include "TaskAPI.h"
-#include "TwistAPI.h"
+#include "ShieldAPI.h"
 #include "SpinAPI.h"
 
 #include "zephyr/console/console.h"
 
-#define HALL1 PA7
-#define HALL2 PC6
+#define HALL1 PC6
+#define HALL2 PC7
 #define HALL3 PD2
 
-#define PHASE_A PWMA
-#define PHASE_B PWMC
-#define PHASE_C PWME
+#define PHASE_A LEG1
+#define PHASE_B LEG2
+#define PHASE_C LEG3
 
 //--------------SETUP FUNCTIONS DECLARATION-------------------
 void setup_routine(); // Setups the hardware and software of the system
@@ -76,12 +76,12 @@ float32_t duty_cycle = 0.5;
 // static float32_t kp = 0.000215;
 // static float32_t ki = 2.86;
 // static float32_t kd = 0.0;
-void chopper(hrtim_tu_number_t high_phase, hrtim_tu_number_t low_phase)
+void chopper(leg_t high_phase, leg_t low_phase)
 {
-	spin.pwm.setDutyCycle(low_phase, 1.0 - duty_cycle);
-	spin.pwm.startDualOutput(low_phase);
-	spin.pwm.setDutyCycle(high_phase, duty_cycle);
-	spin.pwm.startDualOutput(high_phase);
+	shield.power.setDutyCycle(low_phase, 1.0 - duty_cycle);
+	shield.power.start(low_phase);
+	shield.power.setDutyCycle(high_phase, duty_cycle);
+	shield.power.start(high_phase);
 }
 //---------------------------------------------------------------
 
@@ -103,17 +103,12 @@ uint8_t mode = IDLEMODE;
  */
 void setup_routine()
 {
-	/* Setup the hardware first */
-	twist.setVersion(shield_ownverter);
 
 	/* Set the high switch convention for all legs */
-	twist.initAllBuck();
-	spin.pwm.setModulation(PHASE_C, UpDwn);
-	spin.pwm.setSwitchConvention(PHASE_C, PWMx1);
-	spin.pwm.initUnit(PHASE_C);
+	shield.power.initBuck(ALL);
 
 	/* Setup all the measurments */
-	data.enableTwistDefaultChannels();
+	shield.sensors.enableDefaultOwnverterSensors();
 
 	/* Declare tasks */
 	uint32_t app_task_number = task.createBackground(loop_application_task);
@@ -142,7 +137,6 @@ void loop_communication_task()
 			printk(" ________________________________________\n");
 			printk("|     ------- MENU ---------             |\n");
 			printk("|     press i : idle mode                |\n");
-			printk("|     press s : serial mode              |\n");
 			printk("|     press p : power mode               |\n");
 			printk("|     press u : duty cycle UP            |\n");
 			printk("|     press d : duty cycle DOWN          |\n");
@@ -217,68 +211,66 @@ void loop_critical_task()
 	hall_state = hall1_value + 2 * hall2_value + 4 * hall3_value;
 
 	/* Retrieve sensor values */
-	meas_data = data.getLatest(I1_LOW);
+	meas_data = shield.sensors.getLatestValue(I1_LOW);
 	if (meas_data != NO_VALUE) {
 		I1_low_value = meas_data;
 	}
 
-	meas_data = data.getLatest(V1_LOW);
+	meas_data = shield.sensors.getLatestValue(V1_LOW);
 	if (meas_data != NO_VALUE) {
 		V1_low_value = meas_data;
 	}
 
-	meas_data = data.getLatest(V2_LOW);
+	meas_data = shield.sensors.getLatestValue(V2_LOW);
 	if (meas_data != NO_VALUE) {
 		V2_low_value = meas_data;
 	}
 
-	meas_data = data.getLatest(I2_LOW);
+	meas_data = shield.sensors.getLatestValue(I2_LOW);
 	if (meas_data != NO_VALUE) {
 		I2_low_value = meas_data;
 	}
 
-	meas_data = data.getLatest(I_HIGH);
+	meas_data = shield.sensors.getLatestValue(I_HIGH);
 	if (meas_data != NO_VALUE) {
 		I_high = meas_data;
 	}
 
-	meas_data = data.getLatest(V_HIGH);
+	meas_data = shield.sensors.getLatestValue(V_HIGH);
 	if (meas_data != NO_VALUE) {
 		V_high = meas_data;
 	}
 
 	if (mode == IDLEMODE) {
 		if (pwm_enable == true) {
-			spin.pwm.stopDualOutput(PHASE_A);
-			spin.pwm.stopDualOutput(PHASE_B);
-			spin.pwm.stopDualOutput(PHASE_C);
+			shield.power.stop(ALL);
 		}
 		pwm_enable = false;
 	} else if (mode == POWERMODE) {
 		switch (hall_state) {
 		/* This switch case implements classic BLDC logic */
 		case 0b001:
-			spin.pwm.stopDualOutput(PHASE_B);
+			shield.power.stop(PHASE_B);
 			chopper(PHASE_A, PHASE_C);
 			break;
 		case 0b010:
-			spin.pwm.stopDualOutput(PHASE_C);
+			shield.power.stop(PHASE_C);
 			chopper(PHASE_B, PHASE_A);
 			break;
 		case 0b011:
-			spin.pwm.stopDualOutput(PHASE_A);
+			shield.power.stop(PHASE_A);
 			chopper(PHASE_B, PHASE_C);
 			break;
 		case 0b100:
-			spin.pwm.stopDualOutput(PHASE_A);
+			shield.power.stop(PHASE_A);
 			chopper(PHASE_C, PHASE_B);
 			break;
 		case 0b101:
-			spin.pwm.stopDualOutput(PHASE_C);
+			shield.power.stop(PHASE_C);
 			chopper(PHASE_A, PHASE_B);
 			break;
 		case 0b110:
-			spin.pwm.stopDualOutput(PHASE_B);
+			shield.power.stop(PHASE_B);
 			chopper(PHASE_C, PHASE_A);
 			break;
 		}
@@ -286,9 +278,7 @@ void loop_critical_task()
 		/* Set POWER ON */
 		if (!pwm_enable) {
 			pwm_enable = true;
-			spin.pwm.startDualOutput(PHASE_A);
-			spin.pwm.startDualOutput(PHASE_B);
-			spin.pwm.startDualOutput(PHASE_C);
+			shield.power.start(ALL);
 		}
 	}
 }
@@ -302,3 +292,4 @@ int main(void)
 	setup_routine();
 	return 0;
 }
+
