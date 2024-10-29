@@ -290,6 +290,17 @@
         ]
     },
     {
+        "name": "BLDC_hall_sensor",
+        "title": "BLDC motor with hall sensor",
+        "description": "Control a BLDC motor using hall effect sensor",
+        "group": "Examples OWNVERTER",
+        "base": "OWNVERTER/BLDC_hall_sensor",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
         "name": "foc_hall_sensor",
         "title": "Motor control using FOC and hall sensors",
         "description": "an example which show the use of a Field Oriented Control algorithm with discrete hall sensors",
