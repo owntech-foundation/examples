@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 LAAS-CNRS
+ * Copyright (c) 2021-present LAAS-CNRS
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published by
@@ -18,39 +18,40 @@
  */
 
 /**
- * @brief  This file it the main entry point of the
- *         OwnTech Power API. Please check the OwnTech
- *         documentation for detailed information on
- *         how to use Power API: https://docs.owntech.org/
+ * @brief  This example demonstrate how to spawn multiple fast and precise PWM
+ *         signals using SpinAPI.
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
-//--------------Zephyr----------------------------------------
+/* --------------Zephyr---------------------------------------- */
 #include <zephyr/console/console.h>
 
-//--------------OWNTECH APIs----------------------------------
+/* --------------OWNTECH APIs---------------------------------- */
 #include "SpinAPI.h"
 #include "TaskAPI.h"
 
-//--------------SETUP FUNCTIONS DECLARATION-------------------
-void setup_routine(); // Setups the hardware and software of the system
+/* --------------SETUP FUNCTIONS DECLARATION------------------- */
+/* Setups the hardware and software of the system */
+void setup_routine();
 
-//--------------LOOP FUNCTIONS DECLARATION--------------------
-void loop_communication_task(); // code to be executed in the slow communication task
-void loop_application_task();   // Code to be executed in the background task
-void loop_critical_task();     // Code to be executed in real time in the critical task
+/* --------------LOOP FUNCTIONS DECLARATION-------------------- */
+/* Code to be executed in the slow communication task */
+void loop_communication_task();
+/* Code to be executed in the background task */
+void loop_application_task();
+/* Code to be executed in real time in the critical task */
+void loop_critical_task();
 
-//--------------USER VARIABLES DECLARATIONS-------------------
+/* --------------USER VARIABLES DECLARATIONS------------------- */
 uint8_t received_serial_char;
-
 float32_t duty_cycle = 0.3;
 
-//---------------------------------------------------------------
-
-enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVERTER
+/* ------------------------------------------------------------ */
+/* List of possible modes for the OwnTech Board */
+enum serial_interface_menu_mode
 {
     IDLEMODE = 0,
     POWERMODE
@@ -58,13 +59,15 @@ enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVER
 
 uint8_t mode = IDLEMODE;
 
-//--------------SETUP FUNCTIONS-------------------------------
+/* --------------SETUP FUNCTIONS------------------------------- */
 
 /**
  * This is the setup routine.
- * It is used to call functions that will initialize your spin, twist, data and/or tasks.
- * In this example, we setup the version of the spin board and a background task.
- * The critical task is defined but not started.
+ * Here we initialize all five PWM from the Spin Board, effectively providing
+ * ten fast an precise signals ready to use.
+ * Each PWM pair is phase shifted at the initialization.
+ *
+ * We also spawn three tasks to control the duty cycle through USB serial.
  */
 void setup_routine()
 {
@@ -72,77 +75,85 @@ void setup_routine()
     spin.pwm.setModulation(PWMA, UpDwn);
     spin.pwm.setAdcEdgeTrigger(PWMA, EdgeTrigger_up);
     spin.pwm.setMode(PWMA, VOLTAGE_MODE);
-
-    spin.pwm.initUnit(PWMA); // timer initialization
-
-    spin.pwm.startDualOutput(PWMA); // Start PWM
+    /* Timer initialization */
+    spin.pwm.initUnit(PWMA);
+    /* Start PWM */
+    spin.pwm.startDualOutput(PWMA);
 
     /* PWM C initialization */
     spin.pwm.setModulation(PWMC, UpDwn);
     spin.pwm.setAdcEdgeTrigger(PWMC, EdgeTrigger_up);
     spin.pwm.setMode(PWMC, VOLTAGE_MODE);
-
-    spin.pwm.initUnit(PWMC); // timer initialization
-
-    spin.pwm.setPhaseShift(PWMC, 72); // Phase shift of 72°
-    spin.pwm.startDualOutput(PWMC); // Start PWM
+    /* Timer initialization */
+    spin.pwm.initUnit(PWMC);
+    /* Phase shift of 72° */
+    spin.pwm.setPhaseShift(PWMC, 72);
+    /* Start PWM */
+    spin.pwm.startDualOutput(PWMC);
 
     /* PWM D initialization */
     spin.pwm.setModulation(PWMD, UpDwn);
     spin.pwm.setAdcEdgeTrigger(PWMD, EdgeTrigger_up);
     spin.pwm.setMode(PWMD, VOLTAGE_MODE);
-
-    spin.pwm.initUnit(PWMD); // timer initialization
-
-    spin.pwm.setPhaseShift(PWMD, 144); // Phase shift of 144°
-    spin.pwm.startDualOutput(PWMD); // Start PWM
+    /* Timer initialization */
+    spin.pwm.initUnit(PWMD);
+    /* Phase shift of 144° */
+    spin.pwm.setPhaseShift(PWMD, 144);
+    /* Start PWM */
+    spin.pwm.startDualOutput(PWMD);
 
     /* PWM E initialization */
     spin.pwm.setModulation(PWME, UpDwn);
     spin.pwm.setAdcEdgeTrigger(PWME, EdgeTrigger_up);
     spin.pwm.setMode(PWME, VOLTAGE_MODE);
-
-    spin.pwm.initUnit(PWME); // timer initialization
-
-    spin.pwm.setPhaseShift(PWME, 216); // Phase shift of 216°
-    spin.pwm.startDualOutput(PWME); // Start PWM
+    /* Timer initialization */
+    spin.pwm.initUnit(PWME);
+    /* Phase shift of 216° */
+    spin.pwm.setPhaseShift(PWME, 216);
+    /* Start PWM */
+    spin.pwm.startDualOutput(PWME);
 
     /* PWM F initialization */
     spin.pwm.setModulation(PWMF, UpDwn);
     spin.pwm.setAdcEdgeTrigger(PWMF, EdgeTrigger_up);
     spin.pwm.setMode(PWMF, VOLTAGE_MODE);
+    /* Timer initialization */
+    spin.pwm.initUnit(PWMF);
+    /* Phase shift of 288° */
+    spin.pwm.setPhaseShift(PWMF, 288);
+    /* Start PWM */
+    spin.pwm.startDualOutput(PWMF);
 
-    spin.pwm.initUnit(PWMF); // timer initialization
-
-    spin.pwm.setPhaseShift(PWMF, 288); // Phase shift of 288°
-    spin.pwm.startDualOutput(PWMF); // Start PWM
-
-    // Then declare tasks
+    /* Then declare tasks */
     uint32_t app_task_number = task.createBackground(loop_application_task);
     uint32_t com_task_number = task.createBackground(loop_communication_task);
-    task.createCritical(loop_critical_task, 100); // Uncomment if you use the critical task
+    task.createCritical(loop_critical_task, 100);
 
-    // Finally, start tasks
+    /* Finally, we start tasks */
     task.startBackground(app_task_number);
     task.startBackground(com_task_number);
-    task.startCritical(); // Uncomment if you use the critical task
+    task.startCritical();
 }
 
-//--------------LOOP FUNCTIONS--------------------------------
+/* --------------LOOP FUNCTIONS-------------------------------- */
 
+/**
+ * Minimalistic task to implement USB serial communication.
+ * Here U and D keys respectively control PWMs duty cycle Increase and Decrease.
+ */
 void loop_communication_task()
 {
     received_serial_char = console_getchar();
     switch (received_serial_char)
     {
     case 'h':
-        //----------SERIAL INTERFACE MENU-----------------------
-        printk(" ________________________________________\n");
-        printk("|     ------- MENU ---------             |\n");
-        printk("|     press u : duty cycle UP            |\n");
-        printk("|     press d : duty cycle DOWN          |\n");
-        printk("|________________________________________|\n\n");
-        //------------------------------------------------------
+        /* ----------SERIAL INTERFACE MENU----------------------- */
+        printk(" ________________________________________ \n"
+               "|     ------- MENU ---------             |\n"
+               "|     press u : duty cycle UP            |\n"
+               "|     press d : duty cycle DOWN          |\n"
+               "|________________________________________|\n\n");
+        /* ------------------------------------------------------ */
         break;
     case 'u':
         duty_cycle += 0.05;
@@ -157,24 +168,22 @@ void loop_communication_task()
 
 /**
  * This is the code loop of the background task
- * It is executed second as defined by it suspend task in its last line.
- * You can use it to execute slow code such as state-machines.
+ * Here we simply log back the duty cycle reference and print is on USB serial.
  */
 void loop_application_task()
 {
-    // Task content
+    /* Task content */
     printk("%f\n", (double)duty_cycle);
 
-    // Pause between two runs of the task
+    /* Pause between two runs of the task */
     task.suspendBackgroundMs(1000);
 
 }
 
 /**
  * This is the code loop of the critical task
- * It is executed every 500 micro-seconds defined in the setup_software function.
- * You can use it to execute an ultra-fast code with the highest priority which cannot be interruped.
- * It is from it that you will control your power flow.
+ * Here the critical task runs periodically at 10kHz, we simply update the
+ * duty cycle references, of all running PWMs.
  */
 void loop_critical_task()
 {
