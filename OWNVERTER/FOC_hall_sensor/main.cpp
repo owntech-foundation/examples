@@ -130,8 +130,15 @@ static float32_t angle_index_f;
 /* We only make torque control. */
 static float32_t manual_Iq_ref;
 
-static LowPassFirstOrderFilter vHigh_filter = controlLibFactory.lowpassfilter(Ts, 5.0e-3F);
-static LowPassFirstOrderFilter w_mes_filter = controlLibFactory.lowpassfilter(Ts, 5.0e-3F);
+/**
+ * Low Pass Filters Init
+ */
+static LowPassFirstOrderFilter vHigh_filter =
+						controlLibFactory.lowpassfilter(Ts, 5.0e-3F);
+
+static LowPassFirstOrderFilter w_mes_filter =
+						controlLibFactory.lowpassfilter(Ts, 5.0e-3F);
+
 static float32_t V_high_filtered;
 static float32_t inverse_Vhigh;
 
@@ -322,7 +329,7 @@ inline void get_position_and_speed()
 }
 
 /**
- * Handle current limits and switch to Error state if limits exceeded.
+ * Handles current limits and switch to Error state if limits exceeded.
  */
 inline void overcurrent_mngt()
 {
@@ -337,7 +344,7 @@ inline void overcurrent_mngt()
 }
 
 /**
- * Stop PWM and reset filter and PID states
+ * Stops PWM and reset filter and PID states
  */
 inline void stop_pwm_and_reset_states_ifnot()
 {
@@ -350,7 +357,7 @@ inline void stop_pwm_and_reset_states_ifnot()
 }
 
 /**
- * Perform Torque control using Field Oriented Control algorithm
+ * Performs Torque control using Field Oriented Control algorithm
  */
 inline void control_torque()
 {
@@ -549,8 +556,8 @@ void application_task()
 		printk("%7d\n", control_state);
 	} else {
 		/* If memory_print is true then we plot scope datas in an infinite loop
-		 * This can be used with ownplot if you have not python script installed to
-		 * plot downloaded data using dump_scope_datas().
+		 * This can be used with ownplot if you have not python script installed
+		 * to plot downloaded data using dump_scope_datas().
 		 */
 		k_app_idx = (k_app_idx + 1) % SCOPE_SIZE;
 		printk("%.2f:", scope.get_channel_value(k_app_idx, 0));
