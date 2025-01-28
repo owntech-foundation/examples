@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 LAAS-CNRS
+ * Copyright (c) 2024-present LAAS-CNRS
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published by
@@ -14,43 +14,50 @@
  *   You should have received a copy of the GNU Lesser General Public License
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * SPDX-License-Identifier: LGLPV2.1
+ * SPDX-License-Identifier: LGPL-2.1
  */
 
 /**
  * @brief  This file deploys the code for discussing with a python script for
- *         hardware in teh loop applications. Please check its documentation on the
- *         readme file or at: https://docs.owntech.org/
+ *         hardware in the loop applications. Please check its documentation on
+ *         the readme file or at: https://docs.owntech.org/
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
  */
 
-//--------------OWNTECH APIs----------------------------------
+/* --------------OWNTECH APIs---------------------------------- */
 #include "SpinAPI.h"
 #include "TaskAPI.h"
 #include "ShieldAPI.h"
 #include "pid.h"
 #include "comm_protocol.h"
 
-#define RECORD_SIZE 128 // Number of point to record
+/* Number of point to record */
+#define RECORD_SIZE 128
 
 
-//--------------SETUP FUNCTIONS DECLARATION-------------------
-void setup_routine(); // Setups the hardware and software of the system
+/* --------------SETUP FUNCTIONS DECLARATION------------------- */
+/* Setups the hardware and software of the system */
+void setup_routine();
 
-//--------------LOOP FUNCTIONS DECLARATION--------------------
-void loop_application_task();   // Code to be executed in the background task
-void loop_communication_task();   // Code to be executed in the background task
-void loop_control_task();     // Code to be executed in real time in the critical task
+/* --------------LOOP FUNCTIONS DECLARATION-------------------- */
+/* Code to be executed in the background task */
+void loop_application_task();
+/* Code to be executed in the background task */
+void loop_communication_task();
+/* Code to be executed in real time in the critical task */
+void loop_control_task();
 
 
-//--------------USER VARIABLES DECLARATIONS----------------------
+/* -------------USER VARIABLES DECLARATIONS-------------------- */
 
-
-static uint32_t control_task_period = 100; //[us] period of the control task
-static bool pwm_enable_leg_1 = false;            //[bool] state of the PWM (ctrl task)
-static bool pwm_enable_leg_2 = false;            //[bool] state of the PWM (ctrl task)
+/* [us] period of the control task */
+static uint32_t control_task_period = 100;
+/* [bool] state of the PWM (ctrl task) */
+static bool pwm_enable_leg_1 = false;
+/* [bool] state of the PWM (ctrl task) */
+static bool pwm_enable_leg_2 = false;
 
 /* Measurement  variables */
 
@@ -64,7 +71,6 @@ float32_t V_high_value;
 float32_t T1_value;
 float32_t T2_value;
 
-
 float32_t delta_V1;
 float32_t V1_max = 0.0;
 float32_t V1_min = 0.0;
@@ -77,7 +83,8 @@ int8_t AppTask_num, CommTask_num;
 
 static float32_t acquisition_moment = 0.06;
 
-static float meas_data; // temp storage meas value (ctrl task)
+/* Temporary storage for measured value (ctrl task) */
+static float meas_data;
 
 float32_t starting_duty_cycle = 0.1;
 
@@ -94,7 +101,8 @@ static Pid pid1;
 static Pid pid2;
 
 #ifdef CONFIG_SHIELD_OWNVERTER
-static bool pwm_enable_leg_3 = false;            //[bool] state of the PWM (ctrl task)
+/* [bool] state of the PWM (ctrl task) */
+static bool pwm_enable_leg_3 = false;
 float32_t V3_low_value;
 float32_t I3_low_value;
 float32_t T3_value;
@@ -110,7 +118,7 @@ static uint32_t temp_meas_internal = 10;
 
 static float32_t local_analog_value=0;
 
-//---------------SETUP FUNCTIONS----------------------------------
+/* ---------------SETUP FUNCTIONS---------------------------------- */
 
 void setup_routine()
 {
@@ -146,7 +154,7 @@ void setup_routine()
 
 }
 
-//---------------LOOP FUNCTIONS----------------------------------
+/* ---------------LOOP FUNCTIONS---------------------------------- */
 
 void loop_communication_task()
 {
@@ -158,14 +166,17 @@ void loop_application_task()
 {
     switch(mode)
     {
-        case IDLE:    // IDLE MODE - turns data emission off
+        case IDLE:
+            /* IDLE MODE - turns data emission off */
             spin.led.turnOff();
             if(!print_done) {
                 printk("IDLE \n");
                 print_done = true;
             }
             break;
-        case POWER_OFF:  // POWER_OFF MODE - turns the power off but broadcasts the system state data
+        case POWER_OFF:
+            /* POWER_OFF MODE - turns the power off but broadcasts
+             * the system state data */
             spin.led.toggle();
             if(!print_done) {
                 printk("POWER OFF \n");
@@ -173,7 +184,9 @@ void loop_application_task()
             }
             frame_POWER_OFF();
             break;
-        case POWER_ON:   // POWER_ON MODE - turns the system on and broadcasts measurement from the physical variables
+        case POWER_ON:
+            /* POWER_ON MODE - turns the system on and broadcasts
+             * measurement from the physical variables */
             spin.led.turnOn();
             if(!print_done) {
                 printk("POWER ON \n");
@@ -223,7 +236,7 @@ void loop_application_task()
 
 void loop_control_task()
 {
-    // ------------- GET SENSOR MEASUREMENTS ---------------------
+    /* ------------- GET SENSOR MEASUREMENTS --------------------- */
     meas_data = shield.sensors.getLatestValue(V1_LOW);
     if (meas_data != NO_VALUE)
         V1_low_value = meas_data;
@@ -259,9 +272,10 @@ void loop_control_task()
 #endif
 
 
-    //----------- DEPLOYS MODES----------------
+    /* ----------- DEPLOYS MODES---------------- */
     switch(mode){
-        case IDLE:         // IDLE and POWER_OFF modes turn the power off
+        /* IDLE and POWER_OFF modes turn the power off */
+        case IDLE:
         case POWER_OFF:
             shield.power.stop(LEG1);
             pwm_enable_leg_1 = false;
@@ -278,72 +292,173 @@ void loop_control_task()
 #endif
             break;
 
-        case POWER_ON:     // POWER_ON mode turns the power ON
+        case POWER_ON:
+            /* POWER_ON mode turns the power ON */
 
-            //Tests if the legs were turned off and does it only once ]
-            if(!pwm_enable_leg_1 && power_leg_settings[LEG1].settings[BOOL_LEG]) {shield.power.start(LEG1); pwm_enable_leg_1 = true;}
-            if(!pwm_enable_leg_2 && power_leg_settings[LEG2].settings[BOOL_LEG]) {shield.power.start(LEG2); pwm_enable_leg_2 = true;}
-
-#ifdef CONFIG_SHIELD_OWNVERTER
-            if(!pwm_enable_leg_3 && power_leg_settings[LEG3].settings[BOOL_LEG]) {shield.power.start(LEG3); pwm_enable_leg_3 = true;}
-#endif
-
-            //Tests if the legs were turned on and does it only once ]
-            if(pwm_enable_leg_1 && !power_leg_settings[LEG1].settings[BOOL_LEG]) {shield.power.stop(LEG1); pwm_enable_leg_1 = false;}
-            if(pwm_enable_leg_2 && !power_leg_settings[LEG2].settings[BOOL_LEG]) {shield.power.stop(LEG2); pwm_enable_leg_2 = false;}
-
-#ifdef CONFIG_SHIELD_OWNVERTER
-            if(pwm_enable_leg_3 && !power_leg_settings[LEG3].settings[BOOL_LEG]) {shield.power.stop(LEG3); pwm_enable_leg_3 = false;}
-#endif
-
-            //calls the pid calculation if the converter in either in mode buck or boost for a given dynamically set reference value
-            if(power_leg_settings[LEG1].settings[BOOL_BUCK] || power_leg_settings[LEG1].settings[BOOL_BOOST]){
-                power_leg_settings[LEG1].duty_cycle = pid1.calculateWithReturn(power_leg_settings[LEG1].reference_value , *power_leg_settings[LEG1].tracking_variable);
+            /* Tests if the legs were turned off and does it only once */
+            if(!pwm_enable_leg_1 &&
+                power_leg_settings[LEG1].settings[BOOL_LEG])
+            {
+                shield.power.start(LEG1);
+                pwm_enable_leg_1 = true;
             }
-
-            if(power_leg_settings[LEG2].settings[BOOL_BUCK] || power_leg_settings[LEG2].settings[BOOL_BOOST]){
-                power_leg_settings[LEG2].duty_cycle = pid2.calculateWithReturn(power_leg_settings[LEG2].reference_value , *power_leg_settings[LEG2].tracking_variable);
+            if(!pwm_enable_leg_2 &&
+                power_leg_settings[LEG2].settings[BOOL_LEG])
+            {
+                shield.power.start(LEG2);
+                pwm_enable_leg_2 = true;
             }
 
 #ifdef CONFIG_SHIELD_OWNVERTER
-            if(power_leg_settings[LEG3].settings[BOOL_BUCK] || power_leg_settings[LEG3].settings[BOOL_BOOST]){
-                power_leg_settings[LEG3].duty_cycle = pid2.calculateWithReturn(power_leg_settings[LEG3].reference_value , *power_leg_settings[LEG3].tracking_variable);
+            if(!pwm_enable_leg_3
+                && power_leg_settings[LEG3].settings[BOOL_LEG])
+            {
+                shield.power.start(LEG3);
+                pwm_enable_leg_3 = true;
+            }
+#endif
+            /* Tests if the legs were turned on and does it only once */
+            if(pwm_enable_leg_1 &&
+               !power_leg_settings[LEG1].settings[BOOL_LEG])
+            {
+                shield.power.stop(LEG1);
+                pwm_enable_leg_1 = false;
+            }
+
+            if(pwm_enable_leg_2 &&
+               !power_leg_settings[LEG2].settings[BOOL_LEG])
+            {
+                shield.power.stop(LEG2);
+                pwm_enable_leg_2 = false;
+            }
+
+#ifdef CONFIG_SHIELD_OWNVERTER
+            if(pwm_enable_leg_3 &&
+               !power_leg_settings[LEG3].settings[BOOL_LEG])
+            {
+                shield.power.stop(LEG3);
+                pwm_enable_leg_3 = false;
             }
 #endif
 
+            /* Calls the pid calculation if the converter in either
+             * in mode buck or boost for a given dynamically
+             * set reference value */
 
-            if(power_leg_settings[LEG1].settings[BOOL_LEG]){
-                if(power_leg_settings[LEG1].settings[BOOL_BOOST]){
-                    shield.power.setDutyCycle(LEG1, (1-power_leg_settings[LEG1].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
-                } else {
-                    shield.power.setDutyCycle(LEG1, power_leg_settings[LEG1].duty_cycle ); //uses the normal convention by default
+            if(power_leg_settings[LEG1].settings[BOOL_BUCK] ||
+               power_leg_settings[LEG1].settings[BOOL_BOOST])
+            {
+                power_leg_settings[LEG1].duty_cycle =
+                    pid1.calculateWithReturn(
+                        power_leg_settings[LEG1].reference_value,
+                        *power_leg_settings[LEG1].tracking_variable
+                    );
+            }
+
+            if(power_leg_settings[LEG2].settings[BOOL_BUCK] ||
+               power_leg_settings[LEG2].settings[BOOL_BOOST])
+            {
+                power_leg_settings[LEG2].duty_cycle =
+                    pid2.calculateWithReturn(
+                        power_leg_settings[LEG2].reference_value ,
+                        *power_leg_settings[LEG2].tracking_variable
+                    );
+            }
+
+#ifdef CONFIG_SHIELD_OWNVERTER
+            if(power_leg_settings[LEG3].settings[BOOL_BUCK] ||
+               power_leg_settings[LEG3].settings[BOOL_BOOST])
+            {
+            power_leg_settings[LEG3].duty_cycle =
+                pid3.calculateWithReturn(
+                    power_leg_settings[LEG3].reference_value ,
+                    *power_leg_settings[LEG3].tracking_variable
+                );
+            }
+#endif
+
+            if(power_leg_settings[LEG1].settings[BOOL_LEG])
+            {
+                if(power_leg_settings[LEG1].settings[BOOL_BOOST])
+                {
+                    /* Inverses the convention of the leg in case
+                     * of changing from buck to boost */
+                    shield.power.setDutyCycle(
+                        LEG1,
+                        (1-power_leg_settings[LEG1].duty_cycle)
+                    );
+                }
+                else
+                {
+                    /* Uses the normal convention by default */
+                    shield.power.setDutyCycle(
+                        LEG1,
+                        power_leg_settings[LEG1].duty_cycle
+                    );
                 }
             }
 
-            if(power_leg_settings[LEG2].settings[BOOL_LEG]){
-                if(power_leg_settings[LEG2].settings[BOOL_BOOST]){
-                    shield.power.setDutyCycle(LEG2, (1-power_leg_settings[LEG2].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
-                }else{
-                    shield.power.setDutyCycle(LEG2, power_leg_settings[LEG2].duty_cycle); //uses the normal convention by default
+            if(power_leg_settings[LEG2].settings[BOOL_LEG])
+            {
+                if(power_leg_settings[LEG2].settings[BOOL_BOOST])
+                {
+                    /* Inverses the convention of the leg in case
+                     * of changing from buck to boost */
+                    shield.power.setDutyCycle(
+                        LEG2,
+                        (1-power_leg_settings[LEG2].duty_cycle)
+                    );
+                }
+                else
+                {
+                    /* Uses the normal convention by default */
+                    shield.power.setDutyCycle(
+                        LEG2,
+                        power_leg_settings[LEG2].duty_cycle
+                    );
                 }
             }
 
 #ifdef CONFIG_SHIELD_OWNVERTER
-            if(power_leg_settings[LEG3].settings[BOOL_LEG]){
-                if(power_leg_settings[LEG3].settings[BOOL_BOOST]){
-                    shield.power.setDutyCycle(LEG3, (1-power_leg_settings[LEG3].duty_cycle) ); //inverses the convention of the leg in case of changing from buck to boost
-                }else{
-                    shield.power.setDutyCycle(LEG3, power_leg_settings[LEG3].duty_cycle); //uses the normal convention by default
+            if(power_leg_settings[LEG3].settings[BOOL_LEG])
+            {
+                if(power_leg_settings[LEG3].settings[BOOL_BOOST])
+                {
+                    /* Inverses the convention of the leg in case of
+                     * changing from buck to boost */
+                    shield.power.setDutyCycle(
+                        LEG3,
+                        (1-power_leg_settings[LEG3].duty_cycle)
+                    );
+                }
+                else
+                {
+                    /* Uses the normal convention by default */
+                    shield.power.setDutyCycle(
+                        LEG3,
+                        power_leg_settings[LEG3].duty_cycle
+                    );
                 }
             }
 #endif
 
-
-            if(V1_low_value>V1_max) V1_max = V1_low_value;  //gets the maximum V1 voltage value. This is used for the capacitor test
-            if(V2_low_value>V2_max) V2_max = V2_low_value;  //gets the maximum V2 voltage value. This is used for the capacitor test
+            if(V1_low_value > V1_max){
+                /* Gets the maximum V1 voltage value.
+                 * This is used for the capacitor test */
+                V1_max = V1_low_value;
+            }
+            if(V2_low_value > V2_max){
+                /* Gets the maximum V2 voltage value.
+                 * This is used for the capacitor test */
+                V2_max = V2_low_value;
+            }
 
 #ifdef CONFIG_SHIELD_OWNVERTER
-            if(V3_low_value>V3_max) V3_max = V3_low_value;  //gets the maximum V2 voltage value. This is used for the capacitor test
+            if(V3_low_value > V3_max){
+                /* Gets the maximum V3 voltage value.
+                 * This is used for the capacitor test */
+                V3_max = V3_low_value;
+            }
 #endif
 
             break;
