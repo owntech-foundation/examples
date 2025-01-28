@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 LAAS-CNRS
+ * Copyright (c) 2024-present OwnTech Technologies
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published by
@@ -24,10 +24,10 @@
  *         with a duty of 8 PWM events and a period of 10 PWM events.
  *         Please refer to README.md for more details.
  *
- * @author Jean Alinei <jean.alinei@owntech.org>
+ * @author Jean Alinei <jean.alinei@owntech.io>
  */
 
-//--------------OWNTECH APIs----------------------------------
+/* --------------OWNTECH APIs---------------------------------- */
 #include "CommunicationAPI.h"
 #include "TaskAPI.h"
 #include "ShieldAPI.h"
@@ -35,27 +35,30 @@
 
 #include "zephyr/console/console.h"
 
-//--------------SETUP FUNCTIONS DECLARATION-------------------
+/* --------------SETUP FUNCTIONS DECLARATION------------------- */
 void setup_routine(); // Setups the hardware and software of the system
 
-//--------------LOOP FUNCTIONS DECLARATION--------------------
-void loop_communication_task(); // code to be executed in the slow communication task
-void loop_application_task();   // Code to be executed in the background task
-void loop_critical_task();     // Code to be executed in real time in the critical task
+/* --------------LOOP FUNCTIONS DECLARATION-------------------- */
+/* Code to be executed in the slow communication task */
+void loop_communication_task();
+/* Code to be executed in the background task */
+void loop_application_task();
+/* Code to be executed in real time in the critical task */
+void loop_critical_task();
 
-//--------------USER VARIABLES DECLARATIONS-------------------
+/* --------------USER VARIABLES DECLARATIONS------------------- */
 uint8_t received_serial_char;
 
 float32_t duty_cycle = 0.5;
 float32_t phase_shift = 0;
 uint8_t burst_duty = 8;
 uint8_t burst_period = 10;
-static bool pwm_enable = false;            //[bool] state of the PWM (ctrl task)
+/* [bool] state of the PWM (control task) */
+static bool pwm_enable = false;
 
-
-//---------------------------------------------------------------
-
-enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVERTER
+/* ------------------------------------------------------------ */
+/* List of possible power mode for the OwnTech board. */
+enum serial_interface_menu_mode
 {
     IDLEMODE = 0,
     POWERMODE
@@ -63,25 +66,31 @@ enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVER
 
 uint8_t mode = IDLEMODE;
 
-//--------------SETUP FUNCTIONS-------------------------------
+/* --------------SETUP FUNCTIONS------------------------------- */
 
 /**
  * This is the setup routine.
- * It is used to call functions that will initialize your spin, twist, data and/or tasks.
- * In this example, we setup the version of the spin board and a background task.
- * The critical task is defined but not started.
+ * Here we defined multiple PWMs using SpinAPI.
+ * PWM A and PWM C are meant to be one H bridge
+ * PWM E and PWM F are meant to be the second H bridge
+ *
+ * Phase shift is initialized at 0°. PWM A phase shift is not set as it is
+ * the phase reference per definition.
  */
 void setup_routine()
 {
 
-    // Setup the hardware first
-    spin.pwm.setFrequency(200000); // Set frequency of pwm
+    /* Setup the hardware first */
+
+    /* Set frequency of pwm */
+    spin.pwm.setFrequency(200000);
 
     /* Set switch convention to have proper H bridges */
     spin.pwm.setSwitchConvention(PWMC, PWMx2);
     spin.pwm.setSwitchConvention(PWMF, PWMx2);
 
-    spin.pwm.initUnit(PWMA); // timer initialization
+    /* Timer initialization */
+    spin.pwm.initUnit(PWMA);
     spin.pwm.initUnit(PWMC);
     spin.pwm.initUnit(PWME);
     spin.pwm.initUnit(PWMF);
@@ -92,7 +101,7 @@ void setup_routine()
     spin.pwm.setModulation(PWME, Lft_aligned);
     spin.pwm.setModulation(PWMF, Lft_aligned);
 
-    /* Set initial phase shifts*/
+    /* Set initial phase shifts */
     spin.pwm.setPhaseShift(PWMC, 0);
     spin.pwm.setPhaseShift(PWME, 0);
     spin.pwm.setPhaseShift(PWMF, 0);
@@ -103,24 +112,36 @@ void setup_routine()
     spin.pwm.setDutyCycle(PWME, duty_cycle);
     spin.pwm.setDutyCycle(PWMF, duty_cycle);
 
+    /* Initialize Burst Mode */
     spin.pwm.initBurstMode();
     spin.pwm.setBurstMode(burst_duty, burst_period);
     spin.pwm.startBurstMode();
     communication.sync.initMaster();
 
-    // Then declare tasks
+    /* Now Hardware is initialized we declare tasks */
     uint32_t app_task_number = task.createBackground(loop_application_task);
     uint32_t com_task_number = task.createBackground(loop_communication_task);
-    task.createCritical(loop_critical_task, 100); // Uncomment if you use the critical task
+    task.createCritical(loop_critical_task, 100);
 
-    // Finally, start tasks
+    /* Finally, we start tasks */
     task.startBackground(app_task_number);
     task.startBackground(com_task_number);
-    task.startCritical(); // Uncomment if you use the critical task
+    task.startCritical();
 }
 
-//--------------LOOP FUNCTIONS--------------------------------
+/* --------------LOOP FUNCTIONS-------------------------------- */
 
+/**
+ * Communication loop permits to implement simple control interface through
+ * USB serial. In this example we defined :
+ * Power ON / OFF using respectively P and I keys.
+ * Phase shift control using U and D keys to respectively Increase and Decrease
+ * phase shift.
+ * Burst period control using T and Y keys to respectively Increase and Decrease
+ * burst mode period.
+ * Burst mode duty cycle using E and R keys to respectively Increase and Decrease
+ * burst mode duty.
+ */
 void loop_communication_task()
 {
     while (1)
@@ -129,19 +150,19 @@ void loop_communication_task()
         switch (received_serial_char)
         {
         case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     ------- MENU ---------             |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|     press i : idle mode                |\n");
-            printk("|     press e : burst mode duty UP       |\n");
-            printk("|     press r : burst mode duty DOWN     |\n");
-            printk("|     press t : burst mode period UP     |\n");
-            printk("|     press y : burst mode period DOWN   |\n");
-            printk("|     press u : phase shift UP           |\n");
-            printk("|     press d : phase shift DOWN         |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
+            /* ----------SERIAL INTERFACE MENU----------------------- */
+            printk(" ________________________________________ \n"
+                   "|     ------- MENU ---------             |\n"
+                   "|     press p : power mode               |\n"
+                   "|     press i : idle mode                |\n"
+                   "|     press e : burst mode duty UP       |\n"
+                   "|     press r : burst mode duty DOWN     |\n"
+                   "|     press t : burst mode period UP     |\n"
+                   "|     press y : burst mode period DOWN   |\n"
+                   "|     press u : phase shift UP           |\n"
+                   "|     press d : phase shift DOWN         |\n"
+                   "|________________________________________|\n\n");
+            /* ------------------------------------------------------ */
             break;
         case 'i':
             printk("idle mode\n");
@@ -177,24 +198,25 @@ void loop_communication_task()
 
 /**
  * This is the code loop of the background task
- * It is executed second as defined by it suspend task in its last line.
- * You can use it to execute slow code such as state-machines.
+ * Here we only log inputs for demonstration purposes.
  */
 void loop_application_task()
 {
-    // Task content
+    /* Task content */
     printk("phase shift: %f\n", phase_shift);
     printk("burst mode duty: %d\n", burst_duty);
     printk("burst mode period: %d\n", burst_period);
-    // Pause between two runs of the task
+    /* Pause between two runs of the task */
     task.suspendBackgroundMs(100);
 }
 
 /**
  * This is the code loop of the critical task
- * It is executed every 500 micro-seconds defined in the setup_software function.
- * You can use it to execute an ultra-fast code with the highest priority which cannot be interruped.
- * It is from it that you will control your power flow.
+ * A minimalistic state machine makes sure that power is off in Idle Mode
+ * And that we enable power when requested through USB serial.
+ * Here we set the phase shift to PWM E and PWM F effectively phase shifting
+ * the second H bridge from the first one.
+ * We also update the burst mode parameters.
  */
 void loop_critical_task()
 {

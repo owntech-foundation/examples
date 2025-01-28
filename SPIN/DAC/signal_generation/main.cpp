@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 LAAS-CNRS
+ * Copyright (c) 2021-present LAAS-CNRS
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published by
@@ -18,75 +18,85 @@
  */
 
 /**
- * @brief  This file it the main entry point of the
- *         OwnTech Power API. Please check the OwnTech
- *         documentation for detailed information on
- *         how to use Power API: https://docs.owntech.org/
+ * @brief  This examples demonstrates how to use the Digital to Analog converter
+ *         using SpinAPI.
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
-//--------------OWNTECH APIs----------------------------------
+/* --------------OWNTECH APIs---------------------------------- */
 #include "SpinAPI.h"
 #include "TaskAPI.h"
 
-//--------------SETUP FUNCTIONS DECLARATION-------------------
-void setup_routine(); // Setups the hardware and software of the system
+/* --------------SETUP FUNCTIONS DECLARATION------------------- */
+/* Setups the hardware and software of the system */
+void setup_routine();
 
-//--------------LOOP FUNCTIONS DECLARATION--------------------
-void loop_background_task();   // Code to be executed in the background task
-void loop_critical_task();     // Code to be executed in real time in the critical task
+/* --------------LOOP FUNCTIONS DECLARATION-------------------- */
 
-//--------------USER VARIABLES DECLARATIONS-------------------
+/* Code to be executed in the background task */
+void loop_background_task();
+/* Code to be executed in real time in the critical task */
+void loop_critical_task();
 
+/* --------------USER VARIABLES DECLARATIONS------------------- */
 static uint32_t dac_value;
 
-//--------------SETUP FUNCTIONS-------------------------------
+/* --------------SETUP FUNCTIONS------------------------------- */
 
 /**
  * This is the setup routine.
- * It is used to call functions that will initialize your spin, twist, data and/or tasks.
- * In this example, we setup the version of the spin board and a background task.
- * The critical task is defined but not started.
+ * It initializes the DAC. And spawn one task for demonstration purpose.
  */
 void setup_routine()
 {
-    spin.dac.initConstValue(2); // DAC initialization
+    /* DAC initialization, here DAC2 is used */
+    spin.dac.initConstValue(2);
+
+    /* DAC value ranges from 0 to 4096 (12 bit resolution)
+     * On Spin, the default Analog reference is 2048mV
+     * Output voltage range from 0mV to 2048mV */
     spin.dac.setConstValue(2, 1, 0);
 
-    uint32_t background_task_number = task.createBackground(loop_background_task);
-    //task.createCritical(loop_critical_task, 500); // Uncomment if you use the critical task
+    uint32_t background_task_number =
+                            task.createBackground(loop_background_task);
 
-    // Finally, start tasks
+    /* task.createCritical(loop_critical_task, 100); */
+
+
+    /* Finally, start tasks */
     task.startBackground(background_task_number);
-    //task.startCritical(); // Uncomment if you use the critical task
+    /* task.startCritical(); */
 }
 
-//--------------LOOP FUNCTIONS--------------------------------
+/* --------------LOOP FUNCTIONS-------------------------------- */
 
 /**
  * This is the code loop of the background task
- * It is executed second as defined by it suspend task in its last line.
- * You can use it to execute slow code such as state-machines.
+ * Here it changes the DAC value.
  */
 void loop_background_task()
 {
-    // Task content
+    /* Task content */
 
-    dac_value = (dac_value + 100)%4096;
+    /* Here we increment the dac value by 100 quanta
+     * The modulo is here to make sure that dac_value
+     * ranges from 0 to 4096 */
+    dac_value = (dac_value + 100) % 4096;
+    /* DAC reference is updated. We expect to see a
+     * sawtooth signal from 0mV to 2000mV on Spin pin 34 */
     spin.dac.setConstValue(2, 1, dac_value);
 
-    // Pause between two runs of the task
+    /* Pause between two runs of the task */
     task.suspendBackgroundMs(100);
 }
 
 /**
  * This is the code loop of the critical task
- * It is executed every 500 micro-seconds defined in the setup_software function.
- * You can use it to execute an ultra-fast code with the highest priority which cannot be interruped.
- * It is from it that you will control your power flow.
+ * For now it is not initialized in the setup_routine but you can
+ * easily uncomment it to implement your own fast DAC control logic.
  */
 void loop_critical_task()
 {
