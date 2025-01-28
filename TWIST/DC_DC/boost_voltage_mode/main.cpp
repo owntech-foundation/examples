@@ -102,7 +102,7 @@ uint8_t mode = IDLEMODE;
 void setup_routine()
 {
     /* boost voltage mode */
-    shield.power.initBoost(LEG1);
+    shield.power.initBoost(ALL);
 
     shield.sensors.enableDefaultTwistSensors();
 
@@ -173,10 +173,9 @@ void loop_application_task()
 
         printk("%.3f:", (double)I1_low_value);
         printk("%.3f:", (double)V1_low_value);
-        printk("%.3f:", (double)I2_low_value);
-        printk("%.3f:", (double)V2_low_value);
         printk("%.3f:", (double)I_high);
-        printk("%f\n", (double)V_high);
+        printk("%.3f:", (double)V_high);
+        printk("%.3f\n", (double)voltage_reference);
     }
 
     task.suspendBackgroundMs(1000);
@@ -196,12 +195,6 @@ void loop_critical_task()
     meas_data = shield.sensors.getLatestValue(V1_LOW);
     if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
-    meas_data = shield.sensors.getLatestValue(V2_LOW);
-    if (meas_data != NO_VALUE) V2_low_value = meas_data;
-
-    meas_data = shield.sensors.getLatestValue(I2_LOW);
-    if (meas_data != NO_VALUE) I2_low_value = meas_data;
-
     meas_data = shield.sensors.getLatestValue(I_HIGH);
     if (meas_data != NO_VALUE) I_high = meas_data;
 
@@ -214,14 +207,14 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            shield.power.stop(ALL);
+            shield.power.stop(LEG1);
         }
         pwm_enable = false;
     }
     else if (mode == POWERMODE)
     {
         duty_cycle = pid.calculateWithReturn(voltage_reference, V_high);
-        shield.power.setDutyCycle(ALL,duty_cycle);
+        shield.power.setDutyCycle(LEG1,duty_cycle);
 
         /* Set POWER ON */
         if (!pwm_enable)
