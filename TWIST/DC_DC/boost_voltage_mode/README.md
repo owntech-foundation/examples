@@ -7,17 +7,41 @@ This example will implement a voltage mode boost converter to control the output
 
 ## Hardware setup and requirement
 
+The circuit diagram of the board is shown in the image below.
 
-![schema](Image/boost_m.png)
+![circuit diagram](Image/circuit_diagram.png)
+
+
+The power flows from `V1Low` to `V_high`. The wiring diagram is shown in the figure below.
+
+
+![wiring diagram](Image/boost_m.png)
 
 You will need :
 - 1 TWIST
 - A dc power supply (**max 10V**)
 - A resistor (or a dc electronic load)
 
-## Software setup
+## Software setup and structure
 
-We import the OwnTech control library with platformio.ini via the line :
+The example is built using the `main.cpp` file and the `control` library.
+
+#### Main code structure
+
+The `main.cpp` structure is shown in the image below.
+
+![Code structure](Image/main_structure.png)
+
+The code structure is as follows:
+- On the top of the code some initialization functions take place.
+- **Setup Routine** - calls functions that set the hardware and software
+- **Communication Task** - Handles the keyboard communication and decides which `MODE` is activated
+- **Application Task** - Handles the `MODE`, activates the LED and prints data on the serial port 
+- **Communication Task** - Handles the `MODE` sets power ON/OFF and track the `V_high` variable with a `PID`
+
+#### Control scheme
+
+The control library is imported in platformio.ini via the line :
 
 ```
 lib_deps=
@@ -30,25 +54,20 @@ We can use this library to initialize a PID control with the function :
 pid.init(pid_params);
 ```
 
-the initial parameters are :
+The control diagram of the `PID` is shown in the figure below.
 
-```cpp
-static Pid pid; // define a pid controller
+![Control diagram](Image/control_diagram.png)
 
-static float32_t kp = 0.000215;
-static float32_t Ti = 7.5175e-5;
-static float32_t Td = 0.0;
-static float32_t N = 0.0;
-static float32_t upper_bound = 1.0F;
-static float32_t lower_bound = 0.0F;
-static float32_t Ts = control_task_period * 1.e-6F;
-static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
-```
 
 ## Expected result
 
 This code will control the output voltage to have 15V, you can control the output voltage with the serial monitor :
 
-- press `u` to increase the voltage
-- press `d` to decrease the voltage
+- press `u` to increase the voltage reference by 0.5V
+- press `d` to decrease the voltage reference by 0.5V
+
+The following plot shows the expected result. Here the voltage reference was modified and `V_High` can be seen to follow it. 
+Both currents are negative, as the current measurement `I_High` is in the `load` convention and the current measurement `I1_low` is in `source` convention.  
+
+![Expected result](Image/result_plot.png)
 
