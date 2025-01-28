@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 LAAS-CNRS
+ * Copyright (c) 2023-present LAAS-CNRS
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published by
@@ -18,39 +18,43 @@
  */
 
 /**
- * @brief  This file it the main entry point of the
- *         OwnTech Power API. Please check the OwnTech
- *         documentation for detailed information on
- *         how to use Power API: https://docs.owntech.org/
+ * @brief  This example demonstrates how to measure the current ripple using
+ *         onboard sensors of the Twist power shield.
  *
  * @author Régis Ruelland <regis.ruelland@laas.fr>
  */
 
-//--------------Zephyr----------------------------------------
+/*--------------Zephyr---------------------------------------- */
 #include <zephyr/console/console.h>
 
-//--------------OWNTECH APIs----------------------------------
+/*--------------OWNTECH APIs---------------------------------- */
 #include "SpinAPI.h"
 #include "ShieldAPI.h"
 #include "TaskAPI.h"
 
-//-------------- Libraries------------------------------------
+/*-------------- Libraries------------------------------------ */
 #include "pid.h"
 #include "arm_math_types.h"
 #include <ScopeMimicry.h>
 
-//--------------SETUP FUNCTIONS DECLARATION-------------------
-void setup_routine(); // Setups the hardware and software of the system
+/*--------------SETUP FUNCTIONS DECLARATION------------------- */
+/* Setups the hardware and software of the system */
+void setup_routine();
 
-//--------------LOOP FUNCTIONS DECLARATION--------------------
-void loop_communication_task(); // code to be executed in the slow communication task
-void loop_application_task();   // Code to be executed in the background task
-void loop_critical_task();     // Code to be executed in real time in the critical task
+/*--------------LOOP FUNCTIONS DECLARATION-------------------- */
+/* Code to be executed in the slow communication task */
+void loop_communication_task();
+/* Code to be executed in the background task */
+void loop_application_task();
+/* Code to be executed in real time in the critical task */
+void loop_critical_task();
 
-//--------------USER VARIABLES DECLARATIONS-------------------
+/*--------------USER VARIABLES DECLARATIONS------------------- */
 
-static uint32_t control_task_period = 100; //[us] period of the control task
-static bool pwm_enable = false;            //[bool] state of the PWM (ctrl task)
+/* [us] period of the control task */
+static uint32_t control_task_period = 100;
+/* [bool] state of the PWM (ctrl task) */
+static bool pwm_enable = false;
 
 uint8_t received_serial_char;
 
@@ -63,7 +67,8 @@ static float32_t I2_low_value;
 static float32_t I_high;
 static float32_t V_high;
 
-static float meas_data; // temp storage meas value (ctrl task)
+/* Temporary storage for measured value (ctrl task) */
+static float meas_data;
 
 float32_t duty_cycle = 0.3;
 static bool enable_acq;
@@ -71,9 +76,7 @@ static float32_t trig_ratio;
 static float32_t begin_trig_ratio = 0.05;
 static float32_t end_trig_ratio = 0.95;
 static uint32_t num_trig_ratio_point = 1024;
-//static float32_t voltage_reference = 5.0; //voltage reference
-
-/* PID coefficient for a 8.6ms step response*/
+/* static float32_t voltage_reference = 5.0; */
 
 /* PID coefficient for a 8.6ms step response*/
 
@@ -93,9 +96,10 @@ static uint16_t number_of_cycle = 2;
 static ScopeMimicry scope(NB_DATAS, 7);
 static bool is_downloading;
 
-//---------------------------------------------------------------
+/*--------------------------------------------------------------- */
 
-enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVERTER
+/* LIST OF POSSIBLE MODES FOR THE OWNTECH CONVERTER */
+enum serial_interface_menu_mode
 {
     IDLEMODE = 0,
     POWERMODE
@@ -103,14 +107,15 @@ enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVER
 
 uint8_t mode = IDLEMODE;
 
-// trigger function for scope manager
+/* Trigger function for scope manager */
 bool a_trigger() {
     return enable_acq;
 }
 
 void dump_scope_datas(ScopeMimicry &scope)  {
     uint8_t *buffer = scope.get_buffer();
-    uint16_t buffer_size = scope.get_buffer_size() >> 2; // we divide by 4 (4 bytes per float data)
+    /* We divide by 4 (4 bytes per float data) */
+    uint16_t buffer_size = scope.get_buffer_size() >> 2;
     printk("begin record\n");
     printk("#");
     for (uint16_t k=0;k < scope.get_nb_channel(); k++) {
@@ -125,22 +130,21 @@ void dump_scope_datas(ScopeMimicry &scope)  {
     printk("end record\n");
 }
 
-//--------------SETUP FUNCTIONS-------------------------------
+/*--------------SETUP FUNCTIONS------------------------------- */
 
 /**
  * This is the setup routine.
- * It is used to call functions that will initialize your spin, twist, data and/or tasks.
- * In this example, we setup the version of the spin board and a background task.
- * The critical task is defined but not started.
+ * Here the setup :
+ *  - Initialize the power shield in Buck mode
+ *  - Initialize the power shield sensors
+ *  - Initialize the PID controller
+ *  - Initialize the scope to retrieve live data using ScopeMimicry
+ *  - Spawn three tasks.
  */
 void setup_routine()
 {
-    // Setup the hardware first
-    spin.gpio.configurePin(PC6, OUTPUT);
-    spin.gpio.configurePin(PB7, OUTPUT);
-    spin.gpio.resetPin(PC6); // use the capacitor
-    spin.gpio.resetPin(PB7); // use the capacitor
-    /* buck voltage mode */
+
+    /* Buck voltage mode */
     shield.power.initBuck(ALL);
 
     shield.sensors.enableDefaultTwistSensors();
@@ -160,37 +164,42 @@ void setup_routine()
 
     trig_ratio = 0.05;
 
-    // Then declare tasks
+    /* Then declare tasks */
     uint32_t app_task_number = task.createBackground(loop_application_task);
     uint32_t com_task_number = task.createBackground(loop_communication_task);
-    task.createCritical(loop_critical_task, 100); // Uncomment if you use the critical task
+    task.createCritical(loop_critical_task, 100);
 
-    // Finally, start tasks
+    /* Finally, start tasks */
     task.startBackground(app_task_number);
     task.startBackground(com_task_number);
-    task.startCritical(); // Uncomment if you use the critical task
+    task.startCritical();
 }
 
-//--------------LOOP FUNCTIONS--------------------------------
+/*--------------LOOP FUNCTIONS-------------------------------- */
 
+/**
+ * This tasks implements a minimalistic USB serial interface to control
+ * the buck converter, to trigger data acquisition of the current ripple,
+ * and to download the samples.
+ */
 void loop_communication_task()
 {
     received_serial_char = console_getchar();
     switch (received_serial_char)
     {
         case 'h':
-            //----------SERIAL INTERFACE MENU-----------------------
-            printk(" ________________________________________\n");
-            printk("|     ------- MENU ---------             |\n");
-            printk("|     press i : idle mode                |\n");
-            printk("|     press p : power mode               |\n");
-            printk("|     press u : duty cycle UP            |\n");
-            printk("|     press d : duty cycle DOWN          |\n");
-            printk("|     press r : download datas           |\n");
-            printk("|     press a : toggle enable_acq var    |\n");
-            printk("|     press c : increment trig ratio     |\n");
-            printk("|________________________________________|\n\n");
-            //------------------------------------------------------
+            /*----------SERIAL INTERFACE MENU----------------------- */
+            printk(" ________________________________________ \n"
+                   "|     ------- MENU ---------             |\n"
+                   "|     press i : idle mode                |\n"
+                   "|     press p : power mode               |\n"
+                   "|     press u : duty cycle UP            |\n"
+                   "|     press d : duty cycle DOWN          |\n"
+                   "|     press r : download datas           |\n"
+                   "|     press a : toggle enable_acq var    |\n"
+                   "|     press c : increment trig ratio     |\n"
+                   "|________________________________________|\n\n");
+            /*------------------------------------------------------ */
             break;
         case 'i':
             printk("idle mode\n");
@@ -198,7 +207,8 @@ void loop_communication_task()
             break;
         case 'p':
             printk("power mode\n");
-            scope.start(); // reset the scope trigger
+            /* Reset the scope trigger */
+            scope.start();
             mode = POWERMODE;
             break;
         case 'u':
@@ -226,8 +236,8 @@ void loop_communication_task()
 
 /**
  * This is the code loop of the background task
- * It is executed second as defined by it suspend task in its last line.
- * You can use it to execute slow code such as state-machines.
+ * This task mostly logs back measurements to the USB serial interface.
+ * A special logic is added to handle samples downloading.
  */
 void loop_application_task()
 {
@@ -259,9 +269,11 @@ void loop_application_task()
 
 /**
  * This is the code loop of the critical task
- * It is executed every 500 micro-seconds defined in the setup_software function.
- * You can use it to execute an ultra-fast code with the highest priority which cannot be interruped.
- * It is from it that you will control your power flow.
+ * This task runs at 10kHz.
+ *  - It retrieves sensors values
+ *  - A special section does the ADC trigger instant calculation and setup
+ *  - Scope is updated
+ *  - It update the PWM signals
  */
 void loop_critical_task()
 {
@@ -294,11 +306,16 @@ void loop_critical_task()
     }
     else if (mode == POWERMODE)
     {
-        //duty_cycle = pid.calculateWithReturn(voltage_reference, V1_low_value);
+        /* Duty_cycle =
+         *      pid.calculateWithReturn(voltage_reference, V1_low_value); */
         shield.power.setDutyCycle(ALL,duty_cycle);
+
         if (enable_acq) {
-            trig_ratio += (end_trig_ratio - begin_trig_ratio) / (float32_t)num_trig_ratio_point;
-            if (trig_ratio > end_trig_ratio) { // make a cycle
+            trig_ratio += (end_trig_ratio - begin_trig_ratio) /
+                          (float32_t)num_trig_ratio_point;
+
+            /* Make a cycle */
+            if (trig_ratio > end_trig_ratio) {
                 trig_ratio = begin_trig_ratio;
             }
             shield.power.setTriggerValue(LEG1, trig_ratio);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 LAAS-CNRS
+ * Copyright (c) 2021-present LAAS-CNRS
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published by
@@ -18,39 +18,43 @@
  */
 
 /**
- * @brief  This file it the main entry point of the
- *         OwnTech Power API. Please check the OwnTech
- *         documentation for detailed information on
- *         how to use Power API: https://docs.owntech.org/
+ * @brief  This example demonstrates how to deploy a Buck converter with
+ *         voltage mode control on the Twist power shield.
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
  */
 
-//--------------Zephyr----------------------------------------
+/*--------------Zephyr---------------------------------------- */
 #include <zephyr/console/console.h>
 
-//--------------OWNTECH APIs----------------------------------
+/*--------------OWNTECH APIs---------------------------------- */
 #include "SpinAPI.h"
 #include "ShieldAPI.h"
 #include "TaskAPI.h"
 
-//--------------OWNTECH Libraries-----------------------------
+/*--------------OWNTECH Libraries----------------------------- */
 #include "pid.h"
 
-//--------------SETUP FUNCTIONS DECLARATION-------------------
-void setup_routine(); // Setups the hardware and software of the system
+/*--------------SETUP FUNCTIONS DECLARATION------------------- */
+/* Setups the hardware and software of the system */
+void setup_routine();
 
-//--------------LOOP FUNCTIONS DECLARATION--------------------
-void loop_communication_task(); // code to be executed in the slow communication task
-void loop_application_task();   // Code to be executed in the background task
-void loop_critical_task();     // Code to be executed in real time in the critical task
+/*--------------LOOP FUNCTIONS DECLARATION-------------------- */
+/* Code to be executed in the slow communication task */
+void loop_communication_task();
+/* Code to be executed in the background task */
+void loop_application_task();
+/* Code to be executed in real time in the critical task */
+void loop_critical_task();
 
-//--------------USER VARIABLES DECLARATIONS-------------------
+/*--------------USER VARIABLES DECLARATIONS------------------- */
 
-static uint32_t control_task_period = 100; //[us] period of the control task
-static bool pwm_enable = false;            //[bool] state of the PWM (ctrl task)
+/* [us] period of the control task */
+static uint32_t control_task_period = 100;
+/* [bool] state of the PWM (ctrl task) */
+static bool pwm_enable = false;
 
 uint8_t received_serial_char;
 
@@ -66,15 +70,15 @@ static float32_t V_high;
 static float32_t temp_1_value;
 static float32_t temp_2_value;
 
-
-static float meas_data; // temp storage meas value (ctrl task)
+/* Temporary storage fore measured value (ctrl task) */
+static float meas_data;
 
 float32_t duty_cycle = 0.3;
 
-static float32_t voltage_reference = 15; //voltage reference
+/* Voltage reference */
+static float32_t voltage_reference = 15;
 
-/* PID coefficient for a 8.6ms step response*/
-
+/* PID coefficients for a 8.6ms step response*/
 static float32_t kp = 0.000215;
 static float32_t Ti = 7.5175e-5;
 static float32_t Td = 0.0;
@@ -85,9 +89,10 @@ static float32_t Ts = control_task_period * 1e-6;
 static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
 static Pid pid;
 
-//---------------------------------------------------------------
+/*--------------------------------------------------------------- */
 
-enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVERTER
+/* LIST OF POSSIBLE MODES FOR THE OWNTECH CONVERTER */
+enum serial_interface_menu_mode
 {
     IDLEMODE = 0,
     POWERMODE
@@ -95,51 +100,57 @@ enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVER
 
 uint8_t mode = IDLEMODE;
 
-//--------------SETUP FUNCTIONS-------------------------------
+/*--------------SETUP FUNCTIONS------------------------------- */
 
 /**
  * This is the setup routine.
- * It is used to call functions that will initialize your spin, twist, data and/or tasks.
- * In this example, we setup the version of the spin board and a background task.
- * The critical task is defined but not started.
+ * Here the setup :
+ *  - Initialize the power shield in Buck mode
+ *  - Initialize the power shield sensors
+ *  - Initialize the PID controller
+ *  - Spawn three tasks.
  */
 void setup_routine()
 {
-    /* buck voltage mode */
+    /* Buck voltage mode */
     shield.power.initBuck(ALL);
 
     shield.sensors.enableDefaultTwistSensors();
 
     pid.init(pid_params);
 
-    // Then declare tasks
+    /* Then declare tasks */
     uint32_t app_task_number = task.createBackground(loop_application_task);
     uint32_t com_task_number = task.createBackground(loop_communication_task);
-    task.createCritical(loop_critical_task, 100); // Uncomment if you use the critical task
+    task.createCritical(loop_critical_task, 100);
 
-    // Finally, start tasks
+    /* Finally, start tasks */
     task.startBackground(app_task_number);
     task.startBackground(com_task_number);
-    task.startCritical(); // Uncomment if you use the critical task
+    task.startCritical();
 }
 
-//--------------LOOP FUNCTIONS--------------------------------
+/*--------------LOOP FUNCTIONS-------------------------------- */
 
+/**
+ * This tasks implements a minimalistic USB serial interface to control
+ * the buck converter.
+ */
 void loop_communication_task()
 {
     received_serial_char = console_getchar();
     switch (received_serial_char)
     {
     case 'h':
-        //----------SERIAL INTERFACE MENU-----------------------
-        printk(" ________________________________________\n");
-        printk("|     ---- MENU buck voltage mode ----   |\n");
-        printk("|     press i : idle mode                |\n");
-        printk("|     press p : power mode               |\n");
-        printk("|     press u : voltage reference UP     |\n");
-        printk("|     press d : voltage reference DOWN   |\n");
-        printk("|________________________________________|\n\n");
-        //------------------------------------------------------
+        /*----------SERIAL INTERFACE MENU----------------------- */
+        printk(" ________________________________________ \n"
+               "|     ---- MENU buck voltage mode ----   |\n"
+               "|     press i : idle mode                |\n"
+               "|     press p : power mode               |\n"
+               "|     press u : voltage reference UP     |\n"
+               "|     press d : voltage reference DOWN   |\n"
+               "|________________________________________|\n\n");
+        /*------------------------------------------------------ */
         break;
     case 'i':
         printk("idle mode\n");
@@ -162,8 +173,7 @@ void loop_communication_task()
 
 /**
  * This is the code loop of the background task
- * It is executed second as defined by it suspend task in its last line.
- * You can use it to execute slow code such as state-machines.
+ * This task mostly logs back measurements to the USB serial interface.
  */
 void loop_application_task()
 {
@@ -202,9 +212,10 @@ void loop_application_task()
 
 /**
  * This is the code loop of the critical task
- * It is executed every 500 micro-seconds defined in the setup_software function.
- * You can use it to execute an ultra-fast code with the highest priority which cannot be interruped.
- * It is from it that you will control your power flow.
+ * This task runs at 10kHz.
+ *  - It retrieves sensors values
+ *  - It runs the PID controller
+ *  - It update the PWM signals
  */
 void loop_critical_task()
 {
@@ -225,7 +236,6 @@ void loop_critical_task()
 
     meas_data = shield.sensors.getLatestValue(V_HIGH);
     if (meas_data != NO_VALUE) V_high = meas_data;
-
 
 
     if (mode == IDLEMODE)
