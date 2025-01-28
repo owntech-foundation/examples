@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 OwnTech Foundation
+ * Copyright (c) 2024-present OwnTech Foundation
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published by
@@ -25,7 +25,7 @@
  * @author Jean Alinei <jean.alinei@owntech.org>
  */
 
-//--------------OWNTECH APIs----------------------------------
+/* --------------OWNTECH APIs---------------------------------- */
 #include "TaskAPI.h"
 #include "ShieldAPI.h"
 #include "SpinAPI.h"
@@ -40,17 +40,24 @@
 #define PHASE_B LEG2
 #define PHASE_C LEG3
 
-//--------------SETUP FUNCTIONS DECLARATION-------------------
-void setup_routine(); // Setups the hardware and software of the system
+/* --------------SETUP FUNCTIONS DECLARATION------------------- */
 
-//--------------LOOP FUNCTIONS DECLARATION--------------------
-void loop_communication_task(); // code to be executed in the slow communication task
-void loop_application_task();   // Code to be executed in the background task
-void loop_critical_task();      // Code to be executed in real time in the critical task
+/* Setups the hardware and software of the system */
+void setup_routine();
 
-//--------------USER VARIABLES DECLARATIONS-------------------
+/* --------------LOOP FUNCTIONS DECLARATION-------------------- */
 
-static bool pwm_enable = false; //[bool] state of the PWM (ctrl task)
+/* Code to be executed in the slow communication task */
+void loop_communication_task();
+/* Code to be executed in the background task */
+void loop_application_task();
+/* Code to be executed in real time in the critical task */
+void loop_critical_task();
+
+/* --------------USER VARIABLES DECLARATIONS------------------- */
+
+/* [bool] state of the PWM (control task) */
+static bool pwm_enable = false;
 
 uint8_t received_serial_char;
 
@@ -67,15 +74,11 @@ uint8_t hall1_value;
 uint8_t hall2_value;
 uint8_t hall3_value;
 
-static float meas_data; // temp storage meas value (ctrl task)
+/* Temporary storage for measured value (control task) */
+static float meas_data;
 
 float32_t duty_cycle = 0.5;
 
-/* PID coefficient for a 8.6ms step response*/
-
-// static float32_t kp = 0.000215;
-// static float32_t ki = 2.86;
-// static float32_t kd = 0.0;
 void chopper(leg_t high_phase, leg_t low_phase)
 {
 	shield.power.setDutyCycle(low_phase, 1.0 - duty_cycle);
@@ -83,9 +86,11 @@ void chopper(leg_t high_phase, leg_t low_phase)
 	shield.power.setDutyCycle(high_phase, duty_cycle);
 	shield.power.start(high_phase);
 }
-//---------------------------------------------------------------
 
-enum serial_interface_menu_mode // LIST OF POSSIBLE MODES FOR THE OWNTECH CONVERTER
+/* --------------------------------------------------------------- */
+
+/* List of possible modes for the OwnTech board */
+enum serial_interface_menu_mode
 {
 	IDLEMODE = 0,
 	POWERMODE
@@ -97,9 +102,14 @@ uint8_t mode = IDLEMODE;
 
 /**
  * This is the setup routine.
- * It is used to call functions that will initialize your spin, twist, data and/or tasks.
- * In this example, we setup the version of the spin board and a background task.
- * The critical task is defined but not started.
+ * It is used to call functions that will initialize your spin,
+ * your power shield, data and/or tasks.
+ *
+ * In this example :
+ * We setup the OwnVerter power shield in buck mode.
+ * We enable its defaults sensors.
+ * We create a critical task running at 10kHz.
+ * We configure the GPIOS needed for measuring the position using hall sensors.
  */
 void setup_routine()
 {
@@ -107,7 +117,7 @@ void setup_routine()
 	/* Set the high switch convention for all legs */
 	shield.power.initBuck(ALL);
 
-	/* Setup all the measurments */
+	/* Setup all the measurements */
 	shield.sensors.enableDefaultOwnverterSensors();
 
 	/* Declare tasks */
@@ -125,23 +135,32 @@ void setup_routine()
 	spin.gpio.configurePin(HALL3, INPUT);
 }
 
-//--------------LOOP FUNCTIONS--------------------------------
+/* --------------LOOP FUNCTIONS-------------------------------- */
 
+/**
+ * This is the communication task.
+ * It is used to control your application through USB serial
+ *
+ * In this example a simple duty cycle control is implemented:
+ * - When pressing U and D keys, we increase or decrease the duty cycle.
+ */
 void loop_communication_task()
 {
 	while (1) {
 		received_serial_char = console_getchar();
 		switch (received_serial_char) {
 		case 'h':
-			//----------SERIAL INTERFACE MENU-----------------------
-			printk(" ________________________________________\n");
-			printk("|     ------- MENU ---------             |\n");
-			printk("|     press i : idle mode                |\n");
-			printk("|     press p : power mode               |\n");
-			printk("|     press u : duty cycle UP            |\n");
-			printk("|     press d : duty cycle DOWN          |\n");
-			printk("|________________________________________|\n\n");
-			//------------------------------------------------------
+			/* ----------SERIAL INTERFACE MENU----------------------- */
+
+			printk(" ________________________________________ \n"
+				   "|     ------- MENU ---------             |\n"
+				   "|     press i : idle mode                |\n"
+				   "|     press p : power mode               |\n"
+				   "|     press u : duty cycle UP            |\n"
+				   "|     press d : duty cycle DOWN          |\n"
+				   "|________________________________________|\n\n");
+
+			/* ------------------------------------------------------ */
 			break;
 		case 'i':
 			printk("idle mode\n");
@@ -166,10 +185,8 @@ void loop_communication_task()
 
 /**
  * This is the code loop of the background task
- * It is executed second as defined by it suspend task in its last line.
- * You can use it to execute slow code such as state-machines.
+ * In this example it is used to send back measurements through USB serial.
  */
-
 void loop_application_task()
 {
 	if (mode == IDLEMODE) {
@@ -195,14 +212,18 @@ void loop_application_task()
 }
 
 /**
- * This is the code loop of the critical task
- * It is executed every 500 micro-seconds defined in the setup_software function.
- * You can use it to execute an ultra-fast code with the highest priority which cannot be
- * interruped. It is from it that you will control your power flow.
+ * This is the code loop of the critical task. It is executed
+ * every 100 micro-seconds as defined in the setup_software function.
+ *
+ * In this example :
+ * - Individual Hall sensors state are read
+ * - Hall State is computed
+ * - Measurements are retrieved
+ * - In power mode, a switch case is launched implementing 6 step logic.
  */
 void loop_critical_task()
 {
-	/* Retrieve the rotor position from hall sensors*/
+	/* Retrieve the rotor position from hall sensors */
 	hall1_value = spin.gpio.readPin(HALL1);
 	hall2_value = spin.gpio.readPin(HALL2);
 	hall3_value = spin.gpio.readPin(HALL3);
@@ -248,7 +269,9 @@ void loop_critical_task()
 		pwm_enable = false;
 	} else if (mode == POWERMODE) {
 		switch (hall_state) {
+
 		/* This switch case implements classic BLDC logic */
+
 		case 0b001:
 			shield.power.stop(PHASE_B);
 			chopper(PHASE_A, PHASE_C);
