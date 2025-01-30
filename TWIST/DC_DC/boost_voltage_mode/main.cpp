@@ -101,10 +101,10 @@ uint8_t mode = IDLEMODE;
 /**
  * This is the setup routine.
  * Here the setup :
- *  - Initialize the power shield in Boost mode
- *  - Initialize the power shield sensors
- *  - Initialize the PID controller
- *  - Spawn three tasks.
+ *  - Initializes the power shield in Boost mode
+ *  - Initializes the power shield sensors
+ *  - Initializes the PID controller
+ *  - Spawns three tasks.
  */
 void setup_routine()
 {
