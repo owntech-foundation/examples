@@ -15,7 +15,8 @@ The circuit diagram of the board is shown in the image below.
 The power flows from `V1Low` to `V_high`. The wiring diagram is shown in the figure below.
 
 
-![wiring diagram](Image/boost_m.png)
+![wiring diagram](Image/wiring_diagram.png)
+
 
 You will need :
 - 1 TWIST
@@ -37,7 +38,19 @@ The code structure is as follows:
 - **Setup Routine** - calls functions that set the hardware and software
 - **Communication Task** - Handles the keyboard communication and decides which `MODE` is activated
 - **Application Task** - Handles the `MODE`, activates the LED and prints data on the serial port 
-- **Communication Task** - Handles the `MODE` sets power ON/OFF and track the `V_high` variable with a `PID`
+- **Critical Task** - Handles the `MODE` sets power ON/OFF and track the `V_high` variable with a `PID`
+
+The tasks are executed following the diagram below. 
+
+
+![Timing diagram](Image/timing_diagram.png)
+
+
+- **Communication Task** - Is waken regularly to verify any keyboard activity
+- **Application Task** - This task is woken once its suspend is finished 
+- **Critical Task** - This task is driven by the HRTIM count interrupt, where it counts a number of HRTIM switching frequency periods. In this case 100us, or 20 periods of the TWIST board 200kHz switching frequency set by default.
+
+
 
 #### Control scheme
 
