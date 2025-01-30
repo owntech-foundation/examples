@@ -95,10 +95,10 @@ uint8_t mode = IDLEMODE;
 /**
  * This is the setup routine.
  * Here the setup task :
- *  - Initialize the power shield in Buck, current mode
- *  - Initialize the power shield sensors
- *  - Set the slope compensation
- *  - Spawn three tasks
+ *  - Initializes the power shield in Buck, current mode
+ *  - Initializes the power shield sensors
+ *  - Sets the slope compensation
+ *  - Spawns three tasks
  */
 void setup_routine()
 {
