@@ -138,17 +138,16 @@ void dump_scope_datas(ScopeMimicry &scope)  {
  * Here the setup :
  *  - Initialize the power shield in Buck mode
  *  - Set the electrolytic capacitor of LEG2 while keep LEG1 capacitor off.
- *  - Initialize the power shield sensors
- *  - Initialize the PID controller
- *  - Initialize the scope
- *  - Spawn three tasks.
+ *  - Initializes the power shield sensors
+ *  - Initializes the PID controller
+ *  - Initializes the scope
+ *  - Spawns three tasks.
  */
 void setup_routine()
 {
     /* Setup the hardware first */
-    shield.power.initBuck(ALL);
+    shield.power.initBuck(LEG1);
     shield.power.disconnectCapacitor(LEG1);
-    shield.power.connectCapacitor(LEG2);
 
     shield.sensors.enableDefaultTwistSensors();
 
@@ -304,21 +303,21 @@ void loop_critical_task()
     {
         if (pwm_enable == true)
         {
-            shield.power.stop(ALL);
+            shield.power.stop(LEG1);
+            pwm_enable = false;
         }
-        pwm_enable = false;
     }
     else if (mode == POWERMODE)
     {
         duty_cycle = pid.calculateWithReturn(voltage_reference, V1_low_value);
-        shield.power.setDutyCycle(ALL,duty_cycle);
+        shield.power.setDutyCycle(LEG1,duty_cycle);
         scope.acquire();
-    }
-    /* Set POWER ON */
-    if (!pwm_enable)
-    {
-        pwm_enable = true;
-        shield.power.start(ALL);
+        /* Set POWER ON */
+        if (pwm_enable == false)
+        {
+            pwm_enable = true;
+            shield.power.start(LEG1);
+        }
     }
 }
 
