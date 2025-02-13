@@ -210,7 +210,8 @@
         "files": [
             "main.cpp",
             "app.conf",
-            "README.md"
+            "README.md",
+            "user_data_objects.h"
         ]
     },
     {
