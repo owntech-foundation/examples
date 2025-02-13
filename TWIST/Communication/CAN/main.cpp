@@ -120,7 +120,7 @@ void loop_background_task()
     printk("%8.3f:", (double)I_high_value);
     printk("%8.3f:", (double)V_high_value);
     printk("%8.3f:", (double)temp_1_value);
-    printk("%8.3f:", (double)broadcasted_value);
+    printk("%8.3f:", (double)received_value);
     printk("\n");
 
     /* This pauses the task for 1000 milli seconds */
@@ -129,13 +129,15 @@ void loop_background_task()
 
     /* Use the following function to send a control reference over CAN */
     communication.can.setCtrlReference(control_reference);
-    /* Use the following function to send a start or stop order over CAN */
-    communication.can.setCtrlStartStop(true);
+    /* Use the following functions to send a start or stop order over CAN */
+    communication.can.startSlaveDevice();
+    communication.can.stopSlaveDevice();
+
 
     /* The following functions retrieve any reference sent over CAN */
     received_value = communication.can.getCtrlReference();
     /* The following functions retrieve any start stop order sent over CAN */
-    received_start_stop = communication.can.getCtrlStartStop();
+    received_start_stop = communication.can.getStartStopState();
 }
 
 /**
