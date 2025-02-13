@@ -202,6 +202,19 @@
         ]
     },
     {
+        "name": "can_communication",
+        "title": "CAN Communication",
+        "description": "This example deploys CAN communication of the Twist board",
+        "group": "Examples TWIST",
+        "base": "TWIST/Communication/CAN",
+        "files": [
+            "main.cpp",
+            "app.conf",
+            "README.md",
+            "user_data_objects.h"
+        ]
+    },
+    {
         "name": "blinky",
         "title": "Blinky LED",
         "description": "Toggling LED",
