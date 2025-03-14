@@ -42,7 +42,8 @@ void loop_critical_task();
 
 /* --------------USER VARIABLES DECLARATIONS------------------- */
 
-static uint32_t incremental_value;
+static uint32_t incremental_value_timer_3;
+static uint32_t incremental_value_timer_4;
 
 /* --------------SETUP FUNCTIONS------------------------------- */
 
@@ -55,7 +56,8 @@ static uint32_t incremental_value;
 void setup_routine()
 {
     /* Init timer */
-    spin.timer.startLogTimer4IncrementalEncoder();
+    spin.timer.startLogIncrementalEncoder(TIMER3);
+    spin.timer.startLogIncrementalEncoder(TIMER4);
 
     /* Then declare tasks */
     uint32_t background_task_number =
@@ -79,8 +81,9 @@ void setup_routine()
 void loop_background_task()
 {
     /* Task content */
-    incremental_value = spin.timer.getTimer4IncrementalEncoderValue();
-    printk(" %u \n", incremental_value);
+    incremental_value_timer_3 = spin.timer.getIncrementalEncoderValue(TIMER3);
+    incremental_value_timer_4 = spin.timer.getIncrementalEncoderValue(TIMER4);
+    printk("TIM3: %u , TIM4: %d\n", incremental_value_timer_3, incremental_value_timer_4);
 
     /* Pause between two runs of the task */
     task.suspendBackgroundMs(100);
