@@ -1,6 +1,6 @@
 # Buck with PID controlled output voltage
 
-A voltage mode buck converter regulates voltage by comparing the output voltage to a reference voltage. It adjusts the duty cycle of its switching signal to keep the output voltage stable. This type of converter efficiently steps down voltage levels, making it useful in various electronic devices like phone battery charger.
+A voltage mode buck converter regulates voltage by comparing the output voltage to a reference voltage. It adjusts the duty cycle of its switching signal to keep the output voltage stable. This type of converter efficiently steps down voltage levels, making it useful in various electronic devices like embedded battery charger.
 
 This example will implement a voltage mode buck converter to control the output.
 
@@ -10,7 +10,16 @@ This example will implement a voltage mode buck converter to control the output.
 ## Hardware setup and requirement
 
 
-![schema](Image/buck_m.png)
+
+The circuit diagram of the board is shown in the image below.
+
+![circuit diagram](Image/circuit_diagram.png)
+
+
+The power flows from `VHigh` to `VLow`. The wiring diagram is shown in the figure below.
+
+
+![wiring diagram](Image/wiring_diagram.png)
 
 !!! warning Hardware pre-requisites 
     You will need :
@@ -18,22 +27,36 @@ This example will implement a voltage mode buck converter to control the output.
     - A dc power supply (20-60V)
     - A resistor (or a dc electronic load)
 
-## Software setup
+#### Main code structure
 
-Locate your `platformio.ini file` in your working folder.
+The `main.cpp` structure is shown in the image below.
 
-![platformio.ini location](Image/platformio_ini_location.png)
+![Code structure](Image/main_structure.png)
+
+The code structure is as follows:
+- On the top of the code some initialization functions take place.
+- **Setup Routine** - calls functions that set the hardware and software
+- **Communication Task** - Handles the keyboard communication and decides which `MODE` is activated
+- **Application Task** - Handles the `MODE`, activates the LED and prints data on the serial port 
+- **Critical Task** - Handles the `MODE`, sets power ON/OFF and tracks the `V1_low_value` variable with a `PID`
+
+The tasks are executed following the diagram below. 
 
 
-We will import `control_library` in `platformio.ini` by decommenting the line :
+![Timing diagram](Image/timing_diagram.png)
 
-```ini
-lib_deps=
-    #control_lib = https://github.com/owntech-foundation/control_library.git
+
+- **Communication Task** - Is awaken regularly to verify any keyboard activity
+- **Application Task** - This task is woken once its suspend is finished 
+- **Critical Task** - This task is driven by the HRTIM count interrupt, where it counts a number of HRTIM switching frequency periods. In this case 100us, or 20 periods of the TWIST board 200kHz switching frequency set by default.
+
+
+
+#### Control scheme
+
+The control library is imported in platformio.ini via the line :
+
 ```
-It should look like this: 
-
-```ini
 lib_deps=
     control_lib = https://github.com/owntech-foundation/control_library.git
 ```
@@ -44,29 +67,19 @@ We can use this library to initialize a PID control with the function :
 pid.init(pid_params);
 ```
 
-the initial parameters are defined using the following lines :
+The control diagram of the `PID` is shown in the figure below.
 
-```cpp
-#include "pid.h"
-static Pid pid; // define a pid controller.
+![Control diagram](Image/control_diagram.png)
 
-static float32_t Ts = control_task_period * 1.e-6F;
-static float32_t kp = 0.000215;
-static float32_t Ti = 7.5175e-5;
-static float32_t Td = 0.0;
-static float32_t N = 0.0;
-static float32_t upper_bound = 1.0F;
-static float32_t lower_bound = 0.0F;
-static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
-```
+
 
 ## Expected result
 
-This code will control the output voltage to have 15V, you can control the output voltage with platformio serial monitor. The image below shows your a snippet of the window and the button to press.
+This code will control `V1low` and `V2low` voltages so that they follow a `voltage_reference`, you can control this reference through platformio serial monitor. The image below shows you a snippet of the window and the button to press.
 
 ![serial monitor button](Image/serial_monitor_button.png)
 
-When opening it for the first time, the serial monitor will give you an initialization message regarding the parameteres of the ADCs as shown below.  
+When opening it for the first time, the serial monitor will give you an initialization message regarding the parameters of the ADCs as shown below.  
 
 ![serial monitor initialization](Image/serial_monitor_initialization.png)
 
@@ -83,7 +96,7 @@ Here's sequence when the help menu is activated with `h`, the power mode is then
     When you send `p` the Twist board will send you back a stream of data on the following format: 
     
     ```c 
-    I1:V1:VREF:I2:V2:VREF:IH:VH:T1:T2
+    I1:V1:VREF:I2:V2:VREF:IH:VH:T1:T2:
     ```
     Where: 
     - `I1` is the current in `LEG1` of the `LOW` side
@@ -97,7 +110,7 @@ Here's sequence when the help menu is activated with `h`, the power mode is then
     - `T1` is the temperature from the NTC thermistor in `LEG1` of the `LOW` side
     - `T2` is the temperature from the NTC thermistor in `LEG2` of the `LOW` side
 
-    For instance when you reveive this: 
+    For instance when you retrieve this: 
 
     ```c 
     1.44:14.80:0.13:16.14:1.14:22.82:
@@ -105,4 +118,7 @@ Here's sequence when the help menu is activated with `h`, the power mode is then
 
     It means that `I1 = 1.46 A`, `V1 = 14.80 V` and so on. 
 
+    If you plot your data with a python code, you will see something similar to this: 
+
+    ![result_plot](Image/result_plot.png)
 

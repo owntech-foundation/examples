@@ -18,8 +18,8 @@
  */
 
 /**
- * @brief  This example shows how to implement a closed loop voltage mode
- *         boost converter with a Twist power shield.
+ * @brief  This example demonstrate how to operate the two power legs of the Twist 
+ *         power shield independently, in Buck voltage mode.
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
@@ -53,12 +53,13 @@ void loop_critical_task();
 
 /* [us] period of the control task */
 static uint32_t control_task_period = 100;
-/* [bool] state of the PWM (ctrl task) */
+/*[bool] state of the PWM (ctrl task) */
 static bool pwm_enable = false;
 
 uint8_t received_serial_char;
 
 /* Measure variables */
+
 static float32_t V1_low_value;
 static float32_t V2_low_value;
 static float32_t I1_low_value;
@@ -69,21 +70,28 @@ static float32_t V_high;
 /* Temporary storage for measured value (ctrl task) */
 static float meas_data;
 
-float32_t duty_cycle = 0.3;
+float32_t duty_cycle_1 = 0.3;
+float32_t duty_cycle_2 = 0.3;
 
 /* Voltage reference */
-static float32_t voltage_reference = 15;
+static float32_t voltage_reference_1 = 15;
+static float32_t voltage_reference_2 = 15;
 
 /* PID coefficient for a 8.6ms step response*/
+
 static float32_t kp = 0.000215;
 static float32_t Ti = 7.5175e-5;
 static float32_t Td = 0.0;
 static float32_t N = 0.0;
 static float32_t upper_bound = 1.0F;
 static float32_t lower_bound = 0.0F;
-static float32_t Ts = control_task_period * 1.e-6F;
-static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
-static Pid pid;
+static float32_t Ts = control_task_period * 1e-6;
+
+static PidParams pid_params1(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
+static PidParams pid_params2(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
+
+static Pid pid1;
+static Pid pid2;
 
 /*--------------------------------------------------------------- */
 
@@ -101,19 +109,20 @@ uint8_t mode = IDLEMODE;
 /**
  * This is the setup routine.
  * Here the setup :
- *  - Initializes the power shield in Boost mode
- *  - Initializes the power shield sensors
- *  - Initializes the PID controller
- *  - Spawns three tasks.
+ *  - Initializes the power shield in Buck mode
+ *  - Initialize the power shield sensors
+ *  - Initialize two PID controllers
+ *  - Spawn three tasks.
  */
 void setup_routine()
 {
-    /* Boost voltage mode */
-    shield.power.initBoost(ALL);
+    /* Buck voltage mode */
+    shield.power.initBuck(ALL);
 
     shield.sensors.enableDefaultTwistSensors();
 
-    pid.init(pid_params);
+    pid1.init(pid_params1);
+    pid2.init(pid_params2);
 
     /* Then declare tasks */
     uint32_t app_task_number = task.createBackground(loop_application_task);
@@ -130,7 +139,7 @@ void setup_routine()
 
 /**
  * This tasks implements a minimalistic USB serial interface to control
- * the boost converter.
+ * the buck converter.
  */
 void loop_communication_task()
 {
@@ -139,13 +148,15 @@ void loop_communication_task()
     {
     case 'h':
         /*----------SERIAL INTERFACE MENU----------------------- */
-        printk(" ________________________________________ \n"
-               "|     --- MENU boost voltage mode ---    |\n"
-               "|     press i : idle mode                |\n"
-               "|     press p : power mode               |\n"
-               "|     press u : voltage reference UP     |\n"
-               "|     press d : voltage reference DOWN   |\n"
-               "|________________________________________|\n\n");
+        printk(" ______________________________________________ \n"
+               "|     ---- MENU buck interleaved mode ----     |\n"
+               "|     press i : idle mode                      |\n"
+               "|     press p : power mode                     |\n"
+               "|     press u : voltage reference 1 UP         |\n"
+               "|     press d : voltage reference 1 DOWN       |\n"
+               "|     press t : voltage reference 2 UP         |\n"
+               "|     press g : voltage reference 2 DOWN       |\n"
+               "|______________________________________________|\n\n");
         /*------------------------------------------------------ */
         break;
     case 'i':
@@ -157,10 +168,16 @@ void loop_communication_task()
         mode = POWERMODE;
         break;
     case 'u':
-        voltage_reference += 0.5;
+        voltage_reference_1 += 0.5;
         break;
     case 'd':
-        voltage_reference -= 0.5;
+        voltage_reference_1 -= 0.5;
+        break;
+    case 't':
+        voltage_reference_2 += 0.5;
+        break;
+    case 'g':
+        voltage_reference_2 -= 0.5;
         break;
     default:
         break;
@@ -183,18 +200,20 @@ void loop_application_task()
 
         printk("%.3f:", (double)I1_low_value);
         printk("%.3f:", (double)V1_low_value);
+        printk("%.3f:", (double)voltage_reference_1);
+        printk("%.3f:", (double)I2_low_value);
+        printk("%.3f:", (double)V2_low_value);
+        printk("%.3f:", (double)voltage_reference_2);
         printk("%.3f:", (double)I_high);
-        printk("%.3f:", (double)V_high);
-        printk("%.3f\n", (double)voltage_reference);
+        printk("%f\n", (double)V_high);
     }
-
-    task.suspendBackgroundMs(1000);
+    task.suspendBackgroundMs(100);
 }
 
 /**
  * This is the code loop of the critical task
  * This task runs at 10kHz.
- *  - It retrieves sensor values
+ *  - It retrieves sensors values
  *  - It runs the PID controller
  *  - It update the PWM signals
  */
@@ -206,6 +225,12 @@ void loop_critical_task()
     meas_data = shield.sensors.getLatestValue(V1_LOW);
     if (meas_data != NO_VALUE) V1_low_value = meas_data;
 
+    meas_data = shield.sensors.getLatestValue(V2_LOW);
+    if (meas_data != NO_VALUE) V2_low_value = meas_data;
+
+    meas_data = shield.sensors.getLatestValue(I2_LOW);
+    if (meas_data != NO_VALUE) I2_low_value = meas_data;
+
     meas_data = shield.sensors.getLatestValue(I_HIGH);
     if (meas_data != NO_VALUE) I_high = meas_data;
 
@@ -213,24 +238,27 @@ void loop_critical_task()
     if (meas_data != NO_VALUE) V_high = meas_data;
 
 
+
     if (mode == IDLEMODE)
     {
         if (pwm_enable == true)
         {
-            shield.power.stop(LEG1);
+            shield.power.stop(ALL);
         }
         pwm_enable = false;
     }
     else if (mode == POWERMODE)
     {
-        duty_cycle = pid.calculateWithReturn(voltage_reference, V_high);
-        shield.power.setDutyCycle(LEG1,duty_cycle);
+        duty_cycle_1 = pid1.calculateWithReturn(voltage_reference_1, V1_low_value);
+        duty_cycle_2 = pid2.calculateWithReturn(voltage_reference_2, V2_low_value);
+        shield.power.setDutyCycle(LEG1,duty_cycle_1);
+        shield.power.setDutyCycle(LEG2,duty_cycle_2);
 
         /* Set POWER ON */
         if (!pwm_enable)
         {
             pwm_enable = true;
-            shield.power.start(LEG1);
+            shield.power.start(ALL);
         }
     }
 
