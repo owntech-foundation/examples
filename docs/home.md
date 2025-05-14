@@ -2,10 +2,11 @@
     Opening a fully featured example is often the best way to get started.
 
 !!! tip
-    Need help to launch an example ? [Here it is !](https://owntech-foundation.github.io/Documentation/core/docs/first_example/)
+    Need help to launch an example ? [Here it is !](https://docs.owntech.org/latest/core/docs/first_example/)
 
 
 ## Browse SPIN examples
+-----------
 
 Get on track using featured examples : 
 
@@ -17,7 +18,7 @@ Get on track using featured examples :
 
     Get up and running in minutes
 
-    [:octicons-arrow-right-24: Blinky](https://owntech-foundation.github.io/Documentation/examples/SPIN/LED/blinky/)
+    [:octicons-arrow-right-24: Blinky](https://docs.owntech.org/latest/examples/SPIN/LED/blinky/)
 
 -   :fontawesome-solid-bullseye:{ .lg .middle } __Multiple PWM__
 
@@ -25,7 +26,7 @@ Get on track using featured examples :
 
     Lets play, lets do PWMs !
 
-    [:octicons-arrow-right-24: Examples](https://owntech-foundation.github.io/Documentation/examples/SPIN/PWM/multiple_pwm/)
+    [:octicons-arrow-right-24: Examples](https://docs.owntech.org/latest/examples/SPIN/PWM/multiple_pwm/)
 
 </div>
 
@@ -39,8 +40,8 @@ Get on track using featured examples :
 
     Unleash fully configurable and feature rich digital control signals
 
-    [:octicons-arrow-right-24: Duty Cycle control](https://owntech-foundation.github.io/Documentation/examples/SPIN/PWM/duty_cycle_setting/)  
-    [:octicons-arrow-right-24: Phase Shift control](https://owntech-foundation.github.io/Documentation/examples/SPIN/PWM/phase_shift/)  
+    [:octicons-arrow-right-24: Duty Cycle control](https://docs.owntech.org/latest/examples/SPIN/PWM/duty_cycle_setting/)  
+    [:octicons-arrow-right-24: Phase Shift control](https://docs.owntech.org/latest/examples/SPIN/PWM/phase_shift/)  
 
 -   :fontawesome-solid-chart-line:{ .lg .middle } __Fast and precisely timed acquisitions__
 
@@ -48,13 +49,30 @@ Get on track using featured examples :
 
     Measurements done right in time
 
-    [:octicons-arrow-right-24: Software Triggered Measures](https://owntech-foundation.github.io/Documentation/examples/SPIN/ADC/adc_software_trigger/)  
-    [:octicons-arrow-right-24: Real Time Measurments](https://owntech-foundation.github.io/Documentation/examples/SPIN/ADC/adc_hrtim_trigger/)
+    [:octicons-arrow-right-24: Software Triggered Measures](https://docs.owntech.org/latest/examples/SPIN/ADC/adc_software_trigger/)  
+    [:octicons-arrow-right-24: Real Time Measurments](https://docs.owntech.org/latest/examples/SPIN/ADC/adc_hrtim_trigger/)
 
 
 </div>
 
 ## Browse TWIST examples
+---------
+
+### Basic Examples
+
+<div class="grid cards" markdown>
+
+-   :octicons-issue-draft-24:{ .lg .middle } __Open Loop Buck__
+
+    ---
+
+    Start easy with an open-loop example for the Buck Mode. 
+
+    [:octicons-arrow-right-24: Buck Open Loop](https://docs.owntech.org/latest/examples/TWIST/Basic/Open-Loop PWM/)    
+
+
+
+</div>
 
 ### DC to DC applications
 
@@ -66,15 +84,15 @@ Get on track using featured examples :
 
     Good starting point to deploy your first power application. 
 
-    [:octicons-arrow-right-24: Buck voltage mode](https://owntech-foundation.github.io/Documentation/examples/TWIST/DC_DC/buck_voltage_mode/)    
+    [:octicons-arrow-right-24: Buck voltage mode](https://docs.owntech.org/latest/examples/TWIST/DC_DC/buck_voltage_mode/)    
 
     Leverage embedded analog hardware, go for current mode !
 
-    [:octicons-arrow-right-24: Buck current mode](https://owntech-foundation.github.io/Documentation/examples/TWIST/DC_DC/buck_current_mode/)  
+    [:octicons-arrow-right-24: Buck current mode](https://docs.owntech.org/latest/examples/TWIST/DC_DC/buck_current_mode/)  
 
     Interleaving, made easy
 
-    [:octicons-arrow-right-24: Interleaved Buck](https://owntech-foundation.github.io/Documentation/examples/TWIST/DC_DC/interleaved/)  
+    [:octicons-arrow-right-24: Interleaved Buck](https://docs.owntech.org/latest/examples/TWIST/DC_DC/interleaved/)  
 
 -   :fontawesome-solid-arrow-trend-up:{ .lg .middle } __Boost__
 
@@ -82,7 +100,7 @@ Get on track using featured examples :
 
     Need a boost ? Here you go !
 
-    [:octicons-arrow-right-24: Boost voltage mode.](https://owntech-foundation.github.io/Documentation/examples/TWIST/DC_DC/boost_voltage_mode/)
+    [:octicons-arrow-right-24: Boost voltage mode.](https://docs.owntech.org/latest/examples/TWIST/DC_DC/boost_voltage_mode/)
 
 </div>
 
@@ -96,7 +114,7 @@ Get on track using featured examples :
 
     Good starting point to discover AC world. 
 
-    [:octicons-arrow-right-24: Grid Forming Inverter ](https://owntech-foundation.github.io/Documentation/examples/TWIST/DC_AC/grid_forming/)    
+    [:octicons-arrow-right-24: Grid Forming Inverter ](https://docs.owntech.org/latest/examples/TWIST/DC_AC/grid_forming/)    
 
 
 
@@ -106,7 +124,7 @@ Get on track using featured examples :
     
     Get in sync with the grid !
 
-    [:octicons-arrow-right-24: Grid Following Inverter](https://owntech-foundation.github.io/Documentation/examples/TWIST/DC_AC/grid_following/)  
+    [:octicons-arrow-right-24: Grid Following Inverter](https://docs.owntech.org/latest/examples/TWIST/DC_AC/grid_following/)  
 
 </div>
 
@@ -120,7 +138,7 @@ Get on track using featured examples :
 
     Sometimes, a simple droop is enough 
 
-    [:octicons-arrow-right-24: DC Droop ](https://owntech-foundation.github.io/Documentation/examples/TWIST/Microgrid/DC_droop/)    
+    [:octicons-arrow-right-24: DC Droop ](https://docs.owntech.org/latest/examples/TWIST/Microgrid/DC_droop/)    
 
 
 
@@ -130,7 +148,7 @@ Get on track using featured examples :
     
     Introduction to communication based DC microgrid
 
-    [:octicons-arrow-right-24: Client - Server DC](https://owntech-foundation.github.io/Documentation/examples/TWIST/Microgrid/DC_client_server/)  
+    [:octicons-arrow-right-24: Client - Server DC](https://docs.owntech.org/latest/examples/TWIST/Microgrid/DC_client_server/)  
 
 -   :fontawesome-solid-link:{ .lg .middle } __AC Client/Server__
 
@@ -138,7 +156,7 @@ Get on track using featured examples :
 
     Sharing the load is caring ! 
 
-    [:octicons-arrow-right-24: AC Client/Server ](https://owntech-foundation.github.io/Documentation/examples/TWIST/Microgrid/AC_client_server/)    
+    [:octicons-arrow-right-24: AC Client/Server ](https://docs.owntech.org/latest/examples/TWIST/Microgrid/AC_client_server/)    
 
 
 
@@ -148,6 +166,31 @@ Get on track using featured examples :
     
     Doing.. Legal Peer2Peer !
 
-    [:octicons-arrow-right-24: AC Peer2Peer](https://owntech-foundation.github.io/Documentation/examples/TWIST/Microgrid/AC_peer_to_peer/)  
+    [:octicons-arrow-right-24: AC Peer2Peer](https://docs.owntech.org/latest/examples/TWIST/Microgrid/AC_peer_to_peer/)  
+
+</div>
+
+## Browse OWNVERTER examples
+-----------
+
+Hall-Sensors Examples 
+
+<div class="grid cards" markdown>
+
+-   :material-engine:{ .lg .middle } __BLDC Motor with HALL Sensors__
+
+    ---
+
+    Drive your BLDC motor with HALL Sensors
+
+    [:octicons-arrow-right-24: BLDC Hall Sensors](https://docs.owntech.org/latest/examples/OWNVERTER/BLDC_hall_sensor/)
+
+-   :material-focus-field:{ .lg .middle } __Field Oriented Control with HALL Sensors__
+
+    ---
+
+    Take your BLDC to the next level with field oriented control !
+
+    [:octicons-arrow-right-24: Examples](https://docs.owntech.org/latest/examples/OWNVERTER/FOC_hall_sensor/)
 
 </div>
