@@ -60,7 +60,6 @@ Get on track using featured examples :
 
 <div class="grid cards" markdown>
 
-
 -   :fontawesome-solid-arrow-trend-down:{ .lg .middle } __Buck__
 
     ---
@@ -89,6 +88,8 @@ Get on track using featured examples :
 
 ### DC to AC applications
 
+<div class="grid cards" markdown>
+
 -   :fontawesome-solid-plug-circle-plus:{ .lg .middle } __Grid forming Inverter__
 
     ---
@@ -110,6 +111,8 @@ Get on track using featured examples :
 </div>
 
 ### Microgrid Applications
+
+<div class="grid cards" markdown>
 
 -   :fontawesome-solid-chart-line:{ .lg .middle } __DC Droop__
 
