@@ -56,3 +56,95 @@ Get on track using featured examples :
 
 ## Browse TWIST examples
 
+### DC to DC applications
+
+<div class="grid cards" markdown>
+
+
+-   :fontawesome-solid-arrow-trend-down:{ .lg .middle } __Buck__
+
+    ---
+
+    Good starting point to deploy your first power application. 
+
+    [:octicons-arrow-right-24: Buck voltage mode](https://owntech-foundation.github.io/Documentation/examples/TWIST/DC_DC/buck_voltage_mode/)    
+
+    Leverage embedded analog hardware, go for current mode !
+
+    [:octicons-arrow-right-24: Buck current mode](https://owntech-foundation.github.io/Documentation/examples/TWIST/DC_DC/buck_current_mode/)  
+
+    Interleaving, made easy
+
+    [:octicons-arrow-right-24: Interleaved Buck](https://owntech-foundation.github.io/Documentation/examples/TWIST/DC_DC/interleaved/)  
+
+-   :fontawesome-solid-arrow-trend-up:{ .lg .middle } __Boost__
+
+    ---
+
+    Need a boost ? Here you go !
+
+    [:octicons-arrow-right-24: Boost voltage mode.](https://owntech-foundation.github.io/Documentation/examples/TWIST/DC_DC/boost_voltage_mode/)
+
+</div>
+
+### DC to AC applications
+
+-   :fontawesome-solid-plug-circle-plus:{ .lg .middle } __Grid forming Inverter__
+
+    ---
+
+    Good starting point to discover AC world. 
+
+    [:octicons-arrow-right-24: Grid Forming Inverter ](https://owntech-foundation.github.io/Documentation/examples/TWIST/DC_AC/grid_forming/)    
+
+
+
+-   :fontawesome-solid-plug-circle-check:{ .lg .middle } __Grid Following Inverter__
+
+    ---
+    
+    Get in sync with the grid !
+
+    [:octicons-arrow-right-24: Grid Following Inverter](https://owntech-foundation.github.io/Documentation/examples/TWIST/DC_AC/grid_following/)  
+
+</div>
+
+### Microgrid Applications
+
+-   :fontawesome-solid-chart-line:{ .lg .middle } __DC Droop__
+
+    ---
+
+    Sometimes, a simple droop is enough 
+
+    [:octicons-arrow-right-24: DC Droop ](https://owntech-foundation.github.io/Documentation/examples/TWIST/Microgrid/DC_droop/)    
+
+
+
+-   :fontawesome-solid-handshake-angle:{ .lg .middle } __DC with communication__
+
+    ---
+    
+    Introduction to communication based DC microgrid
+
+    [:octicons-arrow-right-24: Client - Server DC](https://owntech-foundation.github.io/Documentation/examples/TWIST/Microgrid/DC_client_server/)  
+
+-   :fontawesome-solid-link:{ .lg .middle } __AC Client/Server__
+
+    ---
+
+    Sharing the load is caring ! 
+
+    [:octicons-arrow-right-24: AC Client/Server ](https://owntech-foundation.github.io/Documentation/examples/TWIST/Microgrid/AC_client_server/)    
+
+
+
+-   :fontawesome-solid-plug-circle-bolt:{ .lg .middle } __AC Peer2Peer__
+
+    ---
+    
+    Doing.. Legal Peer2Peer !
+
+    [:octicons-arrow-right-24: AC Peer2Peer](https://owntech-foundation.github.io/Documentation/examples/TWIST/Microgrid/AC_peer_to_peer/)  
+
+</div>
