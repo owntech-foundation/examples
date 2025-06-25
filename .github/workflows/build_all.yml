@@ -1,0 +1,36 @@
+name: Build All Examples
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Clone OwnTech Core
+        run: git clone --depth 1 https://github.com/owntech-foundation/core.git
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          python3 -m pip install --upgrade pip
+          pip3 install platformio
+      - name: Build examples
+        run: |
+          ./scripts/build_examples.sh
+      - name: Archive binaries
+        run: |
+          tar -czf binaries.tar.gz binaries
+      - uses: actions/upload-artifact@v3
+        with:
+          name: firmware-binaries
+          path: binaries.tar.gz
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: automatic-examples-${{ github.run_number }}
+          name: Build All Examples ${{ github.run_number }}
+          files: binaries.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
