@@ -1,0 +1,33 @@
+name: Build Example
+
+on:
+  workflow_dispatch:
+    inputs:
+      example:
+        description: 'Example name as defined in library.json'
+        required: true
+        default: blinky
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Clone OwnTech Core
+        run: git clone --depth 1 https://github.com/owntech-foundation/core.git
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          python3 -m pip install --upgrade pip
+          pip3 install platformio
+      - name: Build selected example
+        run: |
+          ./scripts/build_examples.sh ${{ github.event.inputs.example }}
+      - name: Archive binary
+        run: |
+          tar -czf binaries.tar.gz binaries
+      - uses: actions/upload-artifact@v3
+        with:
+          name: firmware-${{ github.event.inputs.example }}
+          path: binaries.tar.gz
