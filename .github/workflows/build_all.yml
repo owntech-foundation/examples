@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Clone OwnTech Core
         run: git clone --depth 1 https://github.com/owntech-foundation/core.git
       - name: Install dependencies
@@ -22,7 +22,7 @@ jobs:
       - name: Archive binaries
         run: |
           tar -czf binaries.tar.gz binaries
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: firmware-binaries
           path: binaries.tar.gz
