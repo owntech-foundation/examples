@@ -146,17 +146,6 @@
         ]
     },
     {
-        "name": "DC_peer_to_peer",
-        "title": "DC peer to peer",
-        "description": "implementation of DC peer to peer in microgrid",
-        "group": "Examples TWIST",
-        "base": "TWIST/Microgrid/DC_peer_to_peer",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
         "name": "DC_droop",
         "title": "DC droop",
         "description": "implementation of DC droop in microgrid",
