@@ -16,6 +16,7 @@ for EX in $EXAMPLES; do
   BASE=$(jq -r --arg ex "$EX" '.examples[] | select(.name==$ex) | .base' "$EXAMPLE_REPO_DIR/library.json")
   echo "Building $EX -> $BASE"
   platformio run -t "$EX"
+  platformio run
   DEST="$OUTPUT_DIR/$BASE"
   mkdir -p "$DEST"
   cp .pio/build/*/firmware.mcuboot.bin "$DEST/firmware.mcuboot.bin"
