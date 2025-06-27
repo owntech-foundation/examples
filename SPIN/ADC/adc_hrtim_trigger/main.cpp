@@ -63,7 +63,7 @@ void setup_routine()
     spin.pwm.initUnit(PWMA);
 
     /* Setting ADC trigger */
-    spin.pwm.setAdcTrigger(PWMA, ADCTRIG_1);
+    spin.pwm.setAdcTrigger(PWMA, ADC_2);
     spin.pwm.setAdcTriggerInstant(PWMA, 0.06);
     spin.pwm.enableAdcTrigger(PWMA);
 
@@ -71,7 +71,7 @@ void setup_routine()
     spin.pwm.startDualOutput(PWMA);
 
     /* ADC 2 configured to be triggered by the PWM */
-    spin.data.configureTriggerSource(ADC_2, hrtim_ev1);
+    spin.data.configureTriggerSource(ADC_2, TRIG_PWM);
     /* Acquisition on pin 35 */
     spin.data.enableAcquisition(35, ADC_2);
 
