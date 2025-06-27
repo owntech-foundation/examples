@@ -27,11 +27,11 @@ You will need :
 
 ## Embedded Firmware setup
 
-We import the `communication_library` in `platformio.ini` via the line. Be careful to include the `#generic_shield_comm` at the end, since it will get the right version of the protocol :
+We import the `communication_library` in `platformio.ini` via the line. Be careful to include the `#power_tuesday` at the end, since it will get the right version of the protocol :
 
 ```ini
 lib_deps=
-    comm_protocol = https://github.com/owntech-foundation/python_twist_comm_protocol.git#generic_shield_comm
+    comm_protocol = https://github.com/owntech-foundation/python_twist_comm_protocol.git#power_tuesday
 ```
 
 ## Embedded Firmware explanation
