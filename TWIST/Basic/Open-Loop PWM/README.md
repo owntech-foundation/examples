@@ -6,7 +6,7 @@ The goal of this basic example is to understand what is a duty cycle and how it 
 
     Before you can run this example, you must have : 
     
-    - successfully gone through our [getting started](https://docs.owntech.org/core/docs/environment_setup/) tutorial to set up your work environment
+    - successfully gone through our [getting started](https://docs.owntech.org/latest/core/docs/environment_setup/) tutorial to set up your work environment
     - successfully gone through our [first example](https://docs.owntech.org/latest/core/docs/first_example/) tutorial and download the "Open Loop PWM" example 
 
 
@@ -111,7 +111,7 @@ Once you have wired the cables are connected your TWIST board to your computer, 
 !!! warning "Is you software ready?"
     Before you can run this example, you must have : 
     
-    - successfully gone through our [getting started](https://docs.owntech.org/core/docs/environment_setup/) tutorial to set up your work environment
+    - successfully gone through our [getting started](https://docs.owntech.org/latest/core/docs/environment_setup/) tutorial to set up your work environment
     - successfully gone through our [first example](https://docs.owntech.org/latest/core/docs/first_example/) tutorial and download the "Open Loop PWM" example 
 
 

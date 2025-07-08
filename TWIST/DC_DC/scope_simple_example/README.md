@@ -4,8 +4,8 @@ The scope is a powerful tool to inspect electric signals is real time. In this e
 
 This example will implement a voltage mode buck converter to control the output.
 
-!!! attention Are you ready to start ?
-    Before you can run this example, you must have successfully gone through our [getting started](https://docs.owntech.org/core/docs/environment_setup/).  
+!!! warning "Are you ready to start ?"
+    Before you can run this example, you must have successfully gone through our [getting started](https://docs.owntech.org/latest/core/docs/environment_setup/).  
 
 ## Hardware setup and requirement
 
