@@ -9,10 +9,10 @@ Peak current control mode is a technique used in DC-DC converters to regulate th
 !!! warning The Buck stops here 
     Currently current mode is only supported for **buck configuration**.
 
-!!! attention Are you ready to start ?
+!!! warning "Are you ready to start ?"
     Before you can run this example:
-    - you **must** have successfully gone through our [getting started](https://docs.owntech.org/core/docs/environment_setup/).
-    - ideally, you should have successfully gone through our [Voltage Mode Example](https://docs.owntech.org/examples/TWIST/DC_DC/buck_voltage_mode/)  
+    - you **must** have successfully gone through our [getting started](https://docs.owntech.org/latest/core/docs/environment_setup/).
+    - ideally, you should have successfully gone through our [Voltage Mode Example](https://docs.owntech.org/latest/examples/TWIST/DC_DC/buck_voltage_mode/)  
 
 
 ## Hardware setup and requirement

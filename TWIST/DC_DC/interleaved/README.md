@@ -16,8 +16,8 @@ The waveform below shows how each switch in the image above operates and their a
 
 This example will implement interleaved operation using the two legs of the TWIST.
 
-!!! attention Are you ready to start ?
-    Before you can run this example, you must have successfully gone through our [getting started](https://docs.owntech.org/core/docs/environment_setup/).  
+!!! warning "Are you ready to start ?"
+    Before you can run this example, you must have successfully gone through our [getting started](https://docs.owntech.org/latest/core/docs/environment_setup/).  
 
 
 ## Hardware setup and requirements
