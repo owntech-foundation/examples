@@ -12,7 +12,7 @@ The six sectors are determined based on the Hall effect sensor outputs, which ch
 
 In code this is done with :  
 
-``` hall_state = hall1_value + 2*hall3_value + 4*hall2_value; ```  
+``` hall_state = hall1_value + 2 * hall2_value + 4 * hall3_value; ```  
 
 Note that this should be adapted depending on the way phases and hall effect sensors are connected to the inverter. It might be necessary to permute the hall
 values to run the motor correctly.  
