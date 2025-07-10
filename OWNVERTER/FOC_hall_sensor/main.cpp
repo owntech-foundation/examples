@@ -53,8 +53,8 @@ void loop_critical_task();
 void application_task();
 
 /* --------------USER VARIABLES DECLARATIONS------------------- */
-#define HALL1 PA7
-#define HALL2 PC6
+#define HALL1 PC6
+#define HALL2 PC7
 #define HALL3 PD2
 
 static const float32_t AC_CURRENT_LIMIT = 3.0;
@@ -315,7 +315,7 @@ inline void get_position_and_speed()
 	HALL2_value = spin.gpio.readPin(HALL2);
 	HALL3_value = spin.gpio.readPin(HALL3);
 	/* We compute angle index using HALL values. */
-	angle_index = HALL3_value * 4 + HALL2_value * 2 + HALL1_value * 1;
+	angle_index = HALL1_value * 1 + HALL2_value * 2 + HALL3_value * 4;
 
 	hall_angle =
 			ot_modulo_2pi(PI / 3.0 * sector[angle_index] +
@@ -553,7 +553,9 @@ void application_task()
 		printk("%7.2f:", Iq_max);
 		printk("%7.2f:", manual_Iq_ref);
 		printk("%7.2f:", I1_offset);
-		printk("%7d\n", control_state);
+		printk("%7d:", control_state);
+		printk("%7d\n", angle_index);
+
 	} else {
 		/* If memory_print is true then we plot scope datas in an infinite loop
 		 * This can be used with ownplot if you have not python script installed
