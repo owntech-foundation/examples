@@ -1,4 +1,4 @@
-Welcome to the OwnTech examples repository.
+Welcome to my version of the OwnTech examples repository. Here I added some extra examples concerning the MMC converter, communications and DC DC topologies.
 
 Here you can find ready to be used example for [SPIN](https://github.com/owntech-foundation/SPIN) and [TWIST](https://github.com/owntech-foundation/TWIST).
 
