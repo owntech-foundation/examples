@@ -43,6 +43,10 @@
         {
             "name": "Antoine Boche",
             "email": "antoine.boche@laas.fr"
+        },
+        {
+            "name": "Ana Haas",
+            "email": "ana-luiza.haas-bezerrra@centralesupelec.fr"
         }
     ],
     "examples": [
@@ -319,6 +323,72 @@
         "description": "an example which show the use of a Field Oriented Control algorithm with discrete hall sensors",
         "group": "Examples OWNVERTER",
         "base": "OWNVERTER/FOC_hall_sensor",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "boost_voltage_mode_typed",
+        "title": "Voltage Mode Boost - typed reference",
+        "description": "Voltage mode boost converter using PID controller for TWIST with typed voltage reference",
+        "group": "Examples TWIST",
+        "base": "TWIST/DC_DC/boost_voltage_mode_typed",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "buck_voltage_mode_typed",
+        "title": "Voltage Mode Buck - typed reference",
+        "description": "Voltage mode buck converter using PID controller for TWIST with typed voltage reference",
+        "group": "Examples TWIST",
+        "base": "TWIST/DC_DC/buck_voltage_mode_typed",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "blinky_mmc_arm",
+        "title": "Blinky MMC arm",
+        "description": "Unpowered MMC arm to test arm control logic and communication",
+        "group": "Examples TWIST",
+        "base": "TWIST/MMC/blinky_mmc_arm",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "single_module_mmc",
+        "title": "Single MMC module",
+        "description": "Tests a single MMC module connection to the circuit",
+        "group": "Examples TWIST",
+        "base": "TWIST/MMC/single_module_mmc",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "cvb_control_mmc",
+        "title": "CVB control",
+        "description": "Tests the MMC arm open-loop control logic using Capacitor Voltage Balancing algorithm",
+        "group": "Examples TWIST",
+        "base": "TWIST/MMC/cvb_control_mmc",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "basic_communication",
+        "title": "Basic Communication",
+        "description": "This example deploys all communication of the Twist board",
+        "group": "Examples TWIST",
+        "base": "TWIST/Communication/basic_communication",
         "files": [
             "main.cpp",
             "README.md"
