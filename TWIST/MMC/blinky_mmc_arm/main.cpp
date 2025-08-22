@@ -18,11 +18,16 @@
  */
 
 /**
- * @brief  This example shows how to blink the onboard LED of the Spin board.
+ * @brief  This example shows how to a MMC arm works by blinking the onboard LED of the Spin board of the arm modules.
+ *         This research was funded in whole by the French National Research Agency (ANR) under the project CARROTS "ANR-24-CE05-0920-01".
  *
- * @author Clément Foucher <clement.foucher@laas.fr>
- * @author Luiz Villa <luiz.villa@laas.fr>
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
+ * @author Ana Luiza Haas Bezerra <ana-luiza.haas-bezerra@centralesupelec.fr>
+ * @author Zaid Jabbar <zaid.jabbar@grenoble-inp.fr>
+ * @author Luiz Villa <luiz.villa@laas.fr>
+ * @author Jean Alinei <jean.alinei@owntech.org>
+ * @author Noemi Lanciotti <noemi.lanciotti@centralesupelec.fr>
+ * @author Loïc Quéval <loic.queval@centralesupelec.fr>
  */
 
 /* --------------OWNTECH APIs---------------------------------- */

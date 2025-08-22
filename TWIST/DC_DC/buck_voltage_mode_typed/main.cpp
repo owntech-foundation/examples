@@ -19,11 +19,14 @@
 
 /**
  * @brief  This example demonstrates how to deploy a Buck converter with
- *         voltage mode control on the Twist power shield.
+ *         voltage mode control on the Twist power shield with typed voltage reference.
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
+ * @author Ana Luiza Haas Bezerra <ana-luiza.haas-bezerra@centralesupelec.fr>
+ * @author Noemi Lanciotti <noemi.lanciotti@centralesupelec.fr>
+ * @author Loïc Quéval <loic.queval@centralesupelec.fr>
  */
 
 /*--------------Zephyr---------------------------------------- */

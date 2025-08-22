@@ -45,9 +45,21 @@
             "email": "antoine.boche@laas.fr"
         },
         {
-            "name": "Ana Haas",
+            "name": "Ana Luiza Haas Bezerra",
             "email": "ana-luiza.haas-bezerrra@centralesupelec.fr"
-        }
+        },
+        {
+            "name": "Noemi Lanciotti",
+            "email": "noemi.lanciotti@centralesupelec.fr"
+        },
+        {
+            "name": "Loïc Quéval",
+            "email": "loic.queval@centralesupelec.fr"
+        },
+        {
+            "name": "Zaid Jabbar",
+            "email": "zaid.jabbar@grenoble-inp.fr"
+        },
     ],
     "examples": [
     {
@@ -353,7 +365,7 @@
     {
         "name": "blinky_mmc_arm",
         "title": "Blinky MMC arm",
-        "description": "Unpowered MMC arm to test arm control logic and communication",
+        "description": "Unpowered MMC arm by blinking the onboard LED of the Spin board of the arm modules.",
         "group": "Examples TWIST",
         "base": "TWIST/MMC/blinky_mmc_arm",
         "files": [
@@ -364,7 +376,7 @@
     {
         "name": "single_module_mmc",
         "title": "Single MMC module",
-        "description": "Tests a single MMC module connection to the circuit",
+        "description": "MMC module using a Twist board.",
         "group": "Examples TWIST",
         "base": "TWIST/MMC/single_module_mmc",
         "files": [
@@ -375,7 +387,7 @@
     {
         "name": "cvb_control_mmc",
         "title": "CVB control",
-        "description": "Tests the MMC arm open-loop control logic using Capacitor Voltage Balancing algorithm",
+        "description": "Open-loop control of a MMC arm integrating a Capacitor Voltage Balancing algorithm.",
         "group": "Examples TWIST",
         "base": "TWIST/MMC/cvb_control_mmc",
         "files": [
@@ -386,7 +398,7 @@
     {
         "name": "basic_communication",
         "title": "Basic Communication",
-        "description": "This example deploys all communication of the Twist board",
+        "description": "Basic communication example to verify if RS-485, CAN, Analog and Sync communications are well established.",
         "group": "Examples TWIST",
         "base": "TWIST/Communication/basic_communication",
         "files": [

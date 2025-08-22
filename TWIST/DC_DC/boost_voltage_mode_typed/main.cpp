@@ -19,11 +19,14 @@
 
 /**
  * @brief  This example shows how to implement a closed loop voltage mode
- *         boost converter with a Twist power shield.
+ *         boost converter with a Twist power shield with typed voltage reference.
  *
  * @author Clément Foucher <clement.foucher@laas.fr>
  * @author Luiz Villa <luiz.villa@laas.fr>
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
+ * @author Ana Luiza Haas Bezerra <ana-luiza.haas-bezerra@centralesupelec.fr>
+ * @author Noemi Lanciotti <noemi.lanciotti@centralesupelec.fr>
+ * @author Loïc Quéval <loic.queval@centralesupelec.fr>
  */
 
 /*--------------Zephyr---------------------------------------- */

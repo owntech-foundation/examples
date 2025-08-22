@@ -18,10 +18,13 @@
  */
 
 /**
- * @brief  This example deploy a simple CAN based communication using
- *         Thingset library.
+ * @brief  This example deploy a basic communication example to verify
+ *         if RS-485, CAN, Analog and Sync communications are well established.
  *
- * @author Jean Alinei <jean.alinei@owntech.io>
+ * @author Luiz Villa <luiz.villa@laas.fr>
+ * @author Ana Luiza Haas Bezerra <ana-luiza.haas-bezerra@centralesupelec.fr>
+ * @author Noemi Lanciotti <noemi.lanciotti@centralesupelec.fr>
+ * @author Loïc Quéval <loic.queval@centralesupelec.fr>
  */
 
 /*--------------OWNTECH APIs---------------------------------- */
