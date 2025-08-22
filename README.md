@@ -7,6 +7,8 @@ Here you can find ready to be used example for [SPIN](https://github.com/owntech
 - DC DC topology examples
     - [Buck voltage mode](TWIST/DC_DC/buck_voltage_mode/README.md)
     - [Buck current mode](TWIST/DC_DC/buck_current_mode/README.md)
+    - [Buck voltage mode - typed reference](TWIST/DC_DC/buck_voltage_mode_typed/README.md)
+    - [Buck current mode - typed reference](TWIST/DC_DC/buck_current_mode_typed/README.md)
     - [Boost voltage mode](TWIST/DC_DC/boost_voltage_mode/README.md)
     - [Interleaved Buck](TWIST/DC_DC/interleaved/README.md)
     - [Current ripple measure in buck voltage mode](TWIST/DC_DC/current_ripple_measurement/README.md)
@@ -20,6 +22,11 @@ Here you can find ready to be used example for [SPIN](https://github.com/owntech
  - DC AC topology examples
     - [Grid forming](TWIST/DC_AC/grid_forming/README.md)
     - [Grid following](TWIST/DC_AC/grid_following/README.md)
+
+- MMC examples
+    - [Blinky MMC arm](TWIST/MMC/blinky_mmc_arm/README.md)
+    - [CVB control](TWIST/MMC/cvb_control_mmc/README.md)
+    - [Single MMC module](TWIST/MMC/single_module_mmc/README.md)
 
 # Examples for SPIN
 
