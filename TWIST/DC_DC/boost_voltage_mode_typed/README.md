@@ -1,4 +1,4 @@
-# Boost with PID controlled output voltage
+# Closed-loop Boost with typed voltage reference
 
 The goal of this tutorial is to use the TWIST board to step up the output voltage. This time, we want to be able to manually change the output voltage by entering it directly into the serial monitor.
 
