@@ -1,8 +1,22 @@
 # Boost with PID controlled output voltage
 
-A voltage mode boost converter regulates voltage by comparing the output voltage to a reference voltage. It adjusts the duty cycle of its switching signal to keep the output voltage stable. This type of converter efficiently steps up voltage levels, making it useful in various electronic devices such as converting photovoltaic panel voltage.
+The goal of this tutorial is to use the TWIST board to step up the output voltage. This time, we want to be able to manually change the output voltage by entering it directly into the serial monitor.
 
-This example will implement a voltage mode boost converter to control the output.
+To do this, we start from the previous Boost voltage mode example and modify the code to have voltage reference input from the keyboard using the following variables to store the typed characters:
+
+- received_serial_char : character typed by the user.
+- buffer[4] : string that stores the input digits from the user. It can stock up to 3 digits + a null character \0 to finish the string.
+- index : integer variable used to track the position on the buffer string.
+- new_voltage_reference : float variable initialized at 0.0 the stocks the new voltage reference converted from buffer string.
+
+How does it works : 
+- During the communication_loop captures characters from the console and stores it until the Enter key (\n) is pressed.
+- Only number digits (0–9) are stored in the buffer.
+- After that the new_voltage_reference variable converts the entered string to an integer value using the function atoi.
+- Into the if loop, if the entered value is between 0 and 30, the voltage_reference becomes new_voltage_reference
+
+!!! warning "Are you ready to start ?"
+    Before you can run this example, you must have successfully gone through our [getting started](https://docs.owntech.org/latest/core/docs/environment_setup/). 
 
 
 ## Hardware setup and requirement
@@ -23,64 +37,9 @@ You will need :
 - A dc power supply (**max 10V**)
 - A resistor (or a dc electronic load)
 
-## Software setup and structure
-
-The example is built using the `main.cpp` file and the `control` library.
-
-#### Main code structure
-
-The `main.cpp` structure is shown in the image below.
-
-![Code structure](Image/main_structure.png)
-
-The code structure is as follows:
-- On the top of the code some initialization functions take place.
-- **Setup Routine** - calls functions that set the hardware and software
-- **Communication Task** - Handles the keyboard communication and decides which `MODE` is activated
-- **Application Task** - Handles the `MODE`, activates the LED and prints data on the serial port 
-- **Critical Task** - Handles the `MODE` sets power ON/OFF and track the `V_high` variable with a `PID`
-
-The tasks are executed following the diagram below. 
-
-
-![Timing diagram](Image/timing_diagram.png)
-
-
-- **Communication Task** - Is waken regularly to verify any keyboard activity
-- **Application Task** - This task is woken once its suspend is finished 
-- **Critical Task** - This task is driven by the HRTIM count interrupt, where it counts a number of HRTIM switching frequency periods. In this case 100us, or 20 periods of the TWIST board 200kHz switching frequency set by default.
-
-
-
-#### Control scheme
-
-The control library is imported in platformio.ini via the line :
-
-```
-lib_deps=
-    control_lib = https://github.com/owntech-foundation/control_library.git
-```
-
-We can use this library to initialize a PID control with the function :
-
-```cpp
-pid.init(pid_params);
-```
-
-The control diagram of the `PID` is shown in the figure below.
-
-![Control diagram](Image/control_diagram.png)
-
 
 ## Expected result
 
-This code will control the output voltage to have 15V, you can control the output voltage with the serial monitor :
+While in power mode, when you type a number between 0 and 20 and type a enter in the end, you should have your voltage reference change like this:
 
-- press `u` to increase the voltage reference by 0.5V
-- press `d` to decrease the voltage reference by 0.5V
-
-The following plot shows the expected result. Here the voltage reference was modified and `V_High` can be seen to follow it. 
-Both currents are negative, as the current measurement `I_High` is in the `load` convention and the current measurement `I1_low` is in `source` convention.  
-
-![Expected result](Image/result_plot.png)
-
+![Expected result](Image/boost_typed_results.png)
