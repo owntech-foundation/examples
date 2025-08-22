@@ -165,7 +165,7 @@ static float meas_data;
 /* Scope variables */
 static bool enable_acq; // Sets trigger moment if true
 static const uint16_t NB_DATAS = 2048; // Number of data acquired
-static ScopeMimicry scope(NB_DATAS, 5); // Scope configuration
+static ScopeMimicry scope(NB_DATAS, 5); // Scope configuration with 5 channels
 static bool is_downloading; // Records data if true
 
 /* SM switching variables */

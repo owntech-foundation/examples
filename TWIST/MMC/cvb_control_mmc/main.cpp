@@ -58,7 +58,7 @@ void sorting();
 
 /*--------------USER VARIABLES DECLARATIONS------------------- */
 
-/* [us] period of the control task */
+/* [us] period of the control task (=critical task period) */
 static uint32_t control_task_period = 100;
 /* [bool] state of the PWM (ctrl task) */
 static bool pwm_enable = false;
@@ -68,39 +68,36 @@ uint8_t received_serial_char;
 float32_t duty_cycle = 0.3;
 
 /* Scope variables */
-
-static bool enable_acq; //trigger variable
+static bool enable_acq; // Sets trigger moment if true
 static const uint16_t NB_DATAS = 1024; //Number of data acquired
-static const float32_t minimal_step = 1.0F / (float32_t) NB_DATAS;
-static ScopeMimicry scope(NB_DATAS, 8);
-static bool is_downloading;
+static ScopeMimicry scope(NB_DATAS, 8); // Scope configuration with 8 channels
+static bool is_downloading; // Records data if true
 
 /* SM switching variables */
-
 static float32_t number_of_connected_submodules_upper_arm;
 static float32_t number_of_connected_submodules_lower_arm;
 
 static bool master = true;
-static uint8_t seq_u[6] = {1, 2, 3, 2, 1, 0};
-static uint8_t seq_l[6] = {2, 1, 0, 1, 2, 3};
+static uint8_t seq_u[6] = {1, 2, 3, 2, 1, 0}; // Connection sequence for upper arm, to be substituted by a sinus + PWM when implementing MMC
+static uint8_t seq_l[6] = {2, 1, 0, 1, 2, 3}; // Connection sequence for lower arm, to be substituted by a sinus + PWM when implementing MMC
 static uint8_t counter_seq = 0;
 static uint32_t sw_timer = 0;
 static uint32_t scope_timer = 0;
-static uint32_t sw_period = 10000; // 1 Hz = 1 s to transition;
-static uint32_t scope_period = 100; // acquire every 100 * 100 µs;
+static uint32_t sw_period = 10000; // 1 Hz = 1 s period to transition to next connection sequence value;
+static uint32_t scope_period = 100; // scope acquire data every t = scope_period (100) * critical_task_period (100 µs) = 10 ms;
 
 /* CVB variables */
-static float32_t modules_capacitor_voltages_upper_arm[3] = {3.0,5.0,4.0}; // Example values to be sorted
-static uint8_t modules_indexes_upper_arm[3] = {0,1,2}; // Example indexes to be sorted
-static float32_t modules_capacitor_voltages_lower_arm[3] = {3.0,5.0,4.0}; // Example values to be sorted
-static uint8_t modules_indexes_lower_arm[3] = {0,1,2}; // Example indexes to be sorted
+static float32_t modules_capacitor_voltages_upper_arm[3] = {3.0,5.0,4.0}; // Upper arm modules capacitor voltages artificially generated, to be substituted by measured current when implementing MMC
+static uint8_t modules_indexes_upper_arm[3] = {0,1,2}; // Upper arm modules indexes to be sorted with the capacitor voltage vector
+static float32_t modules_capacitor_voltages_lower_arm[3] = {3.0,5.0,4.0}; // Lower arm modules capacitor voltages artificially generated, to be substituted by measured current when implementing MMC
+static uint8_t modules_indexes_lower_arm[3] = {0,1,2}; // Lower arm modules indexes to be sorted with the capacitor voltage vector
 static uint8_t total_number_of_modules_arm= 3;
+static int8_t i_upper_arm= 1; // Upper arm current, to be substituted by measured current when implementing MMC
+static int8_t i_lower_arm= -1; // Lower arm current, to be substituted by measured current when implementing MMC
 
 /* Gate logic */
-uint8_t g_u[3] = {0,0,0}; // Example gate signals to send
-uint8_t g_l[3] = {0,0,0}; // Example gate signals to send
-static int8_t i_upper_arm= 1;
-static int8_t i_lower_arm= -1;
+uint8_t g_u[3] = {0,0,0}; // Gate signals to send to the upper modules
+uint8_t g_l[3] = {0,0,0}; // Gate signals to send to the lower modules
 static float32_t g_u_1;
 static float32_t g_u_2;
 static float32_t g_u_3;
@@ -261,7 +258,7 @@ void loop_application_task()
 
 }
 
-
+/* Capacitor Voltage Balancing (CVB) algorithm implementation */
 void sorting()
 {
     uint8_t counter_loops_sorting = 0;
@@ -353,6 +350,7 @@ void loop_critical_task()
 
     if (mode == POWERMODE)
     {
+        /* Connection sequence triangular format generation, chosing how many modules to connect */
         if (sw_timer == sw_period)
         {
             if (counter_seq >= 6) {
@@ -364,8 +362,9 @@ void loop_critical_task()
             sw_timer = 0;
         }
 
-        sorting();
+        sorting(); // Executes the CVB algorithm, chosing which modules to connect
 
+        /* Gate assignment with preference from CVB algorithm */
         g_u_1 = (float)g_u[0];  // recuperate for scope acquisition
         g_u_2 = (float)g_u[1];  // recuperate for scope acquisition
         g_u_3 = (float)g_u[2];  // recuperate for scope acquisition
@@ -374,6 +373,7 @@ void loop_critical_task()
         g_l_2 = (float)g_l[1];  // recuperate for scope acquisition
         g_l_3 = (float)g_l[2];  // recuperate for scope acquisition
         
+        /* Scope data acquisition */
         if (scope_timer == scope_period)
         {
             scope.acquire();

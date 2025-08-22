@@ -65,7 +65,6 @@ static bool pwm_enable = false;
 uint8_t received_serial_char;
 
 /* Measure variables */
-
 static float32_t V1_low_value;
 static float32_t V2_low_value;
 static float32_t I1_low_value;
@@ -81,34 +80,15 @@ static float meas_data;
 
 float32_t duty_cycle = 0.3;
 
-/* Voltage reference */
-static float32_t voltage_reference = 15;
-
-/* PID coefficients for a 8.6ms step response*/
-static float32_t kp = 0.000215;
-static float32_t Ti = 7.5175e-5;
-static float32_t Td = 0.0;
-static float32_t N = 0.0;
-static float32_t upper_bound = 1.0F;
-static float32_t lower_bound = 0.0F;
-static float32_t Ts = control_task_period * 1e-6;
-static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
-static Pid pid;
-
 /* Scope variables */
-
-static bool enable_acq;
-static uint32_t num_trig_ratio_point = 512;
 static const uint16_t NB_DATAS = 2048; //Number of data acquired
-static const float32_t minimal_step = 1.0F / (float32_t) NB_DATAS;
-static uint16_t number_of_cycle = 2;
-static ScopeMimicry scope(NB_DATAS, 5);
-static bool is_downloading;
-static bool trigger = false;
+static ScopeMimicry scope(NB_DATAS, 5); // Scope configuration with 5 channels
+static bool is_downloading; // Records data if true
+static bool trigger = false; // Sets trigger moment if true
 
 /* SM switching variables */
 
-static uint8_t g = 1;
+static uint8_t g = 1; // Module gate signal, indicates if it is connected (g=1), bypassed (g=0) or blocked (g=2)
 
 /*--------------------------------------------------------------- */
 
@@ -175,14 +155,12 @@ void setup_routine()
     scope.connectChannel(I1_low_value, "I_SM");
     scope.connectChannel(V1_low_value, "V_SM");
     scope.connectChannel(duty_cycle, "duty_cycle");
-    scope.connectChannel(I_high, "I_high"); //I_High indicates if the Q1 keeps conducting or not after bootstrap capacitor is discharged, if yes body diode conducts, if not the SM goes to blocked mode
+    scope.connectChannel(I_high, "I_high");
     scope.connectChannel(V_high, "V_high");
     scope.set_trigger(&a_trigger);
     scope.set_delay(0.2F);
     scope.start();
-    //Vc_BTS indicates the bootstrap capacitor charge level, we have to measure it externally
 
-    pid.init(pid_params);
 
     /* Then declare tasks */
     uint32_t app_task_number = task.createBackground(loop_application_task);
@@ -237,16 +215,17 @@ void loop_communication_task()
         duty_cycle -= 0.05;
         break;
     case 's':
-        mode = SWITCHMODE;
+        printk("switch mode\n");
+        mode = SWITCHMODE; // Twist board acts like an Half-bridge module
         trigger = true;
         break;
-    case 'o': //SM ON
+    case 'o': //Turns module ON
         g= 1;
         break;
-    case 'f': //SM OFF
+    case 'f': //Turns module OFF
         g= 0;
         break;
-    case 'b': //Block SM
+    case 'b': //Block module
         g= 2;
         break;
     case 'r':
@@ -276,8 +255,6 @@ void loop_application_task()
     {
         spin.led.toggle();
     }
-
-
         printk("%.3f:", (double)I1_low_value);
         printk("%.3f:", (double)V1_low_value);
         printk("%.3f:", (double)V_high);
@@ -289,11 +266,11 @@ void loop_application_task()
  * This is the code loop of the critical task
  * This task runs at 10kHz.
  *  - It retrieves sensors values
- *  - It runs the PID controller
  *  - It update the PWM signals
  */
 void loop_critical_task()
 {
+    /* Measurement acquisition */
     meas_data = shield.sensors.getLatestValue(I1_LOW);
     if (meas_data != NO_VALUE) I1_low_value = meas_data;
 
@@ -312,7 +289,7 @@ void loop_critical_task()
     meas_data = shield.sensors.getLatestValue(V_HIGH);
     if (meas_data != NO_VALUE) V_high = meas_data;
 
-
+    /* In this INDLEMODE, Twist board is off */
     if (mode == IDLEMODE)
     {
         if (pwm_enable == true)
@@ -321,6 +298,8 @@ void loop_critical_task()
         }
         pwm_enable = false;
     }
+
+    /* In this POWERMODE, Twist board acts Buck converter in open-loop */
     else if (mode == POWERMODE)
     {
         shield.power.setDutyCycle(LEG1,duty_cycle);
@@ -332,33 +311,35 @@ void loop_critical_task()
             shield.power.start(LEG1);
         }
     }
+
+    /* In this SWITCHMODE, Twist board acts like an Half-bridge module */
     else if (mode == SWITCHMODE)
     {
         
 
-        if(g == 0) // SM is off
+        if(g == 0) // Module is off
         {
-            shield.power.setDutyCycle(LEG1,0.0);
+            shield.power.setDutyCycle(LEG1,0.0); // Sets Q1 = 0 (opened) and Q2 = 1 (closed)
             if (!pwm_enable)
             {
                 pwm_enable = true;
                 shield.power.start(LEG1);
             }
         }
-        if(g == 1) // SM is on
+        if(g == 1) // Module is on
         {
-            shield.power.setDutyCycle(LEG1,1.0);
+            shield.power.setDutyCycle(LEG1,1.0); // Sets Q1 = 1 (closed) and Q2 = 0 (opened)
             if (!pwm_enable)
             {
                 pwm_enable = true;
                 shield.power.start(LEG1);
             }
         }            
-        if(g == 2) // SM is blocked
+        if(g == 2) // Module is blocked
         {
             if (pwm_enable == true)
             {
-                shield.power.stop(ALL);
+                shield.power.stop(ALL); // Sets Q1 = Q2 = 0 (open)
             }
             pwm_enable = false;
         }            
