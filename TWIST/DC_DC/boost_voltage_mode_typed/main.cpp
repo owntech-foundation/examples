@@ -62,7 +62,7 @@ static uint32_t control_task_period = 100;
 /* [bool] state of the PWM (ctrl task) */
 static bool pwm_enable = false;
 
-uint8_t received_serial_char;
+uint8_t received_serial_char; //character typed by the user.
 
 /* Measure variables */
 static float32_t V1_low_value;
@@ -92,10 +92,10 @@ static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
 static Pid pid;
 
 /* Pad variables */
-char buffer[4]; 
-int index = 0;
-float new_voltage_reference = 0.0;
-bool enter_captured = false; 
+char buffer[4]; // string that stores the input digits from the user. It can stock up to 3 digits + a null character \0 to finish the string
+int index = 0; // integer variable used to track the position on the buffer string.
+float new_voltage_reference = 0.0; // float variable initialized at 0.0 the stocks the new voltage reference converted from buffer string.
+bool enter_captured = false; // indicator if user typed enter
 
 /*--------------------------------------------------------------- */
 
@@ -180,35 +180,36 @@ void loop_communication_task()
         break;
     }
     
+    /* Obtains typed input from the user */
     if (mode == POWERMODE) {
-        if (received_serial_char == '\n') {
+        if (received_serial_char == '\n') { // If the user clicks enter
             enter_captured = true; 
         }
         
-        else if (received_serial_char >= '0' && received_serial_char <= '9' && index < 3) {
-            buffer[index] = received_serial_char;
+        else if (received_serial_char >= '0' && received_serial_char <= '9' && index < 3) { // If the typed value is a number and the buffer is not yet complete
+            buffer[index] = received_serial_char; // Stores typed number in the buffer according to the index indicating the number position (eg buffer = ['2','4','\0'] -> 24 V)
             buffer[index+1] = '\0';
             index++;
         }
 
         if (enter_captured == true) {
-            new_voltage_reference = atoi(buffer);
-            if (new_voltage_reference < 0 || new_voltage_reference > 30) {
-                index = 0;
-                buffer[0] = '\0';
+            new_voltage_reference = atoi(buffer); // Converts buffer from char to a integer
+            if (new_voltage_reference < 0 || new_voltage_reference > 30) { // Voltage reference can't be higher than 30 or negative
+                index = 0; // Resets buffer index
+                buffer[0] = '\0'; // Resets buffer
                 printk("Invalid input. Voltage reference must be between 0 and 30 V.\n");
             } else {
-                voltage_reference = new_voltage_reference;
-                index = 0;
-                buffer[0] = '\0';
+                voltage_reference = new_voltage_reference; // Sets new voltage reference
+                index = 0; // Resets buffer index
+                buffer[0] = '\0'; // Resets buffer
                 printk("Voltage reference set to %f V.\n", voltage_reference);
             }
             enter_captured = false;
         }
     }
     else {
-        index = 0;
-        buffer[0] = '\0';
+        index = 0; // Resets buffer index
+        buffer[0] = '\0'; // Resets buffer
     }
 }
 
