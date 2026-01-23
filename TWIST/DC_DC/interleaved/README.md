@@ -16,7 +16,7 @@ The waveform below shows how each switch in the image above operates and their a
 
 This example will implement interleaved operation using the two legs of the TWIST.
 
-!!! warning "Are you ready to start ?"
+!!! warning "Are you ready to start?"
     Before you can run this example, you must have successfully gone through our [getting started](https://docs.owntech.org/latest/core/docs/environment_setup/).  
 
 
@@ -25,22 +25,20 @@ This example will implement interleaved operation using the two legs of the TWIS
 ![schema](Image/buck_m.png)
 
 !!! warning Hardware pre-requisites 
-    You will need :
+    You will need:
     - 1 TWIST
-    - A dc power supply (20-60V)
-    - A resistor (or a dc electronic load)
+    - A DC power supply (20-60 V)
+    - A resistor (or a DC electronic load)
 
 
 ## Software setup
 
-## Software setup
-
-Locate your `platformio.ini file` in your working folder.
+Locate your `platformio.ini` file in your working folder.
 
 ![platformio.ini location](Image/platformio_ini_location.png)
 
 
-We will import `control_library` in `platformio.ini` by decommenting the line :
+We will import `control_library` in `platformio.ini` by uncommenting the line:
 
 ```ini
 lib_deps=
@@ -59,7 +57,7 @@ We can use this library to initialize a PID control with the function :
 pid.init(pid_params);
 ```
 
-the initial parameters are defined using the following lines :
+The initial parameters are defined using the following lines:
 
 ```cpp
 static Pid pid; // define a pid controller.
@@ -76,20 +74,20 @@ static PidParams pid_params(Ts, kp, Ti, Td, N, lower_bound, upper_bound);
 
 ## Expected results
 
-This code will control the output voltage to have 15V, you can control the output voltage with platformio serial monitor. The image below shows your a snippet of the window and the button to press.
+This code will control the output voltage to have 15 V. You can control the output voltage with the PlatformIO serial monitor. The image below shows you a snippet of the window and the button to press.
 
 ![serial monitor button](Image/serial_monitor_button.png)
 
-When opening it for the first time, the serial monitor will give you an initialization message regarding the parameteres of the ADCs as shown below.  
+When opening it for the first time, the serial monitor will give you an initialization message regarding the parameters of the ADCs as shown below.  
 
 ![serial monitor initialization](Image/serial_monitor_initialization.png)
 
-!!! tip Commands keys
+!!! tip Command keys
     - press `u` to increase the voltage
     - press `d` to decrease the voltage
     - press `h` to show the help menu
 
-Here's sequence when the help menu is activated with `h`, the power mode is then activated with `p` and finally the Twist converter is put in idle with the `i`. 
+Here's the sequence when the help menu is activated with `h`, the power mode is then activated with `p` and finally the Twist converter is put in idle with the `i`. 
 
 ![serial monitor working](Image/serial_monitor_operation.gif)
 
@@ -107,13 +105,11 @@ Here's sequence when the help menu is activated with `h`, the power mode is then
     - `IH` is the current in `LEG2` of the `LOW` side
     - `VH` is the voltage on the `HIGH` side
 
-    For instance when you reveive this: 
+    For instance, when you receive this: 
 
     ```c 
     1.44:14.80:0.13:16.14:1.14:22.82:
     ```
 
     It means that `I1 = 1.46 A`, `V1 = 14.80 V` and so on. 
-
-
 

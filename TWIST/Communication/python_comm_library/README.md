@@ -1,14 +1,14 @@
 # Python Communication Protocol
 
-This example uses the python communication protocol library to drive a Twist 1.4.1 board in Buck mode.
+This example uses the Python communication protocol library to drive a Twist 1.4.1 board in buck mode.
 
-The script will send data to the board, retrive the measurements and show them on a graph.
+The script will send data to the board, retrieve the measurements and show them on a graph.
 
 !!! danger Advanced example
      This is an advanced example. Make sure you are comfortable with using the [voltage mode](https://docs.owntech.org/examples/TWIST/DC_DC/buck_voltage_mode/) **before** doing this emulator.
 
 
-## Hardware wiring and requirement
+## Hardware wiring and requirements
 
 The wiring of the system is given by the image below:
 - The power converter is connected in `buck` mode with a source and a load.
@@ -17,17 +17,17 @@ The wiring of the system is given by the image below:
 
 ![Communication setup](Image/Comm_system.png)
 
-You will need :
+You will need:
 - 1 TWIST (it works with the OWNVERTER too!)
-- 1 dc power supply (20-60V)
+- 1 DC power supply (20-60 V)
 - 1 power load
 - 1 PC
 
-!!! warning Make sure you read this readme all the way to the end
+!!! warning Make sure you read this README all the way to the end
 
 ## Embedded Firmware setup
 
-We import the `communication_library` in `platformio.ini` via the line. Be careful to include the `#power_tuesday` at the end, since it will get the right version of the protocol :
+We import the `communication_library` in `platformio.ini` via the line. Be careful to include the `#power_tuesday` at the end, since it will get the right version of the protocol:
 
 ```ini
 lib_deps=
@@ -36,7 +36,7 @@ lib_deps=
 
 ## Embedded Firmware explanation
 
-The emebedded firmware will configure the `TWIST` or `OWNVERTER` board to be able to communicate with your computer via python. 
+The embedded firmware will configure the `TWIST` or `OWNVERTER` board to be able to communicate with your computer via Python. 
 
 The software deploys a communication system with three modes:
 
@@ -53,9 +53,9 @@ The software deploys a communication system with three modes:
    - :zap: in the critical_task: starts the power flow, controls the power flow with a PID
 
 !!! Tip How the system works
-    Characters are sent via the Serial port to the `SPIN` board.
-    It parses these characters and decides which value to put in which variables that describes the power converter.
-    For more details, please checkout the [communication protocol library readme](https://github.com/owntech-foundation/python_twist_comm_protocol)
+    Characters are sent via the serial port to the `SPIN` board.
+    It parses these characters and decides which value to put in which variables that describe the power converter.
+    For more details, please check out the [communication protocol library README](https://github.com/owntech-foundation/python_twist_comm_protocol)
 
 
 ## Python script
@@ -87,7 +87,7 @@ It will send a triangular waveform to the board and plot it in real-time.
       }
     ```
 
-    The handler will decide what the message is about and then update the appropriate structure of the communicaiton protocol that handles the information.
+    The handler will decide what the message is about and then update the appropriate structure of the communication protocol that handles the information.
 
     Which activates the power leg `LEG1`.
 
@@ -99,7 +99,7 @@ This code was tested using the following hardware setup:
 ![Emulator setup](Image/HIL_system_real.png)
 
 On the photo:
-  - A computer running the `comm_script.py` python script.
+  - A computer running the `comm_script.py` Python script.
   - A Twist board connected in Buck mode.
   - A voltage source.
   - A resistor connected to `LEG1` and `LEG2`
@@ -110,8 +110,8 @@ On the photo:
 Before running the code
 
 !!! warning Make sure you have:
-    - `python` installed in your computer.
+    - `python` installed on your computer.
     - that you follow the [firmware setup instructions](#embedded-firmware-setup) and have the appropriate libraries listed in `platformio.ini`.
     - flash the `main.cpp` in your Twist board
 
-Once all of the above are ok, you can then run the `comm_script.py` script with your python3.
+Once all of the above are OK, you can then run the `comm_script.py` script with your Python 3.
