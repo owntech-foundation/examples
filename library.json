@@ -1,6 +1,6 @@
 {
     "name": "OwnTech_Examples",
-    "version": "0.0.2",
+    "version": "0.5.0",
     "description": "A library that contains OwnTech Power API examples",
     "keywords": "Power, Control, OwnTech",
     "repository":
@@ -46,283 +46,305 @@
         }
     ],
     "examples": [
-    {
-        "name": "boost_voltage_mode",
-        "title": "Voltage Mode Boost",
-        "description": "Voltage mode boost converter using PID controller for TWIST",
-        "group": "Examples TWIST",
-        "base": "TWIST/DC_DC/boost_voltage_mode",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "buck_voltage_mode",
-        "title": "Voltage Mode Buck",
-        "description": "Voltage mode buck converter using PID controller for TWIST",
-        "group": "Examples TWIST",
-        "base": "TWIST/DC_DC/buck_voltage_mode",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "buck_current_mode",
-        "title": "Current Mode Buck",
-        "description": "Peak current mode buck converter using PID controller for TWIST",
-        "group": "Examples TWIST",
-        "base": "TWIST/DC_DC/buck_current_mode",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "interleaved",
-        "title": "Interleaved",
-        "description": "Interleaved mode buck converter with PID controlled output voltage",
-        "group": "Examples TWIST",
-        "base": "TWIST/DC_DC/interleaved",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "scope_simple_example",
-        "title": "Simple scope example",
-        "description": "Simple example of triggering the scope to acquire a step response.",
-        "group": "Examples TWIST",
-        "base": "TWIST/DC_DC/scope_simple_example",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "ripple_measurement",
-        "title": "Current Ripple Measurement",
-        "description": "Current ripple measurement in buck voltage mode, by sweeping adc trigger",
-        "group": "Examples TWIST",
-        "base": "TWIST/DC_DC/current_ripple_measurement",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "AC_cient_server",
-        "title": "AC client server",
-        "description": "implementation of AC client server in microgrid",
-        "group": "Examples TWIST",
-        "base": "TWIST/Microgrid/AC_client_server",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "AC_peer_to_peer",
-        "title": "AC peer to peer",
-        "description": "implementation of AC peer to peer in microgrid",
-        "group": "Examples TWIST",
-        "base": "TWIST/Microgrid/AC_peer_to_peer",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "DC_cient_server",
-        "title": "DC client server",
-        "description": "implementation of DC client server in microgrid",
-        "group": "Examples TWIST",
-        "base": "TWIST/Microgrid/DC_client_server",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "DC_droop",
-        "title": "DC droop",
-        "description": "implementation of DC droop in microgrid",
-        "group": "Examples TWIST",
-        "base": "TWIST/Microgrid/DC_droop",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "grid_forming",
-        "title": "Grid Forming Inverter",
-        "description": "It generates an AC voltage source. Commonly, a grid-forming inverter is a device that autonomously establishes and maintains stable grid voltage and frequency.",
-        "group": "Examples TWIST",
-        "base": "TWIST/DC_AC/grid_forming",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "grid_following",
-        "title": "Grid Following Inverter",
-        "description": "It is an AC current source which follow a grid voltage. Commonly, a grid-following inverter adjusts its output to match the voltage and frequency of the existing electrical grid",
-        "group": "Examples TWIST",
-        "base": "TWIST/DC_AC/grid_following",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "python_communication_protocol",
-        "title": "Python Communication Protocol",
-        "description": "This example allows a user to control a Twist in DC-DC buck mode using a Python script.",
-        "group": "Examples TWIST",
-        "base": "TWIST/Communication/python_comm_library",
-        "files": [
-            "main.cpp",
-            "comm_script.py",
-            "README.md"
-        ]
-    },
-    {
-        "name": "can_communication",
-        "title": "CAN Communication",
-        "description": "This example deploys CAN communication of the Twist board",
-        "group": "Examples TWIST",
-        "base": "TWIST/Communication/CAN",
-        "files": [
-            "main.cpp",
-            "app.conf",
-            "README.md",
-            "user_data_objects.h"
-        ]
-    },
-    {
-        "name": "blinky",
-        "title": "Blinky LED",
-        "description": "Toggling LED",
-        "group": "Examples SPIN",
-        "base": "SPIN/LED/blinky",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "duty_cycle_setting",
-        "title": "Setting PWM duty cycle",
-        "description": "Using PWM with duty cycle",
-        "group": "Examples SPIN",
-        "base": "SPIN/PWM/duty_cycle_setting",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "multiple_pwm",
-        "title": "Setting multiple PWM",
-        "description": "Using multiple PWM with duty cycle",
-        "group": "Examples SPIN",
-        "base": "SPIN/PWM/multiple_pwm",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "phase_shift",
-        "title": "Setting PWM phase shift",
-        "description": "Setting a phase shift between two PWM",
-        "group": "Examples SPIN",
-        "base": "SPIN/PWM/phase_shift",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "burst_mode",
-        "title": "Setting Burst Mode PWM",
-        "description": "Setting pulsed mode PWM",
-        "group": "Examples SPIN",
-        "base": "SPIN/PWM/burst_mode",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "signal_generation",
-        "title": "DAC signal generation",
-        "description": "Sawtooth generation with DAC",
-        "group": "Examples SPIN",
-        "base": "SPIN/DAC/signal_generation",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "adc_software_trigger",
-        "title": "Software triggered ADC",
-        "description": "setting the adc to be trigerred by software",
-        "group": "Examples SPIN",
-        "base": "SPIN/ADC/adc_hrtim_trigger",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "adc_hrtim_trigger",
-        "title": "HRTIM triggered ADC",
-        "description": "setting the adc to be trigerred by the hrtim",
-        "group": "Examples SPIN",
-        "base": "SPIN/ADC/adc_hrtim_trigger",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "incremental_encoder",
-        "title": "Incremental encoder",
-        "description": "Using a timer with a rotary incrmental encoder",
-        "group": "Examples SPIN",
-        "base": "SPIN/TIMER/incremental_encoder",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "BLDC_hall_sensor",
-        "title": "BLDC motor with hall sensor",
-        "description": "Control a BLDC motor using hall effect sensor",
-        "group": "Examples OWNVERTER",
-        "base": "OWNVERTER/BLDC_hall_sensor",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    },
-    {
-        "name": "foc_hall_sensor",
-        "title": "Motor control using FOC and hall sensors",
-        "description": "an example which show the use of a Field Oriented Control algorithm with discrete hall sensors",
-        "group": "Examples OWNVERTER",
-        "base": "OWNVERTER/FOC_hall_sensor",
-        "files": [
-            "main.cpp",
-            "README.md"
-        ]
-    }
+        {
+            "name": "Open Loop PWM",
+            "title": "Open Loop PWM",
+            "description": "Simple open loop PWM example",
+            "group": "Examples TWIST - Basic",
+            "base": "TWIST/Basic/Open-Loop_PWM",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Voltage Mode Buck",
+            "title": "Voltage Mode Buck",
+            "description": "Voltage mode buck converter using PID controller for TWIST",
+            "group": "Examples TWIST - DC-DC",
+            "base": "TWIST/DC_DC/buck_voltage_mode",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Voltage Mode Boost",
+            "title": "Voltage Mode Boost",
+            "description": "Voltage mode boost converter using PID controller for TWIST",
+            "group": "Examples TWIST - DC-DC",
+            "base": "TWIST/DC_DC/boost_voltage_mode",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Current Mode Buck",
+            "title": "Current Mode Buck",
+            "description": "Peak current mode buck converter using PID controller for TWIST",
+            "group": "Examples TWIST - DC-DC",
+            "base": "TWIST/DC_DC/buck_current_mode",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Interleaved",
+            "title": "Interleaved",
+            "description": "Interleaved mode buck converter with PID controlled output voltage",
+            "group": "Examples TWIST - DC-DC",
+            "base": "TWIST/DC_DC/interleaved",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Independent",
+            "title": "Independent",
+            "description": "Independent mode buck converter with each leg controlled by a dedicated PID",
+            "group": "Examples TWIST - DC-DC",
+            "base": "TWIST/DC_DC/independent",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Simple scope example",
+            "title": "Simple scope example",
+            "description": "Simple example of triggering the scope to acquire a step response.",
+            "group": "Examples TWIST - DC-DC",
+            "base": "TWIST/DC_DC/scope_simple_example",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Current Ripple Measurement",
+            "title": "Current Ripple Measurement",
+            "description": "Current ripple measurement in buck voltage mode, by sweeping adc trigger",
+            "group": "Examples TWIST - DC-DC",
+            "base": "TWIST/DC_DC/current_ripple_measurement",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Grid Following Inverter",
+            "title": "Grid Following Inverter",
+            "description": "It is an AC current source which follow a grid voltage. Commonly, a grid-following inverter adjusts its output to match the voltage and frequency of the existing electrical grid",
+            "group": "Examples TWIST - DC-AC",
+            "base": "TWIST/DC_AC/grid_following",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Grid Forming Inverter",
+            "title": "Grid Forming Inverter",
+            "description": "It generates an AC voltage source. Commonly, a grid-forming inverter is a device that autonomously establishes and maintains stable grid voltage and frequency.",
+            "group": "Examples TWIST - DC-AC",
+            "base": "TWIST/DC_AC/grid_forming",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "CAN Communication",
+            "title": "CAN Communication",
+            "description": "This example deploys CAN communication of the Twist board",
+            "group": "Examples TWIST - COMM",
+            "base": "TWIST/Communication/CAN",
+            "files": [
+                "main.cpp",
+                "app.conf",
+                "README.md",
+                "user_data_objects.h"
+            ]
+        },
+        {
+            "name": "Python Communication Protocol",
+            "title": "Python Communication Protocol",
+            "description": "This example allows a user to control a Twist in DC-DC buck mode using a Python script.",
+            "group": "Examples TWIST - COMM",
+            "base": "TWIST/Communication/python_comm_library",
+            "files": [
+                "main.cpp",
+                "comm_script.py",
+                "README.md"
+            ]
+        },
+        {
+            "name": "AC client server",
+            "title": "AC client server",
+            "description": "implementation of AC client server in microgrid",
+            "group": "Examples TWIST - Microgrid",
+            "base": "TWIST/Microgrid/AC_client_server",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "AC peer to peer",
+            "title": "AC peer to peer",
+            "description": "implementation of AC peer to peer in microgrid",
+            "group": "Examples TWIST - Microgrid",
+            "base": "TWIST/Microgrid/AC_peer_to_peer",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "DC client server",
+            "title": "DC client server",
+            "description": "implementation of DC client server in microgrid",
+            "group": "Examples TWIST - Microgrid",
+            "base": "TWIST/Microgrid/DC_client_server",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "DC droop",
+            "title": "DC droop",
+            "description": "implementation of DC droop in microgrid",
+            "group": "Examples TWIST - Microgrid",
+            "base": "TWIST/Microgrid/DC_droop",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "BLDC motor with hall sensor",
+            "title": "BLDC motor with hall sensor",
+            "description": "Control a BLDC motor using hall effect sensor",
+            "group": "Examples OWNVERTER",
+            "base": "OWNVERTER/BLDC_hall_sensor",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Motor control using FOC and hall sensors",
+            "title": "Motor control using FOC and hall sensors",
+            "description": "an example which show the use of a Field Oriented Control algorithm with discrete hall sensors",
+            "group": "Examples OWNVERTER",
+            "base": "OWNVERTER/FOC_hall_sensor",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "HRTIM triggered ADC",
+            "title": "HRTIM triggered ADC",
+            "description": "setting the adc to be trigerred by the hrtim",
+            "group": "Examples SPIN - ADC",
+            "base": "SPIN/ADC/adc_hrtim_trigger",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Software triggered ADC",
+            "title": "Software triggered ADC",
+            "description": "setting the adc to be trigerred by software",
+            "group": "Examples SPIN - ADC",
+            "base": "SPIN/ADC/adc_software_trigger",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "DAC signal generation",
+            "title": "DAC signal generation",
+            "description": "Sawtooth generation with DAC",
+            "group": "Examples SPIN - DAC",
+            "base": "SPIN/DAC/signal_generation",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Incremental encoder",
+            "title": "Incremental encoder",
+            "description": "Using a timer with a rotary incrmental encoder",
+            "group": "Examples SPIN - TIMER",
+            "base": "SPIN/TIMER/incremental_encoder",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Blinky LED",
+            "title": "Blinky LED",
+            "description": "Toggling LED",
+            "group": "Examples SPIN - LED",
+            "base": "SPIN/LED/blinky",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Setting Burst Mode PWM",
+            "title": "Setting Burst Mode PWM",
+            "description": "Setting pulsed mode PWM",
+            "group": "Examples SPIN - PWM",
+            "base": "SPIN/PWM/burst_mode",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Setting PWM duty cycle",
+            "title": "Setting PWM duty cycle",
+            "description": "Using PWM with duty cycle",
+            "group": "Examples SPIN - PWM",
+            "base": "SPIN/PWM/duty_cycle_setting",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Setting multiple PWM",
+            "title": "Setting multiple PWM",
+            "description": "Using multiple PWM with duty cycle",
+            "group": "Examples SPIN - PWM",
+            "base": "SPIN/PWM/multiple_pwm",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Setting PWM phase shift",
+            "title": "Setting PWM phase shift",
+            "description": "Setting a phase shift between two PWM",
+            "group": "Examples SPIN - PWM",
+            "base": "SPIN/PWM/phase_shift",
+            "files": [
+                "main.cpp",
+                "README.md"
+            ]
+        }
     ]
 }
