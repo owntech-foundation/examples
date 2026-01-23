@@ -7,13 +7,13 @@ The Twist board has two different legs, which allows it to generate two differen
 
 This example will implement two independent power outputs, each with its own voltage reference.
 
-!!! warning "Are you ready to start ?"
+!!! warning "Are you ready to start?"
     Before you can run this example:
     - you **must** have successfully gone through our [getting started](https://docs.owntech.org/latest/core/docs/environment_setup/).
     - ideally, you should have successfully gone through our [Voltage Mode Example](https://docs.owntech.org/latest/examples/TWIST/DC_DC/buck_voltage_mode/)  
 
 
-## Hardware setup and requirement
+## Hardware setup and requirements
 
 The circuit diagram of the example is shown in the image below.
 
@@ -26,10 +26,10 @@ The power flows from `VHigh` to both `VLow1` and `VLow2` independently. The wiri
 
 
 !!! warning Hardware pre-requisites 
-    You will need :
+    You will need:
     - 1 TWIST
-    - A dc power supply (20-60V)
-    - A resistor (or a dc electronic load)
+    - A DC power supply (20-60 V)
+    - A resistor (or a DC electronic load)
 
 
 ## Main Structure
@@ -40,7 +40,7 @@ The `main.cpp` structure is shown in the image below.
 
 The code structure is as follows:
 - On the top of the code some initialization functions take place.
-- **Setup Routine** - calls functions that set the hardware and software. Notice that it creates 2 dintinct PID controllers. 
+- **Setup Routine** - calls functions that set the hardware and software. Notice that it creates 2 distinct PID controllers. 
 
     ```cpp
     /* Initialize buck with current mode*/
@@ -65,8 +65,8 @@ The tasks are executed following the diagram below.
 ![Timing diagram](Image/timing_diagram.png)
 
 
-- **Communication Task** - Is awaken regularly to verify any keyboard activity
-- **Application Task** - This task is woken once its suspend is finished 
+- **Communication Task** - Is awakened regularly to verify any keyboard activity
+- **Application Task** - This task is woken once its suspension is finished 
 - **Critical Task** - This task is driven by the HRTIM count interrupt, where it counts a number of HRTIM switching frequency periods. In this case 100us, or 20 periods of the TWIST board 200kHz switching frequency set by default.
 
 
@@ -83,22 +83,22 @@ _Source : STM32 AN5497_
 
 ## Expected result
 
-This code will control the output voltage to have 15V, you can control the output voltage with platformio serial monitor. The image below shows your a snippet of the window and the button to press.
+This code will control the output voltage to have 15 V. You can control the output voltage with the PlatformIO serial monitor. The image below shows you a snippet of the window and the button to press.
 
 ![serial monitor button](Image/serial_monitor_button.png)
 
-When opening it for the first time, the serial monitor will give you an initialization message regarding the parameteres of the ADCs as shown below.  
+When opening it for the first time, the serial monitor will give you an initialization message regarding the parameters of the ADCs as shown below.  
 
 ![serial monitor initialization](Image/serial_monitor_initialization.png)
 
-!!! tip Commands keys
+!!! tip Command keys
     - press `u` to increase the voltage on `LEG1`
     - press `d` to decrease the voltage on `LEG1`
     - press `t` to increase the voltage on `LEG2`
     - press `g` to decrease the voltage on `LEG2`
     - press `h` to show the help menu
 
-Here's sequence when the help menu is activated with `h`, the power mode is then activated with `p` and finally the Twist converter is put in idle with the `i`. 
+Here's the sequence when the help menu is activated with `h`, the power mode is then activated with `p` and finally the Twist converter is put in idle with the `i`. 
 
 ![serial monitor working](Image/serial_monitor_operation.gif)
 
@@ -111,14 +111,14 @@ Here's sequence when the help menu is activated with `h`, the power mode is then
     Where: 
     - `I1` is the current in `LEG1` of the `LOW` side
     - `V1` is the voltage in `LEG1` of the `LOW` side
-    - `VREF1` is the reference voltage set for `LEG1`of the `LOW` side
+    - `VREF1` is the reference voltage set for `LEG1` of the `LOW` side
     - `I2` is the current in `LEG1` of the `LOW` side
     - `V2` is the voltage in `LEG2` of the `LOW` side
-    - `VREF2` is the reference voltage set for `LEG2`of the `LOW` side
+    - `VREF2` is the reference voltage set for `LEG2` of the `LOW` side
     - `IH` is the current in `LEG2` of the `LOW` side
     - `VH` is the voltage on the `HIGH` side
 
-    For instance when you reveive this: 
+    For instance, when you receive this: 
 
     ```c 
     0.203:1.037:1.000:0.513:2.818:2.500:0.420:14.997643
@@ -126,9 +126,8 @@ Here's sequence when the help menu is activated with `h`, the power mode is then
 
     It means that `I1 = 0.203 A`, `V1 = 1.037 V` and so on. 
 
-    If you plot your data with a python code, you should get something like the image below. You can see each voltage follow its own reference, up until saturation.   
+    If you plot your data with a Python code, you should get something like the image below. You can see each voltage follows its own reference, up until saturation.   
 
     ![result_plot](Image/result_plot.png)
-
 
 

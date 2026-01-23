@@ -1,6 +1,6 @@
-# Ac current source follower
+# AC current source follower
 
-In this example you need to have a first Twist with the [Grid Forming](../grid_forming/README.md) example.
+In this example you need to have a first TWIST with the [Grid Forming](../grid_forming/README.md) example.
 
 <div style="text-align:center"><img src="Image/schema_grid_following.png" alt="Schematic p2p" width="600"></div>
 
@@ -10,15 +10,15 @@ The parameters are:
 * $R_{LOAD} = 15 \Omega$.
 
 In the second Twist we use a software phase locked loop ( _"PLL"_ ).
-By this way we are synchronised with the grid voltage and we can then inject current
+In this way we are synchronized with the grid voltage and we can then inject current
 with a power factor of one. The current is regulated using a proportional resonant (_"PR"_)
 regulator.
 
-## Software overview 
+## Software overview
 ### Import a library
 
-the _"pll"_ and _"pr"_ are provided by the OwnTech control library which must be included 
-in the file `platfomio.ini`.
+The _"PLL"_ and _"PR"_ are provided by the OwnTech control library which must be included 
+in the file `platformio.ini`.
 
 ```
 lib_deps=
@@ -36,7 +36,7 @@ prop_res.init(params);
 The parameters are defined with these values:
 
 ```cpp
-static Pr prop_res; // controller instanciation. 
+static Pr prop_res; // controller instantiation. 
 static float32_t Kp = 0.2F;
 static float32_t Kr = 3000.0F;
 static float32_t Ts = control_task_period * 1.0e-6F;
@@ -62,7 +62,7 @@ and use it:
 pll_datas = pll.calculateWithReturn(V1_low_value - V2_low_value);
 ```
 
-The calculation return a structure with 3 fields:
+The calculation returns a structure with 3 fields:
 
 1. the pulsation `w` in [rad/s]
 2. the angle `angle` in [rad]
@@ -82,22 +82,21 @@ And then: $U_{12} = (2.\alpha - 1).U_{DC}$
 
 $\alpha = \dfrac{U_{12}}{2.U_{DC}}  + 0.5$
 
-## Retrieve recorded datas
+## Retrieve recorded data
 
-After stop i.e. in IDLE mode you can retrieve some data by pressing 'r'. It calls a
-function `dump_scope_datas()` which send to the console variables recorded during
+After stopping, i.e. in IDLE mode, you can retrieve some data by pressing `r`. It calls a
+function `dump_scope_datas()` which sends to the console variables recorded during
 the power flow phase.
 
-But before running, you have to add one line in the file `platfomio.ini`
+But before running, you have to add one line in the file `platformio.ini`
 
 ```ini
 monitor_filters = recorded_datas
 ```
 
-And you have to put the python script `filter_datas_recorded.py` in a `monitor` directory
-which must be in you parent project directory. Then the script should capture the
-console stream to put it in a txt file named `year-month-day_hour_minutes_secondes_record.txt`.
+And you have to put the Python script `filter_datas_recorded.py` in a `monitor` directory
+which must be in your parent project directory. Then the script should capture the
+console stream to put it in a TXT file named `year-month-day_hour_minutes_seconds_record.txt`.
 
-These files can be plotted using the `plot_data.py` python script if you have the
+These files can be plotted using the `plot_data.py` Python script if you have the
 `matplotlib` and `numpy` modules installed.
-

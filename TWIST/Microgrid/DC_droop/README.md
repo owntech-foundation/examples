@@ -1,4 +1,4 @@
-Title: Parallel Power Conversion Experiment - Code Example
+# Parallel Power Conversion Experiment - Code Example
 
 ## Overview
 
@@ -10,7 +10,7 @@ This code example demonstrates an experiment involving three power converters co
 - Each power converter operates in voltage control mode and performs power conversion in buck mode.
 - Individual droop factors of 1.2, 1.1, and 1.6 are programmed for the respective cards.
 
-| Connexion diagram | Microgrid structure |
+| Connection diagram | Microgrid structure |
 | ------ | ------ |
 |   <img src="Image/droop.png" alt="Droop connexion diagram">| <img src="Image/droopss.png" alt="Microgrid structure">|
 
@@ -51,4 +51,3 @@ This code example demonstrates an experiment involving three power converters co
 ## Conclusion
 
 By following the provided guidelines and uploading the code to the power cards, you can emulate and study the dynamics of parallel power conversion in buck mode. This experiment allows you to investigate the impact of varied droop factors on voltage regulation and observe how the power cards work together in parallel to provide power to the DC bus. The combination of voltage control, buck mode operation, and unique droop factors contributes to an efficient and synchronized power conversion system.
-

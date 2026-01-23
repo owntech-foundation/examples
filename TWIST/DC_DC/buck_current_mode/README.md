@@ -9,13 +9,13 @@ Peak current control mode is a technique used in DC-DC converters to regulate th
 !!! warning The Buck stops here 
     Currently current mode is only supported for **buck configuration**.
 
-!!! warning "Are you ready to start ?"
+!!! warning "Are you ready to start?"
     Before you can run this example:
     - you **must** have successfully gone through our [getting started](https://docs.owntech.org/latest/core/docs/environment_setup/).
     - ideally, you should have successfully gone through our [Voltage Mode Example](https://docs.owntech.org/latest/examples/TWIST/DC_DC/buck_voltage_mode/)  
 
 
-## Hardware setup and requirement
+## Hardware setup and requirements
 
 The circuit diagram of the board is shown in the image below.
 
@@ -27,9 +27,9 @@ The power flows from `VHigh` to `VLow`. The wiring diagram is shown in the figur
 ![wiring diagram](Image/wiring_diagram.png)
 
 
-!!! warning Hardwares pre-requisites
+!!! warning Hardware pre-requisites
     You will need:
-    - 1 twist
+    - 1 TWIST
     - A DC power supply
     - A resistor (or a DC electronic load)
 
@@ -62,8 +62,8 @@ The tasks are executed following the diagram below.
 ![Timing diagram](Image/timing_diagram.png)
 
 
-- **Communication Task** - Is awaken regularly to verify any keyboard activity
-- **Application Task** - This task is woken once its suspend is finished 
+- **Communication Task** - Is awakened regularly to verify any keyboard activity
+- **Application Task** - This task is woken once its suspension is finished 
 - **Critical Task** - This task is driven by the HRTIM count interrupt, where it counts a number of HRTIM switching frequency periods. In this case 100us, or 20 periods of the TWIST board 200kHz switching frequency set by default.
 
 
@@ -81,25 +81,25 @@ The voltage measurement `V1_low_value` and the `voltage_reference` are given to 
 When the current measurement is higher than the comparator reference, it will reset the HRTIM, bringing its output from 1 to 0.  
 
 !!! note Source material
-    We recommend you check [stm32 application note](https://www.st.com/resource/en/application_note/an5497-buck-current-mode-with-the-bg474edpow1-discovery-kit-stmicroelectronics.pdf) for more informations about current mode.
+    We recommend you check the [STM32 application note](https://www.st.com/resource/en/application_note/an5497-buck-current-mode-with-the-bg474edpow1-discovery-kit-stmicroelectronics.pdf) for more information about current mode.
 
 
 ## Expected result
 
-This code will control the output voltage to have 15V, you can control the output voltage with platformio serial monitor. The image below shows your a snippet of the window and the button to press.
+This code will control the output voltage to have 15 V. You can control the output voltage with the PlatformIO serial monitor. The image below shows you a snippet of the window and the button to press.
 
 ![serial monitor button](Image/serial_monitor_button.png)
 
-When opening it for the first time, the serial monitor will give you an initialization message regarding the parameteres of the ADCs as shown below.  
+When opening it for the first time, the serial monitor will give you an initialization message regarding the parameters of the ADCs as shown below.  
 
 ![serial monitor initialization](Image/serial_monitor_initialization.png)
 
-!!! tip Commands keys
+!!! tip Command keys
     - press `u` to increase the voltage
     - press `d` to decrease the voltage
     - press `h` to show the help menu
 
-Here's sequence where: 
+Here's the sequence where: 
 - the help menu is activated with `h`, 
 - the power mode is then activated with `p` 
 - the voltage reference is raised from `15 V` to `16 V`
@@ -119,17 +119,16 @@ Here's sequence where:
     - `V2` is the voltage in `LEG2` of the `LOW` side
     - `IpeakRef` is the current reference calculated and given to both `LEG1` and `LEG2` of the `LOW` side
 
-    For instance when you reveive this: 
+    For instance, when you receive this: 
 
     ```c 
     16.000:16.194:16.233:1.500:
     ```
 
-    It means that `voltage_ref = 16 V`, `V1 = 16.194 V`, `V2 = 16.233 V` and `peak_reference = 1.5 V`. 
+    It means that `voltage_ref = 16 V`, `V1 = 16.194 V`, `V2 = 16.233 V` and `peak_reference = 1.5 A`. 
 
-    If you plot your data with a python code, you should get something like the image below. You can see the voltages follow the reference, up until the saturation of the peak reference.   
+    If you plot your data with a Python code, you should get something like the image below. You can see the voltages follow the reference, up until the saturation of the peak reference.   
 
     ![result_plot](Image/result_plot.png)
-
 
 
