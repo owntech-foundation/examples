@@ -416,6 +416,17 @@
             "main.cpp",
             "README.md"
         ]
+    },
+    {
+        "name": "arm_without_cvb",
+        "title": "MMC arm no CVB",
+        "description": "Build a MMC arm in Open-loop control using NLM modulation.",
+        "group": "Examples TWIST",
+        "base": "TWIST/MMC/arm_without_cvb",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
     }
     ]
 }
