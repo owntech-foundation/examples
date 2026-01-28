@@ -438,6 +438,17 @@
             "main.cpp",
             "README.md"
         ]
+    },
+    {
+        "name": "mmc_module_hf_test",
+        "title": "Single MMC module HF test",
+        "description": "MMC module using a Twist board tested in high-frequency.",
+        "group": "Examples TWIST",
+        "base": "TWIST/MMC/mmc_module_hf_test",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
     }
     ]
 }
