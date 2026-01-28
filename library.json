@@ -427,6 +427,17 @@
             "main.cpp",
             "README.md"
         ]
+    },
+    {
+        "name": "mmc_module_lf_test",
+        "title": "Single MMC module LF test",
+        "description": "MMC module using a Twist board tested in low-frequency behavior for easy understanding.",
+        "group": "Examples TWIST",
+        "base": "TWIST/MMC/mmc_module_lf_test",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
     }
     ]
 }
