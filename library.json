@@ -440,7 +440,7 @@
         ]
     },
     {
-        "name": "mmc_module_lf_test",
+        "name": "mmc_module_hf_test",
         "title": "Single MMC module HF test",
         "description": "MMC module using a Twist board tested in high-frequency.",
         "group": "Examples TWIST",
