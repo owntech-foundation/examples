@@ -405,6 +405,50 @@
             "main.cpp",
             "README.md"
         ]
+    },
+    {
+        "name": "arm_with_cvb",
+        "title": "MMC arm with CVB",
+        "description": "Build a MMC arm integrating a Capacitor Voltage Balancing algorithm in Open-loop control using NLM modulation.",
+        "group": "Examples TWIST",
+        "base": "TWIST/MMC/arm_with_cvb",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "arm_without_cvb",
+        "title": "MMC arm no CVB",
+        "description": "Build a MMC arm in Open-loop control using NLM modulation.",
+        "group": "Examples TWIST",
+        "base": "TWIST/MMC/arm_without_cvb",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "mmc_module_lf_test",
+        "title": "Single MMC module LF test",
+        "description": "MMC module using a Twist board tested in low-frequency behavior for easy understanding.",
+        "group": "Examples TWIST",
+        "base": "TWIST/MMC/mmc_module_lf_test",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
+    },
+    {
+        "name": "mmc_module_lf_test",
+        "title": "Single MMC module HF test",
+        "description": "MMC module using a Twist board tested in high-frequency.",
+        "group": "Examples TWIST",
+        "base": "TWIST/MMC/mmc_module_hf_test",
+        "files": [
+            "main.cpp",
+            "README.md"
+        ]
     }
     ]
 }
