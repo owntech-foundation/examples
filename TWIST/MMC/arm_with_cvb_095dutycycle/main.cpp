@@ -984,7 +984,7 @@ void loop_critical_task()
                 {
                     change_state_command = false; // Reset the flag
                 }
-                shield.power.setDutyCycle(LEG1,1.0);
+                shield.power.setDutyCycle(LEG1,0.95);
                 if (!pwm_enable)
                 {
                     pwm_enable = true;

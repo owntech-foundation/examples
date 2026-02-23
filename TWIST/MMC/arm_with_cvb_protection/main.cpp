@@ -676,14 +676,12 @@ void reception_function(void)
             /* Verifies overvoltage protection criteria */
             if(Cap_voltage > overvoltage_tolerance)
             {
-                // mmc_frame_set_status_code(dataTX_mmc, OVER_VOLTAGE);
-                mmc_frame_set_status_code(dataTX_mmc, POWER);
+                mmc_frame_set_status_code(dataTX_mmc, OVER_VOLTAGE);
             }
             /* Verifies overcurrent protection criteria */
             else if(Arm_current > overcurrent_tolerance)
             {
-                // mmc_frame_set_status_code(dataTX_mmc, OVER_CURRENT);
-                mmc_frame_set_status_code(dataTX_mmc, POWER);
+                mmc_frame_set_status_code(dataTX_mmc, OVER_CURRENT);
             }
             else{
                 mmc_frame_set_status_code(dataTX_mmc, POWER);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-present LAAS-CNRS
+ * Copyright (c) 2021-present LAAS-CNRS
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published by
@@ -18,7 +18,7 @@
  */
 
 /**
- * @brief  This example deploys the open-loop control of a MMC arm integrating a Capacitor Voltage Balancing algorithm. 
+ * @brief  This example shows how to a MMC arm works by blinking the onboard LED of the Spin board of the arm modules.
  *         This research was funded in whole by the French National Research Agency (ANR) under the project CARROTS "ANR-24-CE05-0920-01".
  *
  * @author Ayoub Farah Hassan <ayoub.farah-hassan@laas.fr>
@@ -83,16 +83,29 @@ constexpr float32_t overcurrent_tolerance = 8.0F; //[A] Set overcurrent toleranc
 /* -------------- BOARD IDENTIFICATION ----------------------- */
 
 constexpr uint32_t UID_MMC_LEAD_BOARD = 0x002B002A;
-constexpr uint32_t UID_MMC_SM1_BOARD = 0x00330054;
+constexpr uint32_t UID_MMC_SM1_BOARD = 0x0031001B;
 constexpr uint32_t UID_MMC_SM2_BOARD = 0x0033004B;
 constexpr uint32_t UID_MMC_SM3_BOARD = 0x00330049;
 constexpr uint32_t UID_MMC_SM4_BOARD = 0x0033004C;
-constexpr uint32_t UID_MMC_SM5_BOARD = 0x0031001B;
-constexpr uint32_t UID_MMC_SM6_BOARD = 0x11118888;
-constexpr uint32_t UID_MMC_SM7_BOARD = 0x11119999;
-constexpr uint32_t UID_MMC_SM8_BOARD = 0x1111AAA0;
-constexpr uint32_t UID_MMC_SM9_BOARD = 0x1111BBB1;
-constexpr uint32_t UID_MMC_SM10_BOARD = 0x1111CCC2;
+constexpr uint32_t UID_MMC_SM5_BOARD = 0x00330054;
+constexpr uint32_t UID_MMC_SM6_BOARD = 0x11119999;
+constexpr uint32_t UID_MMC_SM7_BOARD = 0x1111AAA0;
+constexpr uint32_t UID_MMC_SM8_BOARD = 0x1111BBB1;
+constexpr uint32_t UID_MMC_SM9_BOARD = 0x1111CCC2;
+constexpr uint32_t UID_MMC_SM10_BOARD = 0x1111CCC3;
+
+
+// constexpr uint32_t UID_MMC_LEAD_BOARD = 0x002B002A;
+// constexpr uint32_t UID_MMC_SM1_BOARD = 0x00330054;
+// constexpr uint32_t UID_MMC_SM2_BOARD = 0x0033004B;
+// constexpr uint32_t UID_MMC_SM3_BOARD = 0x00330049;
+// constexpr uint32_t UID_MMC_SM4_BOARD = 0x0033004C;
+// constexpr uint32_t UID_MMC_SM5_BOARD = 0x0031001B;
+// constexpr uint32_t UID_MMC_SM6_BOARD = 0x11118888;
+// constexpr uint32_t UID_MMC_SM7_BOARD = 0x11119999;
+// constexpr uint32_t UID_MMC_SM8_BOARD = 0x1111AAA0;
+// constexpr uint32_t UID_MMC_SM9_BOARD = 0x1111BBB1;
+// constexpr uint32_t UID_MMC_SM10_BOARD = 0x1111CCC2;
 
 static uint32_t read_board_uid()
 {
@@ -552,6 +565,15 @@ static float32_t modulation_signal_lower;
 
 LowPassFirstOrderFilter i_low_filter(Ts, 180e-6F);
 static float32_t i_lowfilter_value;
+
+/* Oscillations treatment */
+static float32_t duty_cycle = 1.0; // Duty cycle to be used during connected states
+static float32_t duty_cycle_ramp_up[4] = {0.25,0.5,0.75,0.95}; // Duty cycle ramp in 4 levels to reduce oscillations
+static float32_t duty_cycle_ramp_down[4] = {0.75,0.5,0.25,0.0}; // Duty cycle ramp in 4 levels to reduce oscillations
+// static float32_t duty_cycle_ramp_up[12] = {0.25,0.25,0.25,0.5,0.5,0.5,0.75,0.75,0.75,0.95,0.95,0.95}; // Duty cycle ramp in 4 levels to reduce oscillations
+// static float32_t duty_cycle_ramp_down[12] = {0.75,0.75,0.75,0.5,0.5,0.5,0.25,0.25,0.25,0.0,0.0,0.0}; // Duty cycle ramp in 4 levels to reduce oscillations
+uint32_t duty_cycle_counter = 0;
+
 /* --------------SETUP FUNCTIONS------------------------------- */
 
 /* Function to control the LEDs in the low level */
@@ -970,11 +992,11 @@ void loop_critical_task()
         }
         else
         {
-            
             /* Verifies if command to be ON or OFF changed */
             if (module_comand != module_command_past)
             {
                 change_state_command = true; // Set the flag to change the state
+                duty_cycle_counter = 0;
             }
 
             /* Sets LED ON if gate command is 1 or OFF if gate command is 0 */
@@ -984,12 +1006,18 @@ void loop_critical_task()
                 {
                     change_state_command = false; // Reset the flag
                 }
-                shield.power.setDutyCycle(LEG1,1.0);
+                if (duty_cycle_counter < 4)
+                {
+                    duty_cycle = duty_cycle_ramp_up[duty_cycle_counter];
+                    duty_cycle_counter++;
+                }
+                shield.power.setDutyCycle(LEG1,duty_cycle);
                 if (!pwm_enable)
                 {
                     pwm_enable = true;
                     shield.power.start(LEG1);
                 }
+                
             }
             else if (module_comand == 2)
             {
@@ -1002,6 +1030,7 @@ void loop_critical_task()
                     shield.power.stop(ALL);
                 }
                 pwm_enable = false;
+                
             }
             else
             {
@@ -1009,7 +1038,12 @@ void loop_critical_task()
                 {
                     change_state_command = false; // Reset the flag
                 }
-                shield.power.setDutyCycle(LEG1,0.0);
+                if (duty_cycle_counter < 4)
+                {
+                    duty_cycle = duty_cycle_ramp_down[duty_cycle_counter];
+                    duty_cycle_counter++;
+                }
+                shield.power.setDutyCycle(LEG1,duty_cycle);
                 if (!pwm_enable)
                 {
                     pwm_enable = true;
