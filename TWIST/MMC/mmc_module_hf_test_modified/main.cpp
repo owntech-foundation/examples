@@ -291,7 +291,7 @@ void loop_application_task()
 void loop_critical_task()
 {
     meas_data = shield.sensors.getLatestValue(I1_LOW);
-    if (meas_data != NO_VALUE) I1_low_value = meas_data;
+    if (meas_data != NO_VALUE) I1_low_value = -meas_data;
     
     meas_data = shield.sensors.getLatestValue(V1_LOW);
     if (meas_data != NO_VALUE) V1_low_value = meas_data;
@@ -342,16 +342,22 @@ void loop_critical_task()
         {
             g = seq_ON_OFF[ONOFF_index];
         }
-        if(seq_timer >= decalage_source + 0.38) // BLOCK
+        if(seq_timer >= 0.38) // BLOCK
         {
             g=2;
             counter_ONOFF = 0;
-            if (V1_low_value < udc/2) // If VDC is TURNED OFF, pass to second part of the sequence
+        }
+        if(seq_timer >= 0.45) // BLOCK
+        {
+            g=2;
+            counter_ONOFF = 0;
+            if (I1_low_value < I_on) // If VDC is TURNED OFF, pass to second part of the sequence
             {
                 mode = SECONDSEQUENCEMODE;
                 seq_timer = 0.45;
             }
         }
+
         
         if(g == 0) // SM is off
         {

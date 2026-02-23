@@ -108,7 +108,7 @@ static uint32_t critical_task_timer = 0;
 static const float32_t decalage_source = 0;
 static bool Vsource_turnoff_indicator = false;
 static bool Vsource_ON_once_indicator = false;
-static float32_t udc = 20.0; // VDC value on the module test
+static float32_t I_on = 0.5; // Current value when VDC is still ON
 
 /*--------------------------------------------------------------- */
 
@@ -290,7 +290,7 @@ void loop_critical_task()
 {
     
     meas_data = shield.sensors.getLatestValue(I1_LOW);
-    if (meas_data != NO_VALUE) I1_low_value = meas_data;
+    if (meas_data != NO_VALUE) I1_low_value = -meas_data;
     
     meas_data = shield.sensors.getLatestValue(V1_LOW);
     if (meas_data != NO_VALUE) V1_low_value = meas_data;
@@ -351,7 +351,12 @@ void loop_critical_task()
         if(seq_timer >= 0.2) // OFF
         {
             g=0;
-            if (V1_low_value < udc/2) // If VDC is TURNED OFF, pass to second part of the sequence
+
+        }
+        if(seq_timer >= 0.45) // OFF
+        {
+            g=0;
+            if (I1_low_value < I_on) // If VDC is TURNED OFF, pass to second part of the sequence
             {
                 mode = SECONDSEQUENCEMODE;
                 seq_timer = 0.45;
