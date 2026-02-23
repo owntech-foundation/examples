@@ -351,13 +351,12 @@ void loop_critical_task()
         {
             g=2;
             counter_ONOFF = 0;
-            if (I1_low_value < I_on) // If VDC is TURNED OFF, pass to second part of the sequence
+            if (V1_low_value < 10.0) // If VDC is TURNED OFF, pass to second part of the sequence
             {
                 mode = SECONDSEQUENCEMODE;
                 seq_timer = 0.45;
             }
         }
-
         
         if(g == 0) // SM is off
         {
@@ -414,7 +413,7 @@ void loop_critical_task()
     else if (mode == SECONDSEQUENCEMODE)
     {
         
-        if(seq_timer >= 0.38) // BLOCK
+        if(seq_timer >= 0.38 && seq_timer < 0.8) // BLOCK
         {
             g=2;
             counter_ONOFF = 0;
