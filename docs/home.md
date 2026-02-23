@@ -170,41 +170,6 @@ Get on track using featured examples :
 
 </div>
 
-## Browse MMC examples
------------
-
-
-<div class="grid cards" markdown>
-
--   :fontawesome-solid-lightbulb:{ .lg .middle } __Blinky MMC arm__
-
-    ---
-
-    Fast MMC arm using only leds 
-
-    [:octicons-arrow-right-24: Blinky MMC ](https://docs.owntech.org/latest/examples/TWIST/MMC/blinky_mmc_arm/)    
-
-
-
--   :fontawesome-solid-scale-balanced:{ .lg .middle } __CVB control__
-
-    ---
-    
-    Introduction to MMC control
-
-    [:octicons-arrow-right-24: MMC CVB control ](https://docs.owntech.org/latest/examples/TWIST/MMC/cvb_control/)  
-
--   :fontawesome-puzzle-piece:{ .lg .middle } __Single MMC module__
-
-    ---
-
-    Reproduce a MMC module using one Twist board ! 
-
-    [:octicons-arrow-right-24: MMC module ](https://docs.owntech.org/latest/examples/TWIST/MMC/single_module_mmc/)    
-
-
-</div>
-
 ## Browse OWNVERTER examples
 -----------
 

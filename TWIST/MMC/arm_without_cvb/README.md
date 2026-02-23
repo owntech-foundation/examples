@@ -1,2 +1,0 @@
-# MMC arm - without CVB
-
