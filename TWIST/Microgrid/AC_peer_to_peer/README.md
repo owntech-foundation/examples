@@ -22,17 +22,17 @@ A **proportional resonant** is used to keep the input alternative current in pha
 ![twist](Image/schema_P2P_TWIST.png)
 
 
-You will need :
+You will need:
 
-- Two Twist
+- Two TWIST boards
 - A **50V** DC power supply (input voltage for the inverter)
-- A **6V** DC power supply (external sensors/drivers suply for the synchronous rectifier)
+- A **6 V** DC power supply (external sensors/drivers supply for the synchronous rectifier)
 - A **115Ω** resistive load
--  A RJ45 cable
+- An RJ45 cable
 
 It is important to check that the boards you are using have the correct voltage and current measures since they'll be used to compute the duty cycle.
 
-## Instruction to flash the code, and view some results
+## Instructions to flash the code, and view some results
 
 
 ### To flash the code
@@ -42,14 +42,14 @@ This example depends on two libraries:
 1. control_library
 2. ScopeMimicry
 
-To use them, you have to add the following lines in platformio.ini file:
+To use them, you have to add the following lines in the `platformio.ini` file:
 ```
 lib_deps=
     control_library = https://github.com/owntech-foundation/control_library.git
     scope = https://github.com/owntech-foundation/scopemimicry.git 
 ```
 
-In src/main.cpp at the line n. 48 you have a macro that defines wether you are flashing the inverter or the synchronous rectifier.
+In `src/main.cpp` at line 48 you have a macro that defines whether you are flashing the inverter or the synchronous rectifier.
 
 To flash the inverter, choose :
 
@@ -63,18 +63,18 @@ To flash the synchronous rectifier, choose :
 #define CONSUMER
 ```
 
-Here P_ref = 20W to have a 14V output DC voltage. You can change this value in line 87 of src/main.cpp file.
+Here P_ref = 20 W to have a 14 V output DC voltage. You can change this value on line 87 of the `src/main.cpp` file.
 
 After that, connect to the inverter serial monitor and press `p` to start power flow. Press `i` to stop.
 
-### To view some variables.
+### To view some variables
 While running, press `t` to trigger the scope.
-After stop i.e. in IDLE mode you can retrieve some data by pressing `r`. 
+After stopping, i.e. in IDLE mode, you can retrieve some data by pressing `r`. 
 
 
 ## Expected results
 
-If everything goes well you'll have 47V delivered to the resistor.
+If everything goes well, you'll have 47 V delivered to the resistor.
 
 Here are some results for Vdc and Idc :
 ![DC side result](Image/P2P-DCside_m.png)
@@ -84,6 +84,6 @@ And for Vac and Iac :
 ![AC side result](Image/P2p-AcSide_m.png)
 
 
-By using the python script you can also watch MCU internal variables :
+By using the Python script you can also watch MCU internal variables:
 
 ![MCU values](Image/ADC_result_P2P.png)

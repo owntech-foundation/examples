@@ -1,20 +1,20 @@
-# Blinking a led
+# Blinking an LED
 
-Here is a simple example to start with SPIN : making a led blink.
+Here is a simple example to start with SPIN: making an LED blink.
 
 ## Hardware setup and requirements
 
 ![Schematic](Image/schema.png)
 *figure 1*
 
-You will need : 
+You will need: 
 
-- 1 spin
-- A usb-c cable to supply power to the spin, and also upload the code from computer
+- 1 SPIN
+- A USB-C cable to supply power to the SPIN, and also upload the code from a computer
 
 ## Software setup
 
-The led is toggled in the background task called each 1s, which means the leed will blink at the rate of 1s : 
+The LED is toggled in the background task called every 1 s, which means the LED will blink at the rate of 1 s. 
 
 ```cpp
     spin.led.toggle();
@@ -22,4 +22,4 @@ The led is toggled in the background task called each 1s, which means the leed w
 
 ## Expected result 
 
-Visual result : the led should turn on and off. 
+Visual result: the LED should turn on and off. 

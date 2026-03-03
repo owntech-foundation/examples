@@ -1,17 +1,17 @@
 # Burst mode PWM
 
-Burst mode is an Advanced PWM capability. In few words, instead of generating a continuous stream of pulses, burst mode sends groups of PWM (Pulse Width Modulation) signals at regular intervals. This method reduces energy consumption, minimizes heat generation, and is especially useful in applications like motor control, LED dimming, and power supplies.
+Burst mode is an advanced PWM capability. In a few words, instead of generating a continuous stream of pulses, burst mode sends groups of PWM (Pulse Width Modulation) signals at regular intervals. This method reduces energy consumption, minimizes heat generation, and is especially useful in applications like motor control, LED dimming, and power supplies.
 
-In power electronics, Burst mode PWM is used two reduce losses under light load conditions
-In this example we'll show you how to setup burst mode for two phase shifted H-bridges.
-It could be used to control a Dual Active Bridge (DAB) in Single Phase Shift modulation modulation under light load conditions.
+In power electronics, burst mode PWM is used to reduce losses under light load conditions.
+In this example we'll show you how to set up burst mode for two phase-shifted H-bridges.
+It could be used to control a Dual Active Bridge (DAB) in Single Phase Shift modulation under light load conditions.
 
 ## Hardware setup and requirements
 
-You will need :
+You will need:
 
-- A spin
-- A usb-c cable to supply the spin
+- A SPIN
+- A USB-C cable to supply the SPIN
 - An oscilloscope to observe PWM waveform
 
 PWMs can be observed on:
@@ -24,7 +24,7 @@ PWMs can be observed on:
 
 During initialization:
 
-- The frequency for the pwm is set to 200kHz, you are free to choose another value.
+- The frequency for the PWM is set to 200 kHz, you are free to choose another value.
 - PWMA and PWMC for the first H-bridge.
 - PWME and PWMF for the second H-bridge.
 
@@ -41,7 +41,7 @@ During initialization:
     spin.pwm.initUnit(PWMF);
 ```
 
-- All PWM are initialized in phase.
+- All PWMs are initialized in phase.
 
 ```cpp
     /* Set initial phase shifts*/
@@ -52,8 +52,8 @@ During initialization:
 
 Burst mode initialization:
 
-- Burst mode duty is set to 8. It means that PWM output will be void during 8 PWM events
-- Burst mode Period is set to 10. It means that PWM output will be off for 8 PWM event every 10 PWM events.
+- Burst mode duty is set to 8. It means that PWM output will be off during 8 PWM events.
+- Burst mode period is set to 10. It means that PWM output will be off for 8 PWM events every 10 PWM events.
 
 ```cpp
 uint8_t burst_duty = 8;
@@ -80,11 +80,11 @@ You can control the burst mode period from the serial monitor :
 - press `t` to increase the burst mode period
 - press `y` to decrease the burst mode period
 
-On the oscilloscope you should observe
+On the oscilloscope you should observe:
 
 - That PWMs are ON only **two periods out of ten**
 - That you can control the burst duty and period to change the number of active PWM periods
-- That you can control the second H-bridge (PWME and PWMF) phase shift from the first H-bridge (PWMA PWMC)
+- That you can control the second H-bridge (PWME and PWMF) phase shift from the first H-bridge (PWMA, PWMC)
 
 **NB:**
 
