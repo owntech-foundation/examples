@@ -2,15 +2,15 @@
 
 Measuring current ripple can be useful to understand if the converter is operating correctly. However, it requires an oscilloscope and a special type of probe, making it difficult to achieve. 
 
-In this example will use the embedded HAL sensor of the Twist board and multiply its time resolution by 400. To do so we will keep the converter in a stable operating condition and perform a sweep on the current measurement trigger moment. The procedure will be explained in more detail below.
+In this example, we will use the embedded Hall sensor of the Twist board and multiply its time resolution by 400. To do so we will keep the converter in a stable operating condition and perform a sweep on the current measurement trigger moment. The procedure will be explained in more detail below.
 
-We will work in open loop and at a fixed duty cyle.
+We will work in open loop and at a fixed duty cycle.
 
 !!! warning 
     This is a very advanced example. Please take your time to execute it.
 
 
-## Hardware setup and requirement
+## Hardware setup and requirements
 
 The circuit diagram of the board is shown in the image below.
 
@@ -23,10 +23,10 @@ The power flows from `VHigh` to `VLow`. The wiring diagram is shown in the figur
 
 
 !!! warning Hardware pre-requisites 
-    You will need :
+    You will need:
     - 1 TWIST
-    - A dc power supply (20-60V)
-    - A resistor (or a dc electronic load)
+    - A DC power supply (20-60 V)
+    - A resistor (or a DC electronic load)
 
 
 ## Main Structure
@@ -79,7 +79,7 @@ The code structure is as follows:
             break;
     ```
 
-- **Application Task** - Handles the `MODE`, activates the LED and prints data on the serial port. It calls the data dump if the trigger retrieve has been activated.
+- **Application Task** - Handles the `MODE`, activates the LED and prints data on the serial port. It calls the data dump if the trigger retrieval has been activated.
 
 - **Critical Task** - Handles the `MODE`, sets power ON/OFF, it updates the `duty_cycle` of both legs and it handles the current measurement trigger sweep. 
     The trigger sweep is performed with the following code:
@@ -109,8 +109,8 @@ The tasks are executed following the diagram below.
 ![Timing diagram](Image/timing_diagram.svg)
 
 
-- **Communication Task** - Is awaken regularly to verify any keyboard activity
-- **Application Task** - This task is woken once its suspend is finished 
+- **Communication Task** - Is awakened regularly to verify any keyboard activity
+- **Application Task** - This task is woken once its suspension is finished 
 - **Critical Task** - This task is driven by the HRTIM count interrupt, where it counts a number of HRTIM switching frequency periods. In this case 100us, or 20 periods of the TWIST board 200kHz switching frequency set by default.
 
 ### Control diagram
@@ -126,12 +126,12 @@ In this example you will need to dig deeper in the code to properly observe the 
 
 ### Change the modulation type.
 
-To rebuild the current waveform, we will use the `trig_ratio` variable to will peform a sweep on the moment the measurement is done in comparison with the carrier ramp. The image below illustrate how these changes are made for three different measurement instants. Notice the duty cycle is constant. 
+To rebuild the current waveform, we will use the `trig_ratio` variable to perform a sweep on the moment the measurement is done in comparison with the carrier ramp. The image below illustrates how these changes are made for three different measurement instants. Notice the duty cycle is constant. 
 
 ![Measurement sweep](Image/left_aligned_ADC_sweep.gif)
 
 
-!!! warning We have a problem 
+!!! warning We have a problem
 
     By default, the Twist boards operate in the `Center_Aligned` mode. Its carrier is different as shown in the image below. 
 
@@ -192,7 +192,7 @@ In the `zephyr/boards/shields/twist/twist_v1_4_1.overlay`, change modulation as 
 
 Build the code and upload it to your Twist board.
 
-!!! tip Finger in the trigger    
+!!! tip Finger on the trigger
 
     To capture the current ripple you have to follow these steps:
     - press the **`p`** key to go in `POWER_MODE`
@@ -220,7 +220,7 @@ In the code there's some parameters you can change:
 
 ## Plot the results
 
-Your `.png` file is used for a quick analysis of the results. For a better experience, you can plot the data using a platformio action. 
+Your `.png` file is used for a quick analysis of the results. For a better experience, you can plot the data using a PlatformIO action. 
 
 Follow these steps as in the image below: 
 - Click on the alien

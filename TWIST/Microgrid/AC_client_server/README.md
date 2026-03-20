@@ -18,28 +18,28 @@ The CLIENT inverter receives the current reference and frequency signals from th
 
 ![TWIST Schema](Image/schema_MS_TWIST.png)
 
-you will need :
+You will need:
 
-- Two Twist
+- Two TWIST boards
 - A **40V** DC power supply
 - A **30Ω** resistive load
-- A RJ45 cable
+- An RJ45 cable
 
-## Instruction to flash the code, and use python script
+## Instructions to flash the code, and use the Python script
 
 This example depends on two libraries:
 
 1. control_library
 2. ScopeMimicry
 
-To use them, you have to add the following lines in platformio.ini file:
+To use them, you have to add the following lines in the `platformio.ini` file:
 ```
 lib_deps=
     control_library = https://github.com/owntech-foundation/control_library.git
     scope = https://github.com/owntech-foundation/scopemimicry.git 
 ```
 
-In src/main.cpp at the line n. 48 you have a macro that defines wether you are flashing the server or the client.
+In `src/main.cpp` at line 48 you have a macro that defines whether you are flashing the server or the client.
 
 To flash the server, choose :
 
@@ -61,28 +61,28 @@ There is also a current gain to control the current reference sent to the CLIENT
 tx_data.consigne.Iref_fromSERVER = k_gain*I1_low_value;
 ```
 
-This allows you to increase or deacrese the current of the CLIENT. To increase the current gain, in the serial monitor press `l` to decrease it press `m`.
+This allows you to increase or decrease the current of the CLIENT. To increase the current gain, in the serial monitor press `l`; to decrease it press `m`.
 
-### To view some variables.
-After stop i.e. in IDLE mode you can retrieve some data by pressing 'r'. It calls a
-function `dump_scope_datas()` which send to the console variables recorded during
+### To view some variables
+After stopping, i.e. in IDLE mode, you can retrieve some data by pressing `r`. It calls a
+function `dump_scope_datas()` which sends to the console variables recorded during
 the power flow phase.
 
-But before running, you have to add one line in the file `platfomio.ini`
+But before running, you have to add one line in the file `platformio.ini`
 
 ```ini
 monitor_filters = recorded_datas
 ```
 
-And you have put the python script `filter_datas_recorded.py` in a `monitor` directory
-which must be in you parent project directory. Then the script should capture the
-console stream to put it in a txt file named `year-month-day_hour_minutes_secondes_record.txt`.
+And you have to put the Python script `filter_datas_recorded.py` in a `monitor` directory
+which must be in your parent project directory. Then the script should capture the
+console stream to put it in a TXT file named `year-month-day_hour_minutes_seconds_record.txt`.
 
-These files can be plotted using the `plot_data.py` python script if you have the
+These files can be plotted using the `plot_data.py` Python script if you have the
 `matplotlib` and `numpy` modules installed.
 
 ## Expected result
 
-If you set up correctly the project, you should have server and client output current in phase together.
+If you set up the project correctly, you should have server and client output current in phase together.
 
 ![Result](Image/SC_result.png)

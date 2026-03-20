@@ -1,22 +1,22 @@
 # Scope simple example
 
-The scope is a powerful tool to inspect electric signals is real time. In this example we will visualize a simple step response of `LEG1` PID.
+The scope is a powerful tool to inspect electric signals in real time. In this example we will visualize a simple step response of the `LEG1` PID.
 
 This example will implement a voltage mode buck converter to control the output.
 
-!!! warning "Are you ready to start ?"
+!!! warning "Are you ready to start?"
     Before you can run this example, you must have successfully gone through our [getting started](https://docs.owntech.org/latest/core/docs/environment_setup/).  
 
-## Hardware setup and requirement
+## Hardware setup and requirements
 
 
 ![schema](Image/buck_m.png)
 
 !!! warning Hardware pre-requisites 
-    You will need :
+    You will need:
     - 1 TWIST
-    - A dc power supply (20-60V)
-    - A resistor (or a dc electronic load)
+    - A DC power supply (20-60 V)
+    - A resistor (or a DC electronic load)
 
 ## Software setup
 
@@ -36,19 +36,19 @@ The data to be saved to the scope is structured in the `setup_routine`.
     scope.start();
 
 ```
-Where the voltages and currents of `LEG1` and `LEG2`, the `duty_cycle` and the `V_HIGH` are going to be saved. The delay to apply the trigger is of 20% of all the measurements. 
+Where the voltages and currents of `LEG1` and `LEG2`, the `duty_cycle` and the `V_HIGH` are going to be saved. The delay to apply the trigger is 20% of all the measurements. 
 
 ## Expected result
 
-This code will control the output voltage to have 15V, you can control the output voltage with platformio serial monitor. The image below shows your a snippet of the window and the button to press.
+This code will control the output voltage to have 15 V. You can control the output voltage with the PlatformIO serial monitor. The image below shows you a snippet of the window and the button to press.
 
 ![serial monitor button](Image/serial_monitor_button.png)
 
-When opening it for the first time, the serial monitor will give you an initialization message regarding the parameteres of the ADCs as shown below.  
+When opening it for the first time, the serial monitor will give you an initialization message regarding the parameters of the ADCs as shown below.  
 
 ![serial monitor initialization](Image/serial_monitor_initialization.png)
 
-!!! tip Commands keys
+!!! tip Command keys
     - press `u` to increase the voltage
     - press `d` to decrease the voltage
     - press `a` to increase the voltage step to be applied
@@ -71,7 +71,6 @@ When opening it for the first time, the serial monitor will give you an initiali
     - `V2` is the voltage in `LEG2` of the `LOW` side
     - `IH` is the current in `LEG2` of the `LOW` side
     - `VH` is the voltage on the `HIGH` side
-    - `VREF` is the reference voltage set for `LEG1` and `LEG2`vof the `LOW` side which is applied during `POWER` mode.
+    - `VREF` is the reference voltage set for `LEG1` and `LEG2` of the `LOW` side which is applied during `POWER` mode.
     - `VSTEP` is the size of the voltage step to be applied for the test. 
-
 
