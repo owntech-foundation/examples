@@ -12,16 +12,16 @@ This code example demonstrates a current control experiment utilizing analog com
 - Compensation control is utilized to equilibrate current between different legs of the system. [compensation control](https://gitlab.laas.fr/afarahhass/Test-Controle/-/tree/main_CurrentMode_EqulibrateCurrent)
 
 
-| Connexion diagram | Microgrid structure |
+| Connection diagram | Microgrid structure |
 | ------ | ------ |
 | ![schema_com](Image/Analogique.png) | ![schema_com](Image/Maitre.png)|
 
 
 To run this example you would need:
-1. a Voltage Source fixed at ~30V 
-2. 2 Twist boards 
+1. a voltage source fixed at ~30 V 
+2. 2 TWIST boards 
 3. 1 RJ45 cable to make the communication link between boards.
-4. A variable resistive load between approximatively 6 and 12 Ohm.
+4. A variable resistive load between approximately 6 and 12 ohms.
 
 ## Communication Modules
 
@@ -44,7 +44,7 @@ Synchronization modules ensure that PWM signals are aligned and coordinated betw
 
    Replace this macro with one of the following options based on the board you are flashing:
 
-   For a `AUXILIARY` board:
+   For an `AUXILIARY` board:
    ```cpp
    #define AUXILIARY
    ```
@@ -69,5 +69,4 @@ Synchronization modules ensure that PWM signals are aligned and coordinated betw
 ## Conclusion
 
 This code example showcases a current control experiment that employs analog communication between a `MAIN` board and multiple `AUXILIARY` boards. By following the provided instructions and flashing the appropriate code, you can simulate and observe the regulation and synchronization of current injection into an electrical network. The combination of voltage control, current control, analog communication, and synchronization modules results in an efficient and coordinated system for current regulation.
-
 

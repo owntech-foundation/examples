@@ -10,22 +10,22 @@ Here is a detailed explanation of the six sectors and the switching sequence for
 
 The six sectors are determined based on the Hall effect sensor outputs, which change as the rotor rotates. The Hall sensors provide three signals (H1, H2, H3), which can be interpreted as a 3-bit binary code. Each unique combination of these signals corresponds to one of the six sectors.
 
-In code this is done with :  
+In code, this is done with:  
 
 ``` hall_state = hall1_value + 2 * hall2_value + 4 * hall3_value; ```  
 
 Note that this should be adapted depending on the way phases and hall effect sensors are connected to the inverter. It might be necessary to permute the hall
 values to run the motor correctly.  
 
-### Controling the motor
+### Controlling the motor
 
-In each sequence we supply only two windings using two legs of the ownverter.
-Then if for example we supply phase A and B, the associate phase to phase voltage will
+In each sequence we supply only two windings using two legs of the OWNVERTER.
+Then, for example, if we supply phase A and B, the associated phase-to-phase voltage will
 be:
 
 $U_{AB} = (2.\textsf{duty\\\_cycle} - 1). U_{dc}$
 
-In this example duty_cycle can be increased or lowered by pressing `u` and `d` in the serial monitor. 
+In this example, duty_cycle can be increased or lowered by pressing `u` and `d` in the serial monitor. 
 It should directly affect motor speed.
 
 ### Commutation Sequence

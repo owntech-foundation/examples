@@ -2,17 +2,17 @@
 
 An incremental encoder is a device that converts mechanical motion into digital signals. It typically consists of a rotating disk with evenly spaced slots and a sensor that detects these slots as the disk turns. The sensor generates electrical pulses corresponding to the motion, which can be used to track position, speed, or direction.
 
-in this example we'll see how to use an incremental encoder with spin.
+In this example we'll see how to use an incremental encoder with SPIN.
 
 
-## Hardware setup and requirement
+## Hardware setup and requirements
 
 ![schema](Image/spin_wiring_diagram.drawio)
 
-You will need :
+You will need:
 
-- A spin
-- A usb-c cable to supply the spin
+- A SPIN
+- A USB-C cable to supply the SPIN
 - A rotary incremental encoder
 - A 5V supply for your incremental encoder
 
@@ -42,6 +42,6 @@ This value is displayed in the serial monitor.
 
 ## Expected result
 
-You should see the value in the serial monitor either increasing or decresing depending on how you turning the rotary incremental encoder (clokc-wise or not).
+You should see the value in the serial monitor either increasing or decreasing depending on how you are turning the rotary incremental encoder (clockwise or not).
 
-Every turn your values should be reset to a reference value that will depend on your encoder. 
+Every turn, your values should be reset to a reference value that will depend on your encoder. 

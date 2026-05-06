@@ -1,13 +1,13 @@
 # Open Loop PWM
 
-The goal of this basic example is to understand what is a duty cycle and how it is related to power flow. We will use our TWIST as a buck converter in an open-loop to divide our voltage by 2.
+The goal of this basic example is to understand what a duty cycle is and how it is related to power flow. We will use our TWIST as a buck converter in open loop to divide our voltage by 2.
 
-!!! warning "Are you ready to start ?"
+!!! warning "Are you ready to start?"
 
-    Before you can run this example, you must have : 
+    Before you can run this example, you must have: 
     
     - successfully gone through our [getting started](https://docs.owntech.org/latest/core/docs/environment_setup/) tutorial to set up your work environment
-    - successfully gone through our [first example](https://docs.owntech.org/latest/core/docs/first_example/) tutorial and download the "Open Loop PWM" example 
+    - successfully gone through our [first example](https://docs.owntech.org/latest/core/docs/first_example/) tutorial and downloaded the "Open Loop PWM" example 
 
 
 ## Background
@@ -15,9 +15,9 @@ The goal of this basic example is to understand what is a duty cycle and how it 
 
 ### What is a PWM ?
 
-PWM or Pulse-Width-Modulation is based on the idea that a periodic (repetitive) logic signal (ON/OFF or 0/1) can have its width changed over time. This is shown on the three images below, where you can see the width of the $T_{ON}$ changing from `25%` to `75%` of the total period.
+PWM, or Pulse-Width Modulation, is based on the idea that a periodic (repetitive) logic signal (ON/OFF or 0/1) can have its width changed over time. This is shown on the three images below, where you can see the width of the $T_{ON}$ changing from `25%` to `75%` of the total period.
 
-As shown in [](#fig-duty-25), the duty cycle is `25%` of the total time (`T`), is called `period`. 
+As shown in [](#fig-duty-25), the duty cycle is `25%` of the total time (`T`), which is called the period. 
 
 ![Representation of a duty cycle of 25%](Image/duty_cycle_025_light.svg#only-light){ #fig-duty-25 width=500}
 ![Representation of a duty cycle of 25%](Image/duty_cycle_025_dark.svg#only-dark){ #fig-duty-25 width=500 }
@@ -65,7 +65,7 @@ In power electronics, switching between transistors is NOT instantaneous. To avo
 
 The deadtime can be of three formats: zero, positive or negative.
 
-In zero deadtime, both PWM signal switches **simultaneouly** as shown in [] 
+In zero deadtime, both PWM signal switches **simultaneously** as shown in [] 
 
 ![No deadtime of a PWM signal](Image/no_deadtime_light.svg#only-light){ #fig-no-deadtime width=500}
 ![No deadtime of a PWM signal](Image/no_deadtime_dark.svg#only-dark){ #fig-no-deadtime width=500}
@@ -79,7 +79,7 @@ In zero deadtime, both PWM signal switches **simultaneouly** as shown in []
 The length of the deadtime in either the rising or falling edges depends on the application.   
 
 
-## Hardware setup and requirement
+## Hardware setup and requirements
 -----------
 
 ### Circuit diagram
@@ -106,13 +106,13 @@ The wiring diagram is shown in [](#fig-wiring).
 ![The wiring diagram of this example setup (click to zoom)](Image/wiring_diagram_light.svg#only-light){ #fig-wiring width=full .on-glb}
 ![The wiring diagram of this example setup (click to zoom)](Image/wiring_diagram_dark.svg#only-dark){ #fig-wiring width=full .on-glb}
 
-Once you have wired the cables are connected your TWIST board to your computer, you can upload the example code.  
+Once you have wired the cables and connected your TWIST board to your computer, you can upload the example code.  
 
-!!! warning "Is you software ready?"
-    Before you can run this example, you must have : 
+!!! warning "Is your software ready?"
+    Before you can run this example, you must have: 
     
     - successfully gone through our [getting started](https://docs.owntech.org/latest/core/docs/environment_setup/) tutorial to set up your work environment
-    - successfully gone through our [first example](https://docs.owntech.org/latest/core/docs/first_example/) tutorial and download the "Open Loop PWM" example 
+    - successfully gone through our [first example](https://docs.owntech.org/latest/core/docs/first_example/) tutorial and downloaded the "Open Loop PWM" example 
 
 
 ## Main code structure
@@ -120,12 +120,12 @@ Once you have wired the cables are connected your TWIST board to your computer, 
 
 ### Code structure 
 
-Let's briefly explain the conde structure of the `main.cpp` file of this example. 
+Let's briefly explain the code structure of the `main.cpp` file of this example. 
 
 [](#fig-code-struct) shows a general representation of how the code is structured.
 
-![Oveview of the code structure (click to zoom)](Image/code_structure_light.svg#only-light){ #fig-code-struct width=500 .on-glb}
-![Oveview of the code structure (click to zoom)](Image/code_structure_dark.svg#only-dark){ #fig-code-struct width=500 .on-glb}
+![Overview of the code structure (click to zoom)](Image/code_structure_light.svg#only-light){ #fig-code-struct width=500 .on-glb}
+![Overview of the code structure (click to zoom)](Image/code_structure_dark.svg#only-dark){ #fig-code-struct width=500 .on-glb}
 
 The code structure is as follows:
 
@@ -139,8 +139,8 @@ The code structure is as follows:
 
 The firmware of the TWIST board is executed according to the diagram in [](#fig-timing-diagram).
 
-- **Communication Task** - Is awaken regularly to verify any keyboard activity
-- **Application Task** - This task is woken once its suspend is finished. By default its period if of **100 miliseconds**. 
+- **Communication Task** - Is awakened regularly to verify any keyboard activity
+- **Application Task** - This task is woken once its suspension is finished. By default its period is **100 milliseconds**. 
 - **Critical Task** - This task is driven by the HRTIM count interrupt, where it counts a number of HRTIM switching frequency periods. In this case 100us, or 20 periods of the TWIST board 200kHz switching frequency set by default.
 
 ![Timing diagram of the tasks](Image/task_diagram_light.svg#only-light){ #fig-timing-diagram width=full .on-glb}
@@ -161,7 +161,7 @@ There is no control scheme in this example. By default it is in `Open-loop`.
     - In the bottom toolbar, click on the Serial Monitor icon ![](Image/serial_monitor_button.png). Then click on the serial monitor screen. 
 
 
-This code will control `duty_cycle` so that the voltage output will vary. You can control the duty cycle through platformio serial monitor. 
+This code will control `duty_cycle` so that the voltage output will vary. You can control the duty cycle through the PlatformIO serial monitor. 
 
 When opening it for the first time, the serial monitor will give you an initialization message regarding the parameters of the ADCs as shown below.  
 
@@ -176,9 +176,9 @@ When opening it for the first time, the serial monitor will give you an initiali
     - press `d` to decrease the duty cycle by 0.05
     - press `h` to show the help menu
 
-Here's sequence when the help menu is activated with `h`, the power mode is then activated with `p`, duty cycle is raised up to `0.5` and finally the Twist converter is put in idle with the `i`. 
+Here's the sequence when the help menu is activated with `h`, the power mode is then activated with `p`, the duty cycle is raised up to `0.5` and finally the Twist converter is put in idle with the `i`. 
 
-![Serial monitor output of the sequency above](Image/buck1_serial.png)
+![Serial monitor output of the sequence above](Image/buck1_serial.png)
 
 
 You can measure the DC output voltage thanks to an oscilloscope or a multimeter.
