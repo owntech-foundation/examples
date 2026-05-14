@@ -286,7 +286,7 @@
         "title": "Software triggered ADC",
         "description": "setting the adc to be trigerred by software",
         "group": "Examples SPIN",
-        "base": "SPIN/ADC/adc_hrtim_trigger",
+        "base": "SPIN/ADC/adc_software_trigger",
         "files": [
             "main.cpp",
             "README.md"
